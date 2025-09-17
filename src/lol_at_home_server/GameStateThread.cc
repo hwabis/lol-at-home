@@ -18,11 +18,9 @@ void GameStateThread::HandlePlayerInput(GameInput input) {
 
 void GameStateThread::runGameLoop() {
   // todo all these configurable as hz
-  constexpr auto targetFrameTime = std::chrono::milliseconds(16);
-  constexpr auto deltaBroadcastInterval = std::chrono::milliseconds(250);
+  constexpr auto tickInterval = std::chrono::milliseconds(33);
   constexpr auto fullStateBroadcastInterval = std::chrono::seconds(5);
 
-  auto lastDeltaBroadcast = std::chrono::steady_clock::now();
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
 
   while (isRunning_) {
@@ -31,10 +29,7 @@ void GameStateThread::runGameLoop() {
     processQueuedInputs();
     updateGameState();
 
-    if (frameStart - lastDeltaBroadcast >= deltaBroadcastInterval) {
-      broadcastDeltaGameState();
-      lastDeltaBroadcast = frameStart;
-    }
+    broadcastDeltaGameState();
 
     if (frameStart - lastFullStateBroadcast >= fullStateBroadcastInterval) {
       broadcastFullGameState();
@@ -43,8 +38,8 @@ void GameStateThread::runGameLoop() {
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto elapsed = frameEnd - frameStart;
-    if (elapsed < targetFrameTime) {
-      std::this_thread::sleep_for(targetFrameTime - elapsed);
+    if (elapsed < tickInterval) {
+      std::this_thread::sleep_for(tickInterval - elapsed);
     }
   }
 }
