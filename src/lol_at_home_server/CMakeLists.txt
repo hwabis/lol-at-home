@@ -13,4 +13,13 @@ target_include_directories(lol-at-home-server PRIVATE
 
 target_link_libraries(lol-at-home-server PRIVATE
   spdlog::spdlog
+  unofficial::enet::enet
 )
+
+# For enet
+if(WIN32)
+  target_link_libraries(lol-at-home-server PRIVATE
+    winmm
+    ws2_32
+  )
+endif()
