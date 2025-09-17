@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.28)
 
 project(
   lol-at-home
@@ -8,7 +8,7 @@ project(
 enable_testing()
 find_package(GTest CONFIG REQUIRED)
 
-# add find_package stuff as needed
+find_package(spdlog CONFIG REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(tests)

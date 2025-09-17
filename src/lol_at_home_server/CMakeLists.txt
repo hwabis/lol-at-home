@@ -11,6 +11,6 @@ target_include_directories(lol-at-home-server PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# target_link_libraries(lol-at-home-server PRIVATE
-#   PkgConfig::FFMPEG
-# )
+target_link_libraries(lol-at-home-server PRIVATE
+  spdlog::spdlog
+)
