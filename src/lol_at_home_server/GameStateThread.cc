@@ -12,20 +12,24 @@ void GameStateThread::Stop() {
   isRunning_ = false;
 }
 
-void GameStateThread::HandlePlayerInput(GameInput input) {
+void GameStateThread::HandleInput(PlayerInput input) {
   std::lock_guard<std::mutex> lock(inputQueueMutex_);
   inputQueue_.push(input);
 }
 
 void GameStateThread::runGameLoop() {
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
+  auto lastFrameTime = std::chrono::steady_clock::now() - Config::TickInterval;
 
   while (isRunning_) {
     auto frameStart = std::chrono::steady_clock::now();
+    auto deltaTimeMs =
+        std::chrono::duration<double, std::milli>(frameStart - lastFrameTime)
+            .count();
+    lastFrameTime = frameStart;
 
     processQueuedInputs();
-    updateGameState();
-
+    gameState_.Tick(deltaTimeMs);
     broadcastDeltaGameState();
 
     if (frameStart - lastFullStateBroadcast >=
@@ -43,7 +47,7 @@ void GameStateThread::runGameLoop() {
 }
 
 void GameStateThread::processQueuedInputs() {
-  std::vector<GameInput> inputsToProcess;
+  std::vector<PlayerInput> inputsToProcess;
 
   {
     std::lock_guard<std::mutex> lock(inputQueueMutex_);
@@ -54,14 +58,8 @@ void GameStateThread::processQueuedInputs() {
   }
 
   for (const auto& input : inputsToProcess) {
-    switch (input.Type) {
-      // todo this does stuff in our game state class
-    }
+    gameState_.Process(input);
   }
-}
-
-void GameStateThread::updateGameState() {
-  // todo
 }
 
 void GameStateThread::broadcastDeltaGameState() {

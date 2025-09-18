@@ -1,18 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include "Entity.h"
+#include "Vector2.h"
 
 namespace lol_at_home_server {
 
-using EntityId = uint32_t;
-using PlayerId = uint32_t;
-
-struct Vector2 {
-  float X;
-  float Y;
-};
-
-struct GameInput {
+struct PlayerInput {
   enum class Type : uint8_t {
     MOVE,
     ABILITY,
@@ -27,7 +21,7 @@ struct GameInput {
     R,
   };
 
-  PlayerId PlayerId;
+  EntityId PlayerChampionId;
   Type Type;
 
   Ability Ability;
