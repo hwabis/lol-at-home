@@ -1,4 +1,5 @@
 #include "GameStateThread.h"
+#include "Config.h"
 
 namespace lol_at_home_server {
 
@@ -17,10 +18,6 @@ void GameStateThread::HandlePlayerInput(GameInput input) {
 }
 
 void GameStateThread::runGameLoop() {
-  // todo all these configurable as hz
-  constexpr auto tickInterval = std::chrono::milliseconds(33);
-  constexpr auto fullStateBroadcastInterval = std::chrono::seconds(5);
-
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
 
   while (isRunning_) {
@@ -31,25 +28,32 @@ void GameStateThread::runGameLoop() {
 
     broadcastDeltaGameState();
 
-    if (frameStart - lastFullStateBroadcast >= fullStateBroadcastInterval) {
+    if (frameStart - lastFullStateBroadcast >=
+        Config::FullStateBroadcastInterval) {
       broadcastFullGameState();
       lastFullStateBroadcast = frameStart;
     }
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto elapsed = frameEnd - frameStart;
-    if (elapsed < tickInterval) {
-      std::this_thread::sleep_for(tickInterval - elapsed);
+    if (elapsed < Config::TickInterval) {
+      std::this_thread::sleep_for(Config::TickInterval - elapsed);
     }
   }
 }
 
 void GameStateThread::processQueuedInputs() {
-  std::lock_guard<std::mutex> lock(inputQueueMutex_);
-  while (!inputQueue_.empty()) {
-    GameInput input = inputQueue_.front();
-    inputQueue_.pop();
+  std::vector<GameInput> inputsToProcess;
 
+  {
+    std::lock_guard<std::mutex> lock(inputQueueMutex_);
+    while (!inputQueue_.empty()) {
+      inputsToProcess.push_back(inputQueue_.front());
+      inputQueue_.pop();
+    }
+  }
+
+  for (const auto& input : inputsToProcess) {
     switch (input.Type) {
       // todo this does stuff in our game state class
     }
