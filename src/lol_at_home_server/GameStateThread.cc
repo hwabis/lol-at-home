@@ -5,7 +5,7 @@ namespace lol_at_home_server {
 
 void GameStateThread::Start() {
   isRunning_ = true;
-  gameThread_ = std::jthread([this] { runGameLoop(); });
+  gameThread_ = std::jthread([this] { runAndBlockGameLoop(); });
 }
 
 void GameStateThread::Stop() {
@@ -17,7 +17,7 @@ void GameStateThread::HandleInput(PlayerInput input) {
   inputQueue_.push(input);
 }
 
-void GameStateThread::runGameLoop() {
+void GameStateThread::runAndBlockGameLoop() {
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
   auto lastFrameTime = std::chrono::steady_clock::now() - Config::TickInterval;
 
@@ -28,7 +28,10 @@ void GameStateThread::runGameLoop() {
             .count();
     lastFrameTime = frameStart;
 
-    processQueuedInputs();
+    auto inputs = getAndClearQueuedInputs();
+    for (const auto& input : inputs) {
+      gameState_.Process(input);
+    }
     gameState_.Tick(deltaTimeMs);
     broadcastDeltaGameState();
 
@@ -46,20 +49,18 @@ void GameStateThread::runGameLoop() {
   }
 }
 
-void GameStateThread::processQueuedInputs() {
-  std::vector<PlayerInput> inputsToProcess;
+auto GameStateThread::getAndClearQueuedInputs() -> std::vector<PlayerInput> {
+  std::vector<PlayerInput> inputs;
 
   {
     std::lock_guard<std::mutex> lock(inputQueueMutex_);
     while (!inputQueue_.empty()) {
-      inputsToProcess.push_back(inputQueue_.front());
+      inputs.push_back(inputQueue_.front());
       inputQueue_.pop();
     }
   }
 
-  for (const auto& input : inputsToProcess) {
-    gameState_.Process(input);
-  }
+  return inputs;
 }
 
 void GameStateThread::broadcastDeltaGameState() {

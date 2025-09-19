@@ -4,8 +4,8 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-#include "PlayerInput.h"
 #include "GameState.h"
+#include "PlayerInput.h"
 
 namespace lol_at_home_server {
 
@@ -16,8 +16,8 @@ class GameStateThread {
   void HandleInput(PlayerInput input);
 
  private:
-  void runGameLoop();
-  void processQueuedInputs();
+  void runAndBlockGameLoop();
+  auto getAndClearQueuedInputs() -> std::vector<PlayerInput>;
   void broadcastDeltaGameState();
   void broadcastFullGameState();
 
