@@ -34,11 +34,8 @@ void GameStateThread::runAndBlockGameLoop() {
     lastFrameTime = frameStart;
 
     auto inputs = getAndClearQueuedInputs();
-    for (const auto& input : inputs) {
-      gameState_.Process(input);
-    }
-    gameState_.Update(deltaTimeMs);
-    broadcastDeltaGameState(gameState_.GetDeltaSincePrevUpdate());
+    auto deltas = gameState_.ProcessInputsAndUpdate(inputs, deltaTimeMs);
+    broadcastDeltaGameState(deltas);
 
     if (frameStart - lastFullStateBroadcast >=
         Config::FullStateBroadcastInterval) {

@@ -15,20 +15,16 @@ class GameState {
  public:
   explicit GameState(
       std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities);
-  void Update(double deltaTimeMs);
-  void Process(PlayerInput input);
+  auto ProcessInputsAndUpdate(const std::vector<PlayerInput>& inputs,
+                              double deltaTimeMs)
+      -> std::vector<GameStateDelta>;
   [[nodiscard]] auto GetFullGameState() const
       -> const std::unordered_map<EntityId, std::unique_ptr<Entity>>& {
     return gameState_;
   }
-  [[nodiscard]] auto GetDeltaSincePrevUpdate() const
-      -> const std::vector<GameStateDelta>& {
-    return gameStateDelta_;
-  }
 
  private:
   std::unordered_map<EntityId, std::unique_ptr<Entity>> gameState_;
-  std::vector<GameStateDelta> gameStateDelta_;
 };
 
 }  // namespace lol_at_home_server

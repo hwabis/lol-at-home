@@ -6,19 +6,22 @@ GameState::GameState(
     std::unordered_map<EntityId, std::unique_ptr<Entity>> startGameState)
     : gameState_(std::move(startGameState)) {}
 
-void GameState::Update(double deltaTimeMs) {
-  gameStateDelta_.clear();
+auto GameState::ProcessInputsAndUpdate(const std::vector<PlayerInput>& inputs,
+                                       double deltaTimeMs)
+    -> std::vector<GameStateDelta> {
+  std::vector<GameStateDelta> gameStateDelta;
+
+  for (const auto& input : inputs) {
+    // todo: process(input);
+    // Build delta as we update
+  }
 
   for (auto& [entityId, entity] : gameState_) {
     entity->Update(deltaTimeMs);
-    // todo update gameStateDelta_ somehow
+    // Build delta as we update
   }
-}
 
-void GameState::Process(PlayerInput input) {
-  switch (input.Type) {
-    // todo
-  }
+  return gameStateDelta;
 }
 
 }  // namespace lol_at_home_server
