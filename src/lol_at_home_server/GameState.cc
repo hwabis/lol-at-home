@@ -2,10 +2,16 @@
 
 namespace lol_at_home_server {
 
-void GameState::Tick(double deltaTimeMs) {
-  for (auto& [entityId, entity] : entities) {
-    // todo
-    // entity->Update(deltaTime);
+GameState::GameState(
+    std::unordered_map<EntityId, std::unique_ptr<Entity>> startGameState)
+    : gameState_(std::move(startGameState)) {}
+
+void GameState::Update(double deltaTimeMs) {
+  gameStateDelta_.clear();
+
+  for (auto& [entityId, entity] : gameState_) {
+    entity->Update(deltaTimeMs);
+    // todo update gameStateDelta_ somehow
   }
 }
 

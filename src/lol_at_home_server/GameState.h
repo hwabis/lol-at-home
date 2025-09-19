@@ -7,17 +7,28 @@
 
 namespace lol_at_home_server {
 
+struct GameStateDelta {
+  // todo ??????
+};
+
 class GameState {
  public:
-  void Tick(double deltaTimeMs);
+  explicit GameState(
+      std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities);
+  void Update(double deltaTimeMs);
   void Process(PlayerInput input);
-  [[nodiscard]] auto GetEntities() const
+  [[nodiscard]] auto GetFullGameState() const
       -> const std::unordered_map<EntityId, std::unique_ptr<Entity>>& {
-    return entities;
+    return gameState_;
+  }
+  [[nodiscard]] auto GetDeltaSincePrevUpdate() const
+      -> const std::vector<GameStateDelta>& {
+    return gameStateDelta_;
   }
 
  private:
-  std::unordered_map<EntityId, std::unique_ptr<Entity>> entities;
+  std::unordered_map<EntityId, std::unique_ptr<Entity>> gameState_;
+  std::vector<GameStateDelta> gameStateDelta_;
 };
 
 }  // namespace lol_at_home_server

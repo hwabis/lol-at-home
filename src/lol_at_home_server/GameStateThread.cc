@@ -1,7 +1,11 @@
 #include "GameStateThread.h"
+
 #include "Config.h"
 
 namespace lol_at_home_server {
+
+GameStateThread::GameStateThread(GameState startGameState)
+    : gameState_(std::move(startGameState)) {}
 
 void GameStateThread::Start() {
   isRunning_ = true;
@@ -19,7 +23,8 @@ void GameStateThread::HandleInput(PlayerInput input) {
 
 void GameStateThread::runAndBlockGameLoop() {
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
-  auto lastFrameTime = std::chrono::steady_clock::now() - Config::TickInterval;
+  auto lastFrameTime =
+      std::chrono::steady_clock::now() - Config::UpdateInterval;
 
   while (isRunning_) {
     auto frameStart = std::chrono::steady_clock::now();
@@ -32,19 +37,19 @@ void GameStateThread::runAndBlockGameLoop() {
     for (const auto& input : inputs) {
       gameState_.Process(input);
     }
-    gameState_.Tick(deltaTimeMs);
-    broadcastDeltaGameState();
+    gameState_.Update(deltaTimeMs);
+    broadcastDeltaGameState(gameState_.GetDeltaSincePrevUpdate());
 
     if (frameStart - lastFullStateBroadcast >=
         Config::FullStateBroadcastInterval) {
-      broadcastFullGameState();
+      broadcastFullGameState(gameState_.GetFullGameState());
       lastFullStateBroadcast = frameStart;
     }
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto elapsed = frameEnd - frameStart;
-    if (elapsed < Config::TickInterval) {
-      std::this_thread::sleep_for(Config::TickInterval - elapsed);
+    if (elapsed < Config::UpdateInterval) {
+      std::this_thread::sleep_for(Config::UpdateInterval - elapsed);
     }
   }
 }
@@ -63,11 +68,13 @@ auto GameStateThread::getAndClearQueuedInputs() -> std::vector<PlayerInput> {
   return inputs;
 }
 
-void GameStateThread::broadcastDeltaGameState() {
+void GameStateThread::broadcastDeltaGameState(
+    const std::vector<GameStateDelta>&) {
   // todo
 }
 
-void GameStateThread::broadcastFullGameState() {
+void GameStateThread::broadcastFullGameState(
+    const std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState) {
   // todo
 }
 
