@@ -5,9 +5,8 @@
 
 namespace lol_at_home_server {
 
-// Externally received actions triggered by a player, e.g. champion movement.
-// This does not encompass actions for non-player characters (e.g. tower shots,
-// minion auto-attacks).
+// Actions triggered by any entity, e.g. a player moving their champion, a tower
+// shot, minion auto-attack.
 struct GameAction {
   EntityId Id{};
 };
