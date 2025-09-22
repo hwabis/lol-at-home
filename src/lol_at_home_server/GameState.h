@@ -11,17 +11,17 @@ namespace lol_at_home_server {
 class GameState {
  public:
   explicit GameState(
-      std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities);
+      GameStateEntities startingEntities);
   auto ProcessActionsAndUpdate(const std::vector<GameActionVariant>& actions,
                                double deltaTimeMs) -> GameStateDelta;
   void AddEntity(std::unique_ptr<Entity> entity);
   [[nodiscard]] auto GetFullGameState() const
-      -> const std::unordered_map<EntityId, std::unique_ptr<Entity>>& {
+      -> const GameStateEntities& {
     return gameState_;
   }
 
  private:
-  std::unordered_map<EntityId, std::unique_ptr<Entity>> gameState_;
+  GameStateEntities gameState_;
   EntityId nextEntityId_ = 0;
 };
 

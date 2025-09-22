@@ -1,8 +1,14 @@
 #pragma once
 
+#include <memory>
+#include <unordered_map>
+
 namespace lol_at_home_server {
 
+class Entity;
+
 using EntityId = int;
+using GameStateEntities = std::unordered_map<EntityId, std::unique_ptr<Entity>>;
 
 struct Vector2 {
   double X{};

@@ -70,7 +70,7 @@ void GameStateThread::broadcastDeltaGameState(const GameStateDelta& delta) {
 }
 
 void GameStateThread::broadcastFullGameState(
-    const std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState) {
+    const GameStateEntities& gameState) {
   // todo
 }
 
