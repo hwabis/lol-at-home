@@ -5,7 +5,7 @@
 namespace lol_at_home_server {
 
 // An entity is anything that is used in positional game state calculations.
-// E.g. characters, towers, skillshots
+// E.g. champions, minions, towers, projectiles, area effects
 class Entity {
  public:
   explicit Entity(EntityStats stats) : stats_(stats) {}
@@ -13,8 +13,8 @@ class Entity {
 
   Entity(const Entity&) = delete;
   auto operator=(const Entity&) -> Entity& = delete;
-  Entity(Entity&&) = delete;
-  auto operator=(Entity&&) -> Entity& = delete;
+  Entity(Entity&&) = default;
+  auto operator=(Entity&&) -> Entity& = default;
 
   // Returns whether the entity's stats changed during this update
   [[nodiscard]] virtual auto Update(double deltaTimeMs) -> bool = 0;
