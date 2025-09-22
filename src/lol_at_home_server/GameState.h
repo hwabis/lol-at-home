@@ -1,6 +1,5 @@
 #pragma once
 
-#include <atomic>
 #include <memory>
 #include <unordered_map>
 #include "Entity.h"

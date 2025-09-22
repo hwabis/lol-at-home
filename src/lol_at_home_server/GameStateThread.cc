@@ -1,10 +1,10 @@
 #include "GameStateThread.h"
-#include "Config.h"
 
 namespace lol_at_home_server {
 
-GameStateThread::GameStateThread(GameState startGameState)
-    : gameState_(std::move(startGameState)) {}
+GameStateThread::GameStateThread(GameState startGameState,
+                                 GameStateThreadConfig config)
+    : gameState_(std::move(startGameState)), config_(config) {}
 
 void GameStateThread::Start() {
   isRunning_ = true;
@@ -23,7 +23,7 @@ void GameStateThread::HandleInput(GameAction input) {
 void GameStateThread::runAndBlockGameLoop() {
   auto lastFullStateBroadcast = std::chrono::steady_clock::now();
   auto lastFrameTime =
-      std::chrono::steady_clock::now() - Config::UpdateInterval;
+      std::chrono::steady_clock::now() - config_.UpdateInterval;
 
   while (isRunning_) {
     auto frameStart = std::chrono::steady_clock::now();
@@ -37,15 +37,15 @@ void GameStateThread::runAndBlockGameLoop() {
     broadcastDeltaGameState(delta);
 
     if (frameStart - lastFullStateBroadcast >=
-        Config::FullStateBroadcastInterval) {
+        config_.FullStateBroadcastInterval) {
       broadcastFullGameState(gameState_.GetFullGameState());
       lastFullStateBroadcast = frameStart;
     }
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto elapsed = frameEnd - frameStart;
-    if (elapsed < Config::UpdateInterval) {
-      std::this_thread::sleep_for(Config::UpdateInterval - elapsed);
+    if (elapsed < config_.UpdateInterval) {
+      std::this_thread::sleep_for(config_.UpdateInterval - elapsed);
     }
   }
 }

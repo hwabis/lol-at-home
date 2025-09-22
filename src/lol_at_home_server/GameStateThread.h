@@ -6,12 +6,13 @@
 #include <thread>
 #include "GameAction.h"
 #include "GameState.h"
+#include "GameStateThreadConfig.h"
 
 namespace lol_at_home_server {
 
 class GameStateThread {
  public:
-  explicit GameStateThread(GameState gameState);
+  explicit GameStateThread(GameState gameState, GameStateThreadConfig config);
   void Start();
   void Stop();
   void HandleInput(GameAction input);
@@ -28,6 +29,7 @@ class GameStateThread {
   std::queue<GameAction> actionQueue_;
   std::mutex actionQueueMutex_;
   GameState gameState_;
+  GameStateThreadConfig config_;
 };
 
 }  // namespace lol_at_home_server
