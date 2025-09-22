@@ -29,15 +29,16 @@ auto GameState::ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
   }
 
   for (auto& [entityId, entity] : gameState_) {
-    entity->Update(deltaTimeMs);
+    bool entityChanged = entity->Update(deltaTimeMs);
 
+    if (entityChanged) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-designated-field-initializers"
-    // todo only add entities to the delta whose state has changed this update
-    EntityStats stats{.Id = entityId, .Health = 2};
+      EntityStats stats{.Id = entityId, .Health = 2};
 #pragma GCC diagnostic pop
 
-    gameStateDelta.UpdatedEntities.push_back(stats);
+      gameStateDelta.UpdatedEntities.push_back(stats);
+    }
   }
 
   return gameStateDelta;

@@ -6,7 +6,7 @@
 
 namespace lol_at_home_server {
 
-// Actions for any unit (e.g. champions using abiltiies, minions attacking).
+// Actions for any unit (e.g. champions using abilties, minions attacking).
 // Not every action type will u se all the fields, e.g. Ability is only used if
 // action Type is Ability
 struct GameAction {

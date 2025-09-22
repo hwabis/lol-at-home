@@ -8,7 +8,7 @@ namespace lol_at_home_server {
 // E.g. characters, towers, skillshots
 class Entity {
  public:
-  explicit Entity(EntityStats stats);
+  explicit Entity(EntityStats stats) : stats_(stats) {}
   virtual ~Entity() = default;
 
   Entity(const Entity&) = delete;
@@ -16,12 +16,11 @@ class Entity {
   Entity(Entity&&) = delete;
   auto operator=(Entity&&) -> Entity& = delete;
 
-  virtual void Update(double deltaTimeMs) = 0;
-  [[nodiscard]] auto GetId() const -> EntityId { return id_; }
+  // Returns whether the entity's stats changed during this update
+  [[nodiscard]] virtual auto Update(double deltaTimeMs) -> bool = 0;
   [[nodiscard]] auto GetStatsRef() -> EntityStats& { return stats_; }
 
  private:
-  EntityId id_;
   EntityStats stats_;
 };
 
