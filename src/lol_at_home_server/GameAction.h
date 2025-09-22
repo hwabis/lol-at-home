@@ -1,24 +1,37 @@
 #pragma once
 
-#include <cstdint>
+#include <variant>
 #include "EntityStats.h"
 
 namespace lol_at_home_server {
 
-// Actions for any unit (e.g. champions using abilties, minions attacking).
-// Not every action type will u se all the fields, e.g. Ability is only used if
-// action Type is Ability
+// Externally received actions triggered by a player, e.g. champion movement.
+// This does not encompass actions for non-player characters (e.g. tower shots,
+// minion auto-attacks).
 struct GameAction {
-  enum class Type : uint8_t { Move, Ability, AutoAttack, Stop };
+  EntityId Id{};
+};
+
+struct MoveAction : GameAction {
+  Vector2 EndPosition;
+};
+
+struct AbilityGameAction : GameAction {
   enum class Ability : uint8_t { Q, W, E, R };
-
-  EntityId Id;
-  Type Type;
-
-  Ability Ability;
+  Ability Ability{};
   Vector2 StartPosition;
   Vector2 EndPosition;
-  EntityId TargetId;
 };
+
+struct AutoAttackGameAction : GameAction {
+  EntityId TargetId{};
+};
+
+struct StopGameAction : GameAction {};
+
+using GameActionVariant = std::variant<MoveAction,
+                                       AbilityGameAction,
+                                       AutoAttackGameAction,
+                                       StopGameAction>;
 
 }  // namespace lol_at_home_server

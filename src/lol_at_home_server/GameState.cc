@@ -1,5 +1,6 @@
 #include "GameState.h"
 #include <spdlog/spdlog.h>
+#include "GameActionVisitor.h"
 
 namespace lol_at_home_server {
 
@@ -7,23 +8,20 @@ GameState::GameState(
     std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
     : gameState_(std::move(startingEntities)) {}
 
-auto GameState::ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
-                                        double deltaTimeMs) -> GameStateDelta {
+auto GameState::ProcessActionsAndUpdate(
+    const std::vector<GameActionVariant>& actions,
+    double deltaTimeMs) -> GameStateDelta {
   GameStateDelta gameStateDelta;
 
   for (const auto& action : actions) {
-    if (!gameState_.contains(action.Id)) {
+    EntityId actionEntityId = GetEntityId(action);
+
+    if (!gameState_.contains(actionEntityId)) {
       spdlog::error("Received an action for a non-existant entity");
       return {};
     }
 
-    switch (action.Type) {
-      case GameAction::Type::Move:
-        gameState_.at(action.Id)->GetStatsRef().EndPosition =
-            action.EndPosition;
-        break;
-        // todo everything else
-    }
+    std::visit(GameActionVisitor{gameState_}, action);
 
     gameStateDelta.Actions.push_back(action);
   }

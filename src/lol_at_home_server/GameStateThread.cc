@@ -15,7 +15,7 @@ void GameStateThread::Stop() {
   isRunning_ = false;
 }
 
-void GameStateThread::HandleInput(GameAction input) {
+void GameStateThread::HandleInput(GameActionVariant input) {
   std::lock_guard<std::mutex> lock(actionQueueMutex_);
   actionQueue_.push(input);
 }
@@ -50,8 +50,9 @@ void GameStateThread::runAndBlockGameLoop() {
   }
 }
 
-auto GameStateThread::getAndClearQueuedActions() -> std::vector<GameAction> {
-  std::vector<GameAction> inputs;
+auto GameStateThread::getAndClearQueuedActions()
+    -> std::vector<GameActionVariant> {
+  std::vector<GameActionVariant> inputs;
 
   {
     std::lock_guard<std::mutex> lock(actionQueueMutex_);

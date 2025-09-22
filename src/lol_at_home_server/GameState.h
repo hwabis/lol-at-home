@@ -12,7 +12,7 @@ class GameState {
  public:
   explicit GameState(
       std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities);
-  auto ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
+  auto ProcessActionsAndUpdate(const std::vector<GameActionVariant>& actions,
                                double deltaTimeMs) -> GameStateDelta;
   void AddEntity(std::unique_ptr<Entity> entity);
   [[nodiscard]] auto GetFullGameState() const
