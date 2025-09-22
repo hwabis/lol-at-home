@@ -3,8 +3,6 @@
 
 namespace lol_at_home_server {
 
-std::atomic<EntityId> GameState::nextEntityId_ = 1;
-
 GameState::GameState(
     std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
     : gameState_(std::move(startingEntities)) {}
