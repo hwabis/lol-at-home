@@ -32,12 +32,7 @@ auto GameState::ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
     bool entityChanged = entity->Update(deltaTimeMs);
 
     if (entityChanged) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-designated-field-initializers"
-      EntityStats stats{.Id = entityId, .Health = 2};
-#pragma GCC diagnostic pop
-
-      gameStateDelta.UpdatedEntities.push_back(stats);
+      gameStateDelta.UpdatedEntities.push_back(entity->GetStatsRef());
     }
   }
 

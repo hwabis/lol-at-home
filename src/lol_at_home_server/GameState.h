@@ -23,7 +23,7 @@ class GameState {
 
  private:
   std::unordered_map<EntityId, std::unique_ptr<Entity>> gameState_;
-  static inline std::atomic<EntityId> nextEntityId_;
+  EntityId nextEntityId_ = 0;
 };
 
 }  // namespace lol_at_home_server
