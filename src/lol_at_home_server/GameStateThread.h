@@ -4,8 +4,8 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include "GameAction.h"
 #include "GameState.h"
-#include "PlayerInput.h"
 
 namespace lol_at_home_server {
 
@@ -14,19 +14,19 @@ class GameStateThread {
   explicit GameStateThread(GameState gameState);
   void Start();
   void Stop();
-  void HandleInput(PlayerInput input);
+  void HandleInput(GameAction input);
 
  private:
   void runAndBlockGameLoop();
-  auto getAndClearQueuedInputs() -> std::vector<PlayerInput>;
-  static void broadcastDeltaGameState(const std::vector<GameStateDelta>&);
+  auto getAndClearQueuedActions() -> std::vector<GameAction>;
+  static void broadcastDeltaGameState(const GameStateDelta&);
   static void broadcastFullGameState(
       const std::unordered_map<EntityId, std::unique_ptr<Entity>>&);
 
   std::jthread gameThread_;
   std::atomic<bool> isRunning_ = false;
-  std::queue<PlayerInput> inputQueue_;
-  std::mutex inputQueueMutex_;
+  std::queue<GameAction> actionQueue_;
+  std::mutex actionQueueMutex_;
   GameState gameState_;
 };
 

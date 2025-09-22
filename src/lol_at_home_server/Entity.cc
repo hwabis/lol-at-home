@@ -3,7 +3,7 @@
 
 namespace lol_at_home_server {
 
-Entity::Entity(Vector2 position) : position_(position) {
+Entity::Entity(EntityStats stats) : stats_(stats) {
   static std::atomic<EntityId> newId{1};
   id_ = newId++;
 }

@@ -1,24 +1,43 @@
 #include "GameState.h"
+#include <spdlog/spdlog.h>
 
 namespace lol_at_home_server {
 
 GameState::GameState(
-    std::unordered_map<EntityId, std::unique_ptr<Entity>> startGameState)
-    : gameState_(std::move(startGameState)) {}
+    std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
+    : gameState_(std::move(startingEntities)) {}
 
-auto GameState::ProcessInputsAndUpdate(const std::vector<PlayerInput>& inputs,
-                                       double deltaTimeMs)
-    -> std::vector<GameStateDelta> {
-  std::vector<GameStateDelta> gameStateDelta;
+auto GameState::ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
+                                        double deltaTimeMs) -> GameStateDelta {
+  GameStateDelta gameStateDelta;
 
-  for (const auto& input : inputs) {
-    // todo: process(input);
-    // Build delta as we update
+  for (const auto& action : actions) {
+    if (!gameState_.contains(action.Id)) {
+      spdlog::error("Received an action for a non-existant entity");
+      return {};
+    }
+
+    switch (action.Type) {
+      case GameAction::Type::Move:
+        gameState_.at(action.Id)->GetStatsRef().EndPosition =
+            action.EndPosition;
+        break;
+        // todo everything else
+    }
+
+    gameStateDelta.Actions.push_back(action);
   }
 
   for (auto& [entityId, entity] : gameState_) {
     entity->Update(deltaTimeMs);
-    // Build delta as we update
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-designated-field-initializers"
+    // todo only add entities to the delta whose state has changed this update
+    EntityStats stats{.Id = entityId, .Health = 2};
+#pragma GCC diagnostic pop
+
+    gameStateDelta.UpdatedEntities.push_back(stats);
   }
 
   return gameStateDelta;

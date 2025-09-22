@@ -16,9 +16,9 @@ void GameStateThread::Stop() {
   isRunning_ = false;
 }
 
-void GameStateThread::HandleInput(PlayerInput input) {
-  std::lock_guard<std::mutex> lock(inputQueueMutex_);
-  inputQueue_.push(input);
+void GameStateThread::HandleInput(GameAction input) {
+  std::lock_guard<std::mutex> lock(actionQueueMutex_);
+  actionQueue_.push(input);
 }
 
 void GameStateThread::runAndBlockGameLoop() {
@@ -33,9 +33,9 @@ void GameStateThread::runAndBlockGameLoop() {
             .count();
     lastFrameTime = frameStart;
 
-    auto inputs = getAndClearQueuedInputs();
-    auto deltas = gameState_.ProcessInputsAndUpdate(inputs, deltaTimeMs);
-    broadcastDeltaGameState(deltas);
+    auto actions = getAndClearQueuedActions();
+    auto delta = gameState_.ProcessActionsAndUpdate(actions, deltaTimeMs);
+    broadcastDeltaGameState(delta);
 
     if (frameStart - lastFullStateBroadcast >=
         Config::FullStateBroadcastInterval) {
@@ -51,22 +51,21 @@ void GameStateThread::runAndBlockGameLoop() {
   }
 }
 
-auto GameStateThread::getAndClearQueuedInputs() -> std::vector<PlayerInput> {
-  std::vector<PlayerInput> inputs;
+auto GameStateThread::getAndClearQueuedActions() -> std::vector<GameAction> {
+  std::vector<GameAction> inputs;
 
   {
-    std::lock_guard<std::mutex> lock(inputQueueMutex_);
-    while (!inputQueue_.empty()) {
-      inputs.push_back(inputQueue_.front());
-      inputQueue_.pop();
+    std::lock_guard<std::mutex> lock(actionQueueMutex_);
+    while (!actionQueue_.empty()) {
+      inputs.push_back(actionQueue_.front());
+      actionQueue_.pop();
     }
   }
 
   return inputs;
 }
 
-void GameStateThread::broadcastDeltaGameState(
-    const std::vector<GameStateDelta>&) {
+void GameStateThread::broadcastDeltaGameState(const GameStateDelta& delta) {
   // todo
 }
 

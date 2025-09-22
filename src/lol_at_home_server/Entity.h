@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Vector2.h"
+#include "EntityStats.h"
 
 namespace lol_at_home_server {
 
-using EntityId = int;
-
+// An entity is anything that is used in positional game state calculations.
+// E.g. characters, towers, skillshots
 class Entity {
  public:
-  explicit Entity(Vector2 position);
+  explicit Entity(EntityStats stats);
   virtual ~Entity() = default;
 
   Entity(const Entity&) = delete;
@@ -17,12 +17,12 @@ class Entity {
   auto operator=(Entity&&) -> Entity& = delete;
 
   virtual void Update(double deltaTimeMs) = 0;
-  [[nodiscard]] auto GetPosition() const -> Vector2 { return position_; }
   [[nodiscard]] auto GetId() const -> EntityId { return id_; }
+  [[nodiscard]] auto GetStatsRef() -> EntityStats& { return stats_; }
 
  private:
-  Vector2 position_;
   EntityId id_;
+  EntityStats stats_;
 };
 
 }  // namespace lol_at_home_server

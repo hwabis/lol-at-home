@@ -3,21 +3,17 @@
 #include <memory>
 #include <unordered_map>
 #include "Entity.h"
-#include "PlayerInput.h"
+#include "GameAction.h"
+#include "GameStateDelta.h"
 
 namespace lol_at_home_server {
-
-struct GameStateDelta {
-  // todo ??????
-};
 
 class GameState {
  public:
   explicit GameState(
       std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities);
-  auto ProcessInputsAndUpdate(const std::vector<PlayerInput>& inputs,
-                              double deltaTimeMs)
-      -> std::vector<GameStateDelta>;
+  auto ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
+                               double deltaTimeMs) -> GameStateDelta;
   [[nodiscard]] auto GetFullGameState() const
       -> const std::unordered_map<EntityId, std::unique_ptr<Entity>>& {
     return gameState_;

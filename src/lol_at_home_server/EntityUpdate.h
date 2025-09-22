@@ -1,10 +1,11 @@
 #pragma once
 
+#include "EntityStats.h"
+
 namespace lol_at_home_server {
 
-struct Vector2 {
-  double X;
-  double Y;
+struct EntityUpdate {
+  EntityStats Stats;
 };
 
 }  // namespace lol_at_home_server
