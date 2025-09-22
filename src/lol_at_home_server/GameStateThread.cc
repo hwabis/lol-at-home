@@ -1,5 +1,4 @@
 #include "GameStateThread.h"
-
 #include "Config.h"
 
 namespace lol_at_home_server {

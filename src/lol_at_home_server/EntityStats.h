@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Vector2.h"
-
 namespace lol_at_home_server {
 
 using EntityId = int;
+
+struct Vector2 {
+  double X;
+  double Y;
+};
 
 // A mishmosh of every possible stat for an entity. Not every entity has all of
 // these stats, e.g. a projectile has no health

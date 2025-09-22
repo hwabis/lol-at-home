@@ -4,7 +4,6 @@
 #include "GameStateThread.h"
 
 auto main() -> int {
-  // todo when creating entities we need like a static unique ID pool or smth
   lol_at_home_server::GameStateThread trololol{
       lol_at_home_server::GameState{{}}};
   trololol.Start();

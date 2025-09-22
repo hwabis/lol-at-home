@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include "EntityStats.h"
-#include "Vector2.h"
 
 namespace lol_at_home_server {
 

@@ -3,6 +3,8 @@
 
 namespace lol_at_home_server {
 
+std::atomic<EntityId> GameState::nextEntityId_ = 1;
+
 GameState::GameState(
     std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
     : gameState_(std::move(startingEntities)) {}
@@ -42,6 +44,12 @@ auto GameState::ProcessActionsAndUpdate(const std::vector<GameAction>& actions,
   }
 
   return gameStateDelta;
+}
+
+void GameState::AddEntity(std::unique_ptr<Entity> entity) {
+  EntityId newId = ++nextEntityId_;
+  entity->GetStatsRef().Id = newId;
+  gameState_[newId] = std::move(entity);
 }
 
 }  // namespace lol_at_home_server
