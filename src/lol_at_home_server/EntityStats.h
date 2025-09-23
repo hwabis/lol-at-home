@@ -18,7 +18,9 @@ struct Vector2 {
 };
 
 // Warning: all stats implementations are duck typed. Fields with the same
-// semantic meaning must have the exact same name and type
+// semantic meaning must have the exact same name and type.
+// Yes this is not perfect 😭 but it's either this, or tagged structs with
+// manual dispatch (not type safe), or ECS (not type safe)
 struct EntityStats {
   EntityId Id{};
 };
