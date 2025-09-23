@@ -29,17 +29,11 @@ class GameActionProcessor {
   }
 
   void operator()(const AbilityGameAction& action) {
-    // TODO: Implement ability logic
-    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
-      // Handle ability cast
-    }
+    // todo
   }
 
   void operator()(const AutoAttackGameAction& action) {
-    // TODO: Implement auto-attack logic
-    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
-      // Handle auto-attack
-    }
+    // todo
   }
 
   void operator()(const StopGameAction& action) {
@@ -66,21 +60,8 @@ class GameActionProcessor {
   GameStateEntities& gameState_;
 };
 
-struct GetEntityIdVisitor {
-  auto operator()(const MoveAction& action) -> EntityId { return action.Id; }
-  auto operator()(const AbilityGameAction& action) -> EntityId {
-    return action.Id;
-  }
-  auto operator()(const AutoAttackGameAction& action) -> EntityId {
-    return action.Id;
-  }
-  auto operator()(const StopGameAction& action) -> EntityId {
-    return action.Id;
-  }
-};
-
 inline auto GetEntityId(const GameActionVariant& action) -> EntityId {
-  return std::visit(GetEntityIdVisitor{}, action);
+  return std::visit([](const auto& actionL) { return actionL.Id; }, action);
 }
 
 }  // namespace lol_at_home_server
