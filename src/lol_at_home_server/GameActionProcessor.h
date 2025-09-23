@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
 #include "Entity.h"
 #include "EntityStats.h"
 #include "GameAction.h"
@@ -10,8 +8,7 @@ namespace lol_at_home_server {
 
 class GameActionProcessor {
  public:
-  explicit GameActionProcessor(
-      std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState)
+  explicit GameActionProcessor(GameStateEntities& gameState)
       : gameState_(gameState) {}
 
   void operator()(const MoveAction& action) {
@@ -45,7 +42,7 @@ class GameActionProcessor {
 
  private:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState_;
+  GameStateEntities& gameState_;
 };
 
 struct GetEntityIdVisitor {

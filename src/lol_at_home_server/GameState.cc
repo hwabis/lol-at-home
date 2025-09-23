@@ -5,7 +5,7 @@
 namespace lol_at_home_server {
 
 GameState::GameState(
-    std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
+    GameStateEntities startingEntities)
     : gameState_(std::move(startingEntities)) {}
 
 auto GameState::ProcessActionsAndUpdate(
