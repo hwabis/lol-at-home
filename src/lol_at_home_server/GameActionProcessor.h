@@ -1,5 +1,6 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
 #include "Entity.h"
 #include "EntityStats.h"
 #include "GameAction.h"
@@ -12,31 +13,51 @@ class GameActionProcessor {
       : gameState_(gameState) {}
 
   void operator()(const MoveAction& action) {
-    if (auto it = gameState_.find(action.Id); it != gameState_.end()) {
-      it->second->GetStatsRef().EndPosition = action.EndPosition;
+    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
+      std::visit(
+          [&](auto& stats) {
+            if constexpr (requires { stats.EndPosition; }) {
+              stats.EndPosition = action.EndPosition;
+            } else {
+              spdlog::warn(
+                  "Attempted to process a game action on an incompatible "
+                  "entity");
+            }
+          },
+          itr->second->GetStatsRef());
     }
   }
 
   void operator()(const AbilityGameAction& action) {
     // TODO: Implement ability logic
-    if (auto it = gameState_.find(action.Id); it != gameState_.end()) {
+    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
       // Handle ability cast
     }
   }
 
   void operator()(const AutoAttackGameAction& action) {
     // TODO: Implement auto-attack logic
-    if (auto it = gameState_.find(action.Id); it != gameState_.end()) {
+    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
       // Handle auto-attack
     }
   }
 
   void operator()(const StopGameAction& action) {
-    if (auto it = gameState_.find(action.Id); it != gameState_.end()) {
-      // Stop current action - maybe clear EndPosition or set it to
-      // CurrentPosition
-      auto& stats = it->second->GetStatsRef();
-      stats.EndPosition = stats.CurrentPosition;
+    if (auto itr = gameState_.find(action.Id); itr != gameState_.end()) {
+      std::visit(
+          [&](auto& stats) {
+            if constexpr (requires {
+                            stats.EndPosition;
+                            stats.Position;
+                          }) {
+              stats.EndPosition = stats.Position;
+            } else {
+              spdlog::warn(
+                  "Attempted to process a game action on an incompatible "
+                  "entity");
+            }
+          },
+          itr->second->GetStatsRef());
     }
   }
 

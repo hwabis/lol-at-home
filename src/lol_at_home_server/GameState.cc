@@ -4,8 +4,7 @@
 
 namespace lol_at_home_server {
 
-GameState::GameState(
-    GameStateEntities startingEntities)
+GameState::GameState(GameStateEntities startingEntities)
     : gameState_(std::move(startingEntities)) {}
 
 auto GameState::ProcessActionsAndUpdate(
@@ -39,7 +38,7 @@ auto GameState::ProcessActionsAndUpdate(
 
 void GameState::AddEntity(std::unique_ptr<Entity> entity) {
   EntityId newId = ++nextEntityId_;
-  entity->GetStatsRef().Id = newId;
+  std::visit([newId](auto& stats) { stats.Id = newId; }, entity->GetStatsRef());
   gameState_[newId] = std::move(entity);
 }
 

@@ -8,7 +8,7 @@ namespace lol_at_home_server {
 // E.g. champions, minions, towers, projectiles, area effects
 class Entity {
  public:
-  explicit Entity(EntityStats stats) : stats_(stats) {}
+  explicit Entity(EntityStatsVariant stats) : stats_(stats) {}
   virtual ~Entity() = default;
 
   Entity(const Entity&) = delete;
@@ -18,10 +18,10 @@ class Entity {
 
   // Returns whether the entity's stats changed during this update
   [[nodiscard]] virtual auto Update(double deltaTimeMs) -> bool = 0;
-  [[nodiscard]] auto GetStatsRef() -> EntityStats& { return stats_; }
+  [[nodiscard]] auto GetStatsRef() -> EntityStatsVariant& { return stats_; }
 
  private:
-  EntityStats stats_;
+  EntityStatsVariant stats_;
 };
 
 }  // namespace lol_at_home_server
