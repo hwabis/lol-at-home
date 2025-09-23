@@ -8,10 +8,10 @@
 
 namespace lol_at_home_server {
 
-class GameActionVisitor {
+class GameActionProcessor {
  public:
-  explicit GameActionVisitor(
-      GameStateEntities& gameState)
+  explicit GameActionProcessor(
+      std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState)
       : gameState_(gameState) {}
 
   void operator()(const MoveAction& action) {
@@ -45,7 +45,7 @@ class GameActionVisitor {
 
  private:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  GameStateEntities& gameState_;
+  std::unordered_map<EntityId, std::unique_ptr<Entity>>& gameState_;
 };
 
 struct GetEntityIdVisitor {

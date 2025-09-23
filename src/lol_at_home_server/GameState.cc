@@ -1,11 +1,11 @@
 #include "GameState.h"
 #include <spdlog/spdlog.h>
-#include "GameActionVisitor.h"
+#include "GameActionProcessor.h"
 
 namespace lol_at_home_server {
 
 GameState::GameState(
-    GameStateEntities startingEntities)
+    std::unordered_map<EntityId, std::unique_ptr<Entity>> startingEntities)
     : gameState_(std::move(startingEntities)) {}
 
 auto GameState::ProcessActionsAndUpdate(
@@ -21,7 +21,7 @@ auto GameState::ProcessActionsAndUpdate(
       return {};
     }
 
-    std::visit(GameActionVisitor{gameState_}, action);
+    std::visit(GameActionProcessor{gameState_}, action);
 
     gameStateDelta.Actions.push_back(action);
   }
