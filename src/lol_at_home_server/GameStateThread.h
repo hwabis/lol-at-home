@@ -21,7 +21,7 @@ class GameStateThread {
   void runAndBlockGameLoop();
   auto getAndClearQueuedActions() -> std::vector<GameActionVariant>;
   static void broadcastDeltaGameState(const GameStateDelta&);
-  static void broadcastFullGameState(const GameStateEntities&);
+  static void broadcastFullGameState(const entt::registry&);
 
   std::jthread gameThread_;
   std::atomic<bool> isRunning_ = false;

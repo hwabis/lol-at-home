@@ -6,7 +6,7 @@
 
 auto main() -> int {
   lol_at_home_server::GameStateThread trololol{
-      lol_at_home_server::GameState{{}},
+      lol_at_home_server::GameState{},
       lol_at_home_server::GameStateThreadConfig{
           std::chrono::milliseconds(1000 / 60), std::chrono::seconds(5)},
   };

@@ -10,6 +10,7 @@ find_package(GTest CONFIG REQUIRED)
 
 find_package(spdlog CONFIG REQUIRED)
 find_package(unofficial-enet CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(tests)

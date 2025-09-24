@@ -38,7 +38,7 @@ void GameStateThread::runAndBlockGameLoop() {
 
     if (frameStart - lastFullStateBroadcast >=
         config_.FullStateBroadcastInterval) {
-      broadcastFullGameState(gameState_.GetFullGameState());
+      broadcastFullGameState(gameState_.Registry);
       lastFullStateBroadcast = frameStart;
     }
 
@@ -65,13 +65,12 @@ auto GameStateThread::getAndClearQueuedActions()
   return inputs;
 }
 
-void GameStateThread::broadcastDeltaGameState(const GameStateDelta& delta) {
-  // todo
+void GameStateThread::broadcastDeltaGameState(const GameStateDelta&) {
+  // todo probably only broadcast entities with dirty component
 }
 
-void GameStateThread::broadcastFullGameState(
-    const GameStateEntities& gameState) {
-  // todo
+void GameStateThread::broadcastFullGameState(const entt::registry&) {
+  // todo probably only broadcast entities with position component
 }
 
 };  // namespace lol_at_home_server

@@ -1,14 +1,13 @@
 #pragma once
 
-#include <vector>
-#include "EntityStats.h"
+#include <entt/entt.hpp>
 #include "GameAction.h"
 
 namespace lol_at_home_server {
 
 struct GameStateDelta {
   std::vector<GameActionVariant> Actions;
-  std::vector<EntityStatsVariant> UpdatedEntities;
+  std::vector<entt::entity> ChangedEntities;
 };
 
 }  // namespace lol_at_home_server

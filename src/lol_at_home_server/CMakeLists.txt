@@ -15,6 +15,7 @@ target_include_directories(lol-at-home-server PRIVATE
 target_link_libraries(lol-at-home-server PRIVATE
   spdlog::spdlog
   unofficial::enet::enet
+  EnTT::EnTT
 )
 
 # For enet

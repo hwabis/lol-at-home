@@ -1,29 +1,30 @@
 #pragma once
 
+#include <entt/entt.hpp>
 #include <variant>
-#include "EntityStats.h"
+#include "EcsComponents.h"
 
 namespace lol_at_home_server {
 
 // Actions triggered by any entity, e.g. a player moving their champion, a tower
 // shot, minion auto-attack.
 struct GameAction {
-  EntityId Id{};
+  entt::entity Source{};
 };
 
 struct MoveAction : GameAction {
-  Vector2 EndPosition;
+  Position TargetPosition;
 };
 
 struct AbilityGameAction : GameAction {
-  enum class Ability : uint8_t { Q, W, E, R };
+  enum class Ability : uint8_t { Q, W, E, R, Summ1, Summ2 };
   Ability Ability{};
-  Vector2 StartPosition;
-  Vector2 EndPosition;
+  Position StartPosition;
+  Position EndPosition;
 };
 
 struct AutoAttackGameAction : GameAction {
-  EntityId TargetId{};
+  entt::entity Target{};
 };
 
 struct StopGameAction : GameAction {};
