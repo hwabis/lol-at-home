@@ -66,7 +66,7 @@ auto GameStateThread::getAndClearQueuedActions()
 }
 
 void GameStateThread::broadcastDeltaGameState(const GameStateDelta&) {
-  // todo probably only broadcast entities with dirty component
+  // todo probably only broadcast dirty entities
 }
 
 void GameStateThread::broadcastFullGameState(const entt::registry&) {

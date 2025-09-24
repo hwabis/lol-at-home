@@ -33,6 +33,4 @@ struct DamagingArea {
   Team OwningTeam;
 };
 
-struct Dirty {};
-
 }  // namespace lol_at_home_server

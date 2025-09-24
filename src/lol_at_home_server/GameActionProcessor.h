@@ -17,8 +17,8 @@ class GameActionProcessor {
       return;
     }
 
-    registry_.emplace_or_replace<LinearMovement>(action.Source,
-                                                 action.TargetPosition, 400);
+    registry_.emplace_or_replace<LinearMovement>(
+        action.Source, action.TargetPosition, 400);  // todo
   }
 
   void operator()(const AbilityGameAction& action) {

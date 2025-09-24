@@ -14,8 +14,10 @@ class GameState {
   entt::registry Registry;
 
  private:
-  void updateMovementSystem(double deltaTimeMs);
-  void updateHealthSystem(double deltaTimeMs);
+  void updateMovementSystem(double deltaTimeMs,
+                            std::vector<entt::entity>& dirtyEntities);
+  void updateHealthSystem(double deltaTimeMs,
+                          std::vector<entt::entity>& dirtyEntities);
 };
 
 }  // namespace lol_at_home_server

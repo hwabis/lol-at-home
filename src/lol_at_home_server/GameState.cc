@@ -10,31 +10,18 @@ auto GameState::ProcessActionsAndUpdate(
   GameStateDelta gameStateDelta;
 
   for (const auto& action : actions) {
-    entt::entity actionEntity =
-        std::visit([](const auto& act) { return act.Source; }, action);
-
-    if (!Registry.valid(actionEntity)) {
-      spdlog::error("Received an action for a non-existant entity");
-      return {};
-    }
-
     std::visit(GameActionProcessor{Registry}, action);
     gameStateDelta.Actions.push_back(action);
   }
 
-  updateMovementSystem(deltaTimeMs);
-  updateHealthSystem(deltaTimeMs);
-
-  auto dirtyView = Registry.view<Dirty>();
-  for (auto entity : dirtyView) {
-    gameStateDelta.ChangedEntities.push_back(entity);
-  }
-  Registry.clear<Dirty>();
+  updateMovementSystem(deltaTimeMs, gameStateDelta.ChangedEntities);
+  updateHealthSystem(deltaTimeMs, gameStateDelta.ChangedEntities);
 
   return gameStateDelta;
 }
 
-void GameState::updateMovementSystem(double deltaTimeMs) {
+void GameState::updateMovementSystem(double deltaTimeMs,
+                                     std::vector<entt::entity>& dirtyEntities) {
   auto view = Registry.view<Position, LinearMovement>();
 
   for (auto entity : view) {
@@ -48,21 +35,20 @@ void GameState::updateMovementSystem(double deltaTimeMs) {
     if (distance < 1.0) {
       Registry.remove<LinearMovement>(entity);
       pos = movement.TargetPosition;
-
-      Registry.emplace_or_replace<Dirty>(entity);
     } else {
       double moveDistance = movement.Speed * (deltaTimeMs / 1000.0);
       double ratio = std::min(moveDistance / distance, 1.0);
 
       pos.X += deltaX * ratio;
       pos.Y += deltaY * ratio;
-
-      Registry.emplace_or_replace<Dirty>(entity);
     }
+
+    dirtyEntities.push_back(entity);
   }
 }
 
-void GameState::updateHealthSystem(double deltaTimeMs) {
+void GameState::updateHealthSystem(double deltaTimeMs,
+                                   std::vector<entt::entity>& dirtyEntities) {
   auto view = Registry.view<Health>();
 
   for (auto entity : view) {
@@ -73,9 +59,9 @@ void GameState::updateHealthSystem(double deltaTimeMs) {
       health.CurrentHealth = std::min(
           health.MaxHealth, health.CurrentHealth + ((deltaTimeMs / msInSec) *
                                                     health.HealthRegenPerSec));
-
-      Registry.emplace_or_replace<Dirty>(entity);
     }
+
+    dirtyEntities.push_back(entity);
   }
 }
 
