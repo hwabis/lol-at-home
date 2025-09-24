@@ -17,11 +17,16 @@ struct Health {
 
 struct Mana {
   double Mana{};
+  double MaxMana{};
+  double ManaRegenPerSec{};
 };
 
-struct LinearMovement {
-  Position TargetPosition;
+struct Movable {
   double Speed{};
+};
+
+struct Moving {
+  Position TargetPosition;
 };
 
 struct Team {

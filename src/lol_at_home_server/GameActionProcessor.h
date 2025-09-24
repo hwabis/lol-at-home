@@ -17,8 +17,12 @@ class GameActionProcessor {
       return;
     }
 
-    registry_.emplace_or_replace<LinearMovement>(
-        action.Source, action.TargetPosition, 400);  // todo
+    if (!registry_.all_of<Movable>(action.Source)) {
+      spdlog::warn("Attempted to process action on invalid entity");
+      return;
+    }
+
+    registry_.emplace_or_replace<Moving>(action.Source, action.TargetPosition);
   }
 
   void operator()(const AbilityGameAction& action) {
