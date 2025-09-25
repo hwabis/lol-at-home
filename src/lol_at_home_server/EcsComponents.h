@@ -51,11 +51,11 @@ struct Abilities {
   static constexpr int NumAbilities = 6;
 
   struct Ability {
-    AbilityId abilityId{};
-    float cooldownRemaining{};
-    int rank{};
-    int currentCharges = 1;
-    uint8_t maxCharges = 1;
+    AbilityId Id{};
+    float CooldownRemaining{};
+    int Rank{};
+    int CurrentCharges = 1;
+    uint8_t MaxCharges = 1;
   };
 
   std::unordered_map<AbilitySlot, Ability> Abilities;

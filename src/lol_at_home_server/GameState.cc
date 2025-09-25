@@ -37,7 +37,8 @@ void GameState::updateMovementSystem(double deltaTimeMs,
       Registry.remove<Moving>(entity);
       pos = moving.TargetPosition;
     } else {
-      double moveDistance = movable.Speed * (deltaTimeMs / 1000.0);
+      constexpr int msPerSec = 1000;  // todo not sure yet on how the units work
+      double moveDistance = movable.Speed * (deltaTimeMs / msPerSec);
       double ratio = std::min(moveDistance / distance, 1.0);
 
       pos.X += deltaX * ratio;

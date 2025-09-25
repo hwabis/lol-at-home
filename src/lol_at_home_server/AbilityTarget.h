@@ -13,13 +13,13 @@ struct EntityTarget {
 };
 
 struct OnePointSkillshot {
-  Position Target;  // Relative to caster
+  Position Target;
 };
 
 // Rumble R, Viktor E
 struct TwoPointSkillshot {
-  Position Target1;  // Relative to caster
-  Position Target2;  // Relative to caster
+  Position Target1;
+  Position Target2;
 };
 
 using AbilityTargetVariant =
