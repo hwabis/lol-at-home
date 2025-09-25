@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstdint>
 
 namespace lol_at_home_server {
