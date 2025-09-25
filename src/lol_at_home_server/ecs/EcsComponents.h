@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <unordered_map>
-#include "AbilitySlot.h"
+#include "abilities/AbilitySlot.h"
 
 namespace lol_at_home_server {
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "AbilityTarget.h"
-#include "EcsComponents.h"
+#include "abilities/AbilityTarget.h"
+#include "ecs/EcsComponents.h"
 
 namespace lol_at_home_server {
 

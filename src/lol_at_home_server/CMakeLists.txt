@@ -1,8 +1,8 @@
 include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 add_executable(lol-at-home-server
-  GameState.cc
-  GameStateThread.cc
+  core/GameState.cc
+  core/GameStateThread.cc
   Main.cc
 )
 

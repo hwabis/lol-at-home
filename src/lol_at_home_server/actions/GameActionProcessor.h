@@ -2,8 +2,8 @@
 
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
-#include "AbilityImpl.h"
-#include "GameAction.h"
+#include "abilities/AbilityImpl.h"
+#include "actions/GameAction.h"
 
 namespace lol_at_home_server {
 
@@ -19,8 +19,7 @@ class GameActionProcessor {
     }
 
     if (!registry_.all_of<Movable>(action.Source)) {
-      spdlog::warn("Entity {} has no Movable component",
-                   static_cast<uint32_t>(action.Source));
+      spdlog::warn("Entity has no Movable component");
       return;
     }
 
@@ -35,8 +34,7 @@ class GameActionProcessor {
 
     auto* abilities = registry_.try_get<Abilities>(action.Source);
     if (abilities == nullptr) {
-      spdlog::warn("Entity {} has no Abilities component",
-                   static_cast<uint32_t>(action.Source));
+      spdlog::warn("Entity has no Abilities component");
       return;
     }
 

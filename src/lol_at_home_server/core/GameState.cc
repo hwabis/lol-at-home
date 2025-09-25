@@ -1,6 +1,6 @@
-#include "GameState.h"
+#include "core/GameState.h"
 #include <spdlog/spdlog.h>
-#include "GameActionProcessor.h"
+#include "actions/GameActionProcessor.h"
 
 namespace lol_at_home_server {
 

@@ -4,9 +4,9 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-#include "GameAction.h"
-#include "GameState.h"
-#include "GameStateThreadConfig.h"
+#include "actions/GameAction.h"
+#include "core/GameState.h"
+#include "core/GameStateThreadConfig.h"
 
 namespace lol_at_home_server {
 

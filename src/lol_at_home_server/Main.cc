@@ -1,8 +1,8 @@
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
-#include "GameState.h"
-#include "GameStateThread.h"
-#include "GameStateThreadConfig.h"
+#include "core/GameState.h"
+#include "core/GameStateThread.h"
+#include "core/GameStateThreadConfig.h"
 
 auto main() -> int {
   lol_at_home_server::GameStateThread trololol{

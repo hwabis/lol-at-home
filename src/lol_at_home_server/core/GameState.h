@@ -1,8 +1,8 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "GameAction.h"
-#include "GameStateDelta.h"
+#include "actions/GameAction.h"
+#include "core/GameStateDelta.h"
 
 namespace lol_at_home_server {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "GameAction.h"
+#include "actions/GameAction.h"
 
 namespace lol_at_home_server {
 
