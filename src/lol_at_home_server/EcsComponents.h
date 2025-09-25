@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_map>
+#include "AbilitySlot.h"
 
 namespace lol_at_home_server {
 
@@ -36,6 +38,27 @@ struct Team {
 
 struct DamagingArea {
   Team OwningTeam;
+};
+
+enum class AbilityId : uint8_t {
+  GAREN_Q,
+  GAREN_W,
+  GAREN_E,
+  GAREN_R,
+};
+
+struct Abilities {
+  static constexpr int NumAbilities = 6;
+
+  struct Ability {
+    AbilityId abilityId{};
+    float cooldownRemaining{};
+    int rank{};
+    int currentCharges = 1;
+    uint8_t maxCharges = 1;
+  };
+
+  std::unordered_map<AbilitySlot, Ability> Abilities;
 };
 
 }  // namespace lol_at_home_server

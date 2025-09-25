@@ -25,11 +25,13 @@ class GameActionProcessor {
     registry_.emplace_or_replace<Moving>(action.Source, action.TargetPosition);
   }
 
-  void operator()(const AbilityGameAction& action) {
+  void operator()(const AbilityAction& action) {
     // todo
+    // have a map mapping AbilityId with
+    // pair<expected ability target variant, the actual implementation>
   }
 
-  void operator()(const AutoAttackGameAction& action) {
+  void operator()(const AutoAttackAction& action) {
     // todo
   }
 

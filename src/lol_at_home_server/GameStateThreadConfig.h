@@ -7,13 +7,13 @@ namespace lol_at_home_server {
 struct GameStateThreadConfig {
  public:
   std::chrono::milliseconds UpdateInterval =
-      std::chrono::milliseconds{updateInterval};
+      std::chrono::milliseconds{defaultUpdateInterval_};
   std::chrono::seconds FullStateBroadcastInterval =
-      std::chrono::seconds{fullStateBroadcastInterval};
+      std::chrono::seconds{defaultFullStateBroadcastInterval_};
 
  private:
-  static constexpr int updateInterval = 33;
-  static constexpr int fullStateBroadcastInterval = 33;
+  static constexpr int defaultUpdateInterval_ = 33;
+  static constexpr int defaultFullStateBroadcastInterval_ = 33;
 };
 
 }  // namespace lol_at_home_server

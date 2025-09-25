@@ -2,6 +2,8 @@
 
 #include <entt/entt.hpp>
 #include <variant>
+#include "AbilitySlot.h"
+#include "AbilityTarget.h"
 #include "EcsComponents.h"
 
 namespace lol_at_home_server {
@@ -16,22 +18,18 @@ struct MoveAction : GameAction {
   Position TargetPosition;
 };
 
-struct AbilityGameAction : GameAction {
-  enum class Ability : uint8_t { Q, W, E, R, Summ1, Summ2 };
-  Ability Ability{};
-  Position StartPosition;
-  Position EndPosition;
+struct AbilityAction : GameAction {
+  AbilitySlot Slot{};
+  AbilityTargetVariant Target;
 };
 
-struct AutoAttackGameAction : GameAction {
+struct AutoAttackAction : GameAction {
   entt::entity Target{};
 };
 
 struct StopGameAction : GameAction {};
 
-using GameActionVariant = std::variant<MoveAction,
-                                       AbilityGameAction,
-                                       AutoAttackGameAction,
-                                       StopGameAction>;
+using GameActionVariant =
+    std::variant<MoveAction, AbilityAction, AutoAttackAction, StopGameAction>;
 
 }  // namespace lol_at_home_server
