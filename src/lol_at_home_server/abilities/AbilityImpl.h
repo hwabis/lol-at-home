@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 #include "abilities/AbilityTarget.h"
-#include "ecs/EcsComponents.h"
+#include "ecs/Components.h"
 
 namespace lol_at_home_server {
 

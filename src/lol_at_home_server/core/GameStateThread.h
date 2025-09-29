@@ -7,21 +7,22 @@
 #include "actions/GameAction.h"
 #include "core/GameState.h"
 #include "core/GameStateThreadConfig.h"
+#include "networking/SerializedGameState.h"
 
 namespace lol_at_home_server {
 
 class GameStateThread {
  public:
-  explicit GameStateThread(GameState gameState, GameStateThreadConfig config);
-  void Start();
+  GameStateThread(GameState gameState, GameStateThreadConfig config);
+  void Start(std::function<void(const SerializedGameState&)> broadcastFn);
   void Stop();
   void HandleInput(GameActionVariant input);
 
  private:
-  void runAndBlockGameLoop();
+  void runGameLoop();
   auto getAndClearQueuedActions() -> std::vector<GameActionVariant>;
-  static void broadcastDeltaGameState(const GameStateDelta&);
-  static void broadcastFullGameState(const entt::registry&);
+  void broadcastDeltaGameState(const GameStateDelta&);
+  void broadcastFullGameState(const entt::registry&);
 
   std::jthread gameThread_;
   std::atomic<bool> isRunning_ = false;
@@ -29,6 +30,7 @@ class GameStateThread {
   std::mutex actionQueueMutex_;
   GameState gameState_;
   GameStateThreadConfig config_;
+  std::function<void(const SerializedGameState&)> broadcastFn_;
 };
 
 }  // namespace lol_at_home_server

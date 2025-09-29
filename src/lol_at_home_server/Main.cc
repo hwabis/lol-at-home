@@ -3,17 +3,22 @@
 #include "core/GameState.h"
 #include "core/GameStateThread.h"
 #include "core/GameStateThreadConfig.h"
+#include "networking/EnetNetworkManager.h"
 
 auto main() -> int {
-  lol_at_home_server::GameStateThread trololol{
+  lol_at_home_server::GameStateThread game{
       lol_at_home_server::GameState{},
-      lol_at_home_server::GameStateThreadConfig{
-          std::chrono::milliseconds(1000 / 60), std::chrono::seconds(5)},
-  };
-  trololol.Start();
-  spdlog::info("i show spd");
-  if (enet_initialize() != 0) {
-    spdlog::error("Failed to initialize ENet");
-    return 1;
+      lol_at_home_server::GameStateThreadConfig{}};
+  lol_at_home_server::EnetNetworkManager net;
+
+  game.Start([&net](const auto& state) { net.Send(state); });
+  net.Start([&game](auto action) { game.HandleInput(action); });
+
+  while (true) {
+    // todo have some stop mechanism idk
+    std::this_thread::sleep_for(std::chrono::seconds(5));
   }
+
+  game.Stop();
+  net.Stop();
 }
