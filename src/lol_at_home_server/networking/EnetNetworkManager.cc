@@ -109,6 +109,7 @@ void EnetNetworkManager::sendQueue() {
 auto EnetNetworkManager::serialize(const entt::registry& registry,
                                    const std::vector<entt::entity>& entities)
     -> std::vector<std::byte> {
+  // todo
   // If entities is empty, serialize all entities
   // Otherwise serialize only the specified entities
   // Extract Position, Health, etc. components and pack into bytes

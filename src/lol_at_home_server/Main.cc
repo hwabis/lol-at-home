@@ -1,5 +1,6 @@
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
+#include <iostream>
 #include "core/GameState.h"
 #include "core/GameStateThread.h"
 #include "core/GameStateThreadConfig.h"
@@ -16,11 +17,13 @@ auto main() -> int {
   });
   net.Start([&game](auto action) { game.HandleInput(action); });
 
-  while (true) {
-    // todo have some stop mechanism idk
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-  }
+  spdlog::info("Server running on port 12345");
 
+  std::string input;
+  std::getline(std::cin, input);
+
+  spdlog::info("Shutting down server...");
   game.Stop();
   net.Stop();
+  spdlog::info("Shutted down :3");
 }
