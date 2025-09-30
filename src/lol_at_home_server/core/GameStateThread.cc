@@ -9,7 +9,8 @@ GameStateThread::GameStateThread(GameState startGameState,
     : gameState_(std::move(startGameState)), config_(config) {}
 
 void GameStateThread::Start(
-    std::function<void(const SerializedGameState&)> broadcastFn) {
+    std::function<void(const entt::registry&, const std::vector<entt::entity>&)>
+        broadcastFn) {
   broadcastFn_ = std::move(broadcastFn);
   isRunning_ = true;
   gameThread_ = std::jthread([this] { runGameLoop(); });
@@ -43,11 +44,11 @@ void GameStateThread::runGameLoop() {
 
     auto actions = getAndClearQueuedActions();
     auto delta = gameState_.ProcessActionsAndUpdate(actions, deltaTimeMs);
-    broadcastDeltaGameState(delta);
+    broadcastFn_(gameState_.Registry, delta.ChangedEntities);
 
     if (frameStart - lastFullStateBroadcast >=
         config_.FullStateBroadcastInterval) {
-      broadcastFullGameState(gameState_.Registry);
+      broadcastFn_(gameState_.Registry, {});
       lastFullStateBroadcast = frameStart;
     }
 
@@ -72,17 +73,6 @@ auto GameStateThread::getAndClearQueuedActions()
   }
 
   return inputs;
-}
-
-void GameStateThread::broadcastDeltaGameState(const GameStateDelta&) {
-  // todo probably only broadcast dirty entities
-  broadcastFn_({});
-}
-
-void GameStateThread::broadcastFullGameState(const entt::registry&) {
-  // todo probably only broadcast entities with position component
-  // NO idea yet lmao
-  broadcastFn_({});
 }
 
 };  // namespace lol_at_home_server

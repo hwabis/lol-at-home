@@ -30,14 +30,17 @@ void EnetNetworkManager::Stop() {
   enet_deinitialize();
 }
 
-void EnetNetworkManager::Send(const SerializedGameState& state) {
+void EnetNetworkManager::Send(const entt::registry& registry,
+                              const std::vector<entt::entity>& entities) {
   if (!isRunning_) {
     spdlog::warn("what are you doing bruh");
     return;
   }
 
+  auto bytes = serialize(registry, entities);
+
   std::lock_guard lock(outgoingMutex_);
-  outgoingStates_.push_back(state);
+  outgoingBytes_.push_back(bytes);
 }
 
 void EnetNetworkManager::runNetworkLoop() {
@@ -87,20 +90,28 @@ void EnetNetworkManager::handleIncoming() {
 
 void EnetNetworkManager::sendQueue() {
   std::lock_guard lock(outgoingMutex_);
-  for (const auto& state : outgoingStates_) {
+  for (const auto& bytes : outgoingBytes_) {
     std::lock_guard lock(peersMutex_);
     for (auto* peer : peers_) {
-      ENetPacket* packet = enet_packet_create(
-          state.Data.data(), state.Data.size(), ENET_PACKET_FLAG_RELIABLE);
+      ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
+                                              ENET_PACKET_FLAG_RELIABLE);
       enet_peer_send(peer, 0, packet);
     }
   }
 
-  if (!outgoingStates_.empty()) {
+  if (!outgoingBytes_.empty()) {
     enet_host_flush(host_);
   }
 
-  outgoingStates_.clear();
+  outgoingBytes_.clear();
+}
+
+auto EnetNetworkManager::serialize(const entt::registry& registry,
+                                   const std::vector<entt::entity>& entities)
+    -> std::vector<std::byte> {
+  // If entities is empty, serialize all entities
+  // Otherwise serialize only the specified entities
+  // Extract Position, Health, etc. components and pack into bytes
 }
 
 }  // namespace lol_at_home_server

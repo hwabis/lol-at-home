@@ -11,7 +11,9 @@ auto main() -> int {
       lol_at_home_server::GameStateThreadConfig{}};
   lol_at_home_server::EnetNetworkManager net;
 
-  game.Start([&net](const auto& state) { net.Send(state); });
+  game.Start([&net](const auto& registry, const auto& entities) {
+    net.Send(registry, entities);
+  });
   net.Start([&game](auto action) { game.HandleInput(action); });
 
   while (true) {
