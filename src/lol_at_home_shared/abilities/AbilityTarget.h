@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "ecs/Components.h"
+#include "EcsComponents.h"
 
 namespace lol_at_home_server {
 
@@ -13,13 +13,13 @@ struct EntityTarget {
 };
 
 struct OnePointSkillshot {
-  Position Target;
+  lol_at_home_shared::Position Target;
 };
 
 // Rumble R, Viktor E
 struct TwoPointSkillshot {
-  Position Target1;
-  Position Target2;
+  lol_at_home_shared::Position Target1;
+  lol_at_home_shared::Position Target2;
 };
 
 using AbilityTargetVariant =

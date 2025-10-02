@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-namespace lol_at_home_server {
+namespace lol_at_home_shared {
 
-enum class AbilityId : uint8_t {
+enum class AbilityTag : uint8_t {
   GAREN_Q,
   GAREN_W,
   GAREN_E,

@@ -22,19 +22,21 @@ auto GameState::ProcessActionsAndUpdate(
 
 void GameState::updateMovementSystem(double deltaTimeMs,
                                      std::vector<entt::entity>& dirtyEntities) {
-  auto view = Registry.view<Position, Movable, Moving>();
+  auto view =
+      Registry.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
+                    lol_at_home_shared::Moving>();
 
   for (auto entity : view) {
-    auto& pos = view.get<Position>(entity);
-    auto& movable = view.get<Movable>(entity);
-    auto& moving = view.get<Moving>(entity);
+    auto& pos = view.get<lol_at_home_shared::Position>(entity);
+    auto& movable = view.get<lol_at_home_shared::Movable>(entity);
+    auto& moving = view.get<lol_at_home_shared::Moving>(entity);
 
     double deltaX = moving.TargetPosition.X - pos.X;
     double deltaY = moving.TargetPosition.Y - pos.Y;
     double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
     if (distance < 1.0) {
-      Registry.remove<Moving>(entity);
+      Registry.remove<lol_at_home_shared::Moving>(entity);
       pos = moving.TargetPosition;
     } else {
       constexpr int msPerSec = 1000;  // todo not sure yet on how the units work
@@ -51,10 +53,10 @@ void GameState::updateMovementSystem(double deltaTimeMs,
 
 void GameState::updateHealthSystem(double deltaTimeMs,
                                    std::vector<entt::entity>& dirtyEntities) {
-  auto view = Registry.view<Health>();
+  auto view = Registry.view<lol_at_home_shared::Health>();
 
   for (auto entity : view) {
-    auto& health = view.get<Health>(entity);
+    auto& health = view.get<lol_at_home_shared::Health>(entity);
 
     if (health.CurrentHealth < health.MaxHealth) {
       constexpr double msInSec = 1000.0;

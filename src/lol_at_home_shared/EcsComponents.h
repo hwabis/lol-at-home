@@ -2,10 +2,10 @@
 
 #include <cstdint>
 #include <unordered_map>
-#include "abilities/AbilityId.h"
+#include "abilities/AbilityTag.h"
 #include "abilities/AbilitySlot.h"
 
-namespace lol_at_home_server {
+namespace lol_at_home_shared {
 
 struct Position {
   double X{};
@@ -34,7 +34,7 @@ struct Moving {
 
 struct Team {
   enum class Color : uint8_t { Blue, Red };
-  Color Color;
+  Color TeamColor;
 };
 
 struct DamagingArea {
@@ -45,7 +45,7 @@ struct Abilities {
   static constexpr int NumAbilities = 6;
 
   struct Ability {
-    AbilityId Id{};
+    AbilityTag Tag{};
     float CooldownRemaining{};
     int Rank{};
     int CurrentCharges = 1;
@@ -55,4 +55,4 @@ struct Abilities {
   std::unordered_map<AbilitySlot, Ability> Abilities;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lol_at_home_shared

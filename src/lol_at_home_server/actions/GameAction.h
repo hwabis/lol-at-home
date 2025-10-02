@@ -2,9 +2,9 @@
 
 #include <entt/entt.hpp>
 #include <variant>
+#include "EcsComponents.h"
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTarget.h"
-#include "ecs/Components.h"
 
 namespace lol_at_home_server {
 
@@ -15,11 +15,11 @@ struct GameAction {
 };
 
 struct MoveAction : GameAction {
-  Position TargetPosition;
+  lol_at_home_shared::Position TargetPosition;
 };
 
 struct AbilityAction : GameAction {
-  AbilitySlot Slot{};
+  lol_at_home_shared::AbilitySlot Slot{};
   AbilityTargetVariant Target;
 };
 

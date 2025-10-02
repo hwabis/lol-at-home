@@ -18,12 +18,13 @@ class GameActionProcessor {
       return;
     }
 
-    if (!registry_.all_of<Movable>(action.Source)) {
+    if (!registry_.all_of<lol_at_home_shared::Movable>(action.Source)) {
       spdlog::warn("Entity has no Movable component");
       return;
     }
 
-    registry_.emplace_or_replace<Moving>(action.Source, action.TargetPosition);
+    registry_.emplace_or_replace<lol_at_home_shared::Moving>(
+        action.Source, action.TargetPosition);
   }
 
   void operator()(const AbilityAction& action) {
@@ -32,7 +33,8 @@ class GameActionProcessor {
       return;
     }
 
-    auto* abilities = registry_.try_get<Abilities>(action.Source);
+    auto* abilities =
+        registry_.try_get<lol_at_home_shared::Abilities>(action.Source);
     if (abilities == nullptr) {
       spdlog::warn("Entity has no Abilities component");
       return;
@@ -49,7 +51,7 @@ class GameActionProcessor {
       return;
     }
 
-    auto abilityImpl = getAbilityImpl(ability.Id);
+    auto abilityImpl = getAbilityImpl(ability.Tag);
     abilityImpl->Execute(registry_, ability, action.Target);
   }
 
@@ -66,16 +68,16 @@ class GameActionProcessor {
   entt::registry& registry_;
 
   // todo maybe make this into ability registry class
-  static auto getAbilityImpl(AbilityId abilityId)
+  static auto getAbilityImpl(lol_at_home_shared::AbilityTag abilityId)
       -> std::unique_ptr<AbilityImpl> {
-    // The reason we do to a switch instead of a map is to cover all AbilityId
+    // The reason we do to a switch instead of a map is to cover all AbilityTag
     // at compile time (compiler warning otherwise)
     switch (abilityId) {
       // todo
       // in fact the compiler is emitting a warning right nao
     }
 
-    throw std::runtime_error("Unhandled AbilityId: " +
+    throw std::runtime_error("Unhandled AbilityTag: " +
                              std::to_string(static_cast<int>(abilityId)));
   }
 };
