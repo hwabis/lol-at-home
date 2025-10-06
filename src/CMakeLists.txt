@@ -1,2 +1,3 @@
+add_subdirectory(lol_at_home_client)
 add_subdirectory(lol_at_home_server)
 add_subdirectory(lol_at_home_shared)

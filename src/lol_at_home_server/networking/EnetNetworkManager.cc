@@ -1,6 +1,6 @@
 #include "EnetNetworkManager.h"
-#include <enet/enet.h>
 #include <spdlog/spdlog.h>
+#include "GameStateSerializer.h"
 
 namespace lol_at_home_server {
 
@@ -65,6 +65,8 @@ void EnetNetworkManager::handleIncoming() {
       }
 
       case ENET_EVENT_TYPE_RECEIVE: {
+        spdlog::info("Received something from client");
+
         GameActionVariant action;
         // todo deserialize event.packet->data into action
         onActionReceived_(action);
@@ -109,10 +111,7 @@ void EnetNetworkManager::sendQueue() {
 auto EnetNetworkManager::serialize(const entt::registry& registry,
                                    const std::vector<entt::entity>& entities)
     -> std::vector<std::byte> {
-  // todo
-  // If entities is empty, serialize all entities
-  // Otherwise serialize only the specified entities
-  // Extract Position, Health, etc. components and pack into bytes
+  return lol_at_home_shared::GameStateSerializer::Serialize(registry, entities);
 }
 
 }  // namespace lol_at_home_server

@@ -7,11 +7,17 @@
 #include "networking/EnetNetworkManager.h"
 
 auto main() -> int {
+  auto state = lol_at_home_server::GameState{};
+  auto entity = state.Registry.create();
+  state.Registry.emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
+  state.Registry.emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
+
   lol_at_home_server::GameStateThread game{
-      lol_at_home_server::GameState{},
-      lol_at_home_server::GameStateThreadConfig{}};
+      std::move(state), lol_at_home_server::GameStateThreadConfig{}};
   lol_at_home_server::EnetNetworkManager net;
 
+  // Technically a race condition (game state can run before network starts) but
+  // whatever
   game.Start([&net](const auto& registry, const auto& entities) {
     net.Send(registry, entities);
   });
