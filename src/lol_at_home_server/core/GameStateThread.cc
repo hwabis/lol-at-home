@@ -44,7 +44,9 @@ void GameStateThread::runGameLoop() {
 
     auto actions = getAndClearQueuedActions();
     auto delta = gameState_.ProcessActionsAndUpdate(actions, deltaTimeMs);
-    broadcastFn_(gameState_.Registry, delta.ChangedEntities);
+    if (!delta.ChangedEntities.empty()) {
+      broadcastFn_(gameState_.Registry, delta.ChangedEntities);
+    }
 
     if (frameStart - lastFullStateBroadcast >=
         config_.FullStateBroadcastInterval) {

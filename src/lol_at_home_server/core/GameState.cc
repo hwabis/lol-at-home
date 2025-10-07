@@ -63,9 +63,8 @@ void GameState::updateHealthSystem(double deltaTimeMs,
       health.CurrentHealth = std::min(
           health.MaxHealth, health.CurrentHealth + ((deltaTimeMs / msInSec) *
                                                     health.HealthRegenPerSec));
+      dirtyEntities.push_back(entity);
     }
-
-    dirtyEntities.push_back(entity);
   }
 }
 
