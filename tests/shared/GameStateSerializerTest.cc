@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 #include <gtest/gtest.h>
 #include <entt/entt.hpp>
 #include "EcsComponents.h"
@@ -29,6 +31,7 @@ auto getEntityCount(const entt::registry& registry) -> size_t {
 
 TEST_F(GameStateSerializerTest, SerializeDeserializePosition) {
   auto entity = registry.create();
+
   registry.emplace<Position>(entity, 123.45, 678.90);
 
   auto bytes = GameStateSerializer::Serialize(registry, {});
@@ -279,3 +282,5 @@ TEST_F(GameStateSerializerTest, SerializeEmptyRegistry) {
 
   EXPECT_EQ(getEntityCount(registry), 0);
 }
+
+// NOLINTEND
