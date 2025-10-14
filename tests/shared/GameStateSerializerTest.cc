@@ -13,11 +13,16 @@ class GameStateSerializerTest : public ::testing::Test {
 namespace {
 
 auto getEntityCount(const entt::registry& registry) -> size_t {
-  size_t total_entities = 0;
-  for (auto [entityId, pool] : registry.storage()) {
-    total_entities += pool.size();
+  std::unordered_set<entt::entity> entities;
+
+  for (auto&& typeIndex : registry.storage()) {
+    const auto& pool = typeIndex.second;
+    for (auto entity : pool) {
+      entities.insert(entity);
+    }
   }
-  return total_entities;
+
+  return entities.size();
 }
 
 }  // namespace
