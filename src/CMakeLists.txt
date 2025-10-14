@@ -1,3 +1,3 @@
-add_subdirectory(lol_at_home_client)
-add_subdirectory(lol_at_home_server)
-add_subdirectory(lol_at_home_shared)
+add_subdirectory(client)
+add_subdirectory(server)
+add_subdirectory(shared)
