@@ -262,7 +262,7 @@ TEST_F(GameStateSerializerTest, SerializeDeltaUpdateSpecificEntities) {
   GameStateSerializer::Deserialize(newRegistry, bytes);
 
   // Only entity2 should be in the new registry
-  EXPECT_EQ(getEntityCount(registry), 1);
+  EXPECT_EQ(getEntityCount(newRegistry), 1);
   ASSERT_TRUE(newRegistry.valid(entity2));
 
   auto* pos = newRegistry.try_get<Position>(entity2);
