@@ -4,7 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-#include "actions/GameAction.h"
+#include "GameAction.h"
 #include "core/GameState.h"
 #include "core/GameStateThreadConfig.h"
 
@@ -16,15 +16,16 @@ class GameStateThread {
   void Start(std::function<void(const entt::registry&,
                                 const std::vector<entt::entity>&)> broadcastFn);
   void Stop();
-  void HandleInput(GameActionVariant input);
+  void HandleInput(lol_at_home_shared::GameActionVariant input);
 
  private:
   void runGameLoop();
-  auto getAndClearQueuedActions() -> std::vector<GameActionVariant>;
+  auto getAndClearQueuedActions()
+      -> std::vector<lol_at_home_shared::GameActionVariant>;
 
   std::jthread gameThread_;
   std::atomic<bool> isRunning_ = false;
-  std::queue<GameActionVariant> actionQueue_;
+  std::queue<lol_at_home_shared::GameActionVariant> actionQueue_;
   std::mutex actionQueueMutex_;
   GameState gameState_;
   GameStateThreadConfig config_;

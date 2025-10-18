@@ -4,7 +4,7 @@
 #include <variant>
 #include "EcsComponents.h"
 
-namespace lol_at_home_server {
+namespace lol_at_home_shared {
 
 struct NoTarget {};
 
@@ -25,4 +25,4 @@ struct TwoPointSkillshot {
 using AbilityTargetVariant =
     std::variant<NoTarget, EntityTarget, OnePointSkillshot, TwoPointSkillshot>;
 
-}  // namespace lol_at_home_server
+}  // namespace lol_at_home_shared

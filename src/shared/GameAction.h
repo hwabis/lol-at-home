@@ -6,30 +6,29 @@
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTarget.h"
 
-namespace lol_at_home_server {
+namespace lol_at_home_shared {
 
-// Actions triggered by any entity, e.g. a player moving their champion, a tower
-// shot, minion auto-attack.
-struct GameAction {
+struct MoveAction {
   entt::entity Source{};
-};
-
-struct MoveAction : GameAction {
   lol_at_home_shared::Position TargetPosition;
 };
 
-struct AbilityAction : GameAction {
+struct AbilityAction {
+  entt::entity Source{};
   lol_at_home_shared::AbilitySlot Slot{};
   AbilityTargetVariant Target;
 };
 
-struct AutoAttackAction : GameAction {
+struct AutoAttackAction {
+  entt::entity Source{};
   entt::entity Target{};
 };
 
-struct StopGameAction : GameAction {};
+struct StopGameAction {
+  entt::entity Source{};
+};
 
 using GameActionVariant =
     std::variant<MoveAction, AbilityAction, AutoAttackAction, StopGameAction>;
 
-}  // namespace lol_at_home_server
+}  // namespace lol_at_home_shared

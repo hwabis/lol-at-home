@@ -15,7 +15,8 @@ EnetNetworkManager::~EnetNetworkManager() {
 }
 
 void EnetNetworkManager::Start(
-    std::function<void(const GameActionVariant&)> onActionReceived) {
+    std::function<void(const lol_at_home_shared::GameActionVariant&)>
+        onActionReceived) {
   isRunning_ = true;
   onActionReceived_ = std::move(onActionReceived);
   networkThread_ = std::jthread([this] { runNetworkLoop(); });
@@ -67,7 +68,7 @@ void EnetNetworkManager::handleIncoming() {
       case ENET_EVENT_TYPE_RECEIVE: {
         spdlog::info("Received something from client");
 
-        GameActionVariant action;
+        lol_at_home_shared::GameActionVariant action;
         // todo deserialize event.packet->data into action
         onActionReceived_(action);
 

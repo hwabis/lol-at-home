@@ -17,7 +17,7 @@ class AbilityImpl {
   virtual void Execute(
       entt::registry& registry,
       const lol_at_home_shared::Abilities::Ability& abilityData,
-      const AbilityTargetVariant& target) = 0;
+      const lol_at_home_shared::AbilityTargetVariant& target) = 0;
 };
 
 }  // namespace lol_at_home_server

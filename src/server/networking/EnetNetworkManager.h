@@ -3,7 +3,7 @@
 #include <enet/enet.h>
 #include <functional>
 #include <mutex>
-#include "actions/GameAction.h"
+#include "GameAction.h"
 
 namespace lol_at_home_server {
 
@@ -16,7 +16,8 @@ class EnetNetworkManager {
   EnetNetworkManager(EnetNetworkManager&&) = delete;
   auto operator=(EnetNetworkManager&&) -> EnetNetworkManager& = delete;
 
-  void Start(std::function<void(const GameActionVariant&)> onActionReceived);
+  void Start(std::function<void(const lol_at_home_shared::GameActionVariant&)>
+                 onActionReceived);
   void Stop();
   void Send(const entt::registry& registry,
             const std::vector<entt::entity>& entities);
@@ -31,7 +32,8 @@ class EnetNetworkManager {
 
   std::jthread networkThread_;
   std::atomic<bool> isRunning_ = false;
-  std::function<void(const GameActionVariant&)> onActionReceived_;
+  std::function<void(const lol_at_home_shared::GameActionVariant&)>
+      onActionReceived_;
   std::vector<std::vector<std::byte>> outgoingBytes_;
   std::mutex outgoingMutex_;
   ENetHost* host_;

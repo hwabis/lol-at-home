@@ -5,7 +5,7 @@
 namespace lol_at_home_server {
 
 auto GameState::ProcessActionsAndUpdate(
-    const std::vector<GameActionVariant>& actions,
+    const std::vector<lol_at_home_shared::GameActionVariant>& actions,
     double deltaTimeMs) -> GameStateDelta {
   GameStateDelta gameStateDelta;
 

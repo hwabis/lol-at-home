@@ -1,0 +1,67 @@
+namespace lol_at_home_shared;
+
+struct PositionData {
+  x: double;
+  y: double;
+}
+
+enum AbilitySlotData: ubyte {
+  Q = 0,
+  W = 1,
+  E = 2,
+  R = 3,
+  Summ1 = 4,
+  Summ2 = 5
+}
+
+union AbilityTargetDataFB {
+  NoTargetFB,
+  EntityTargetFB,
+  OnePointSkillshotFB,
+  TwoPointSkillshotFB
+}
+
+table NoTargetFB {}
+
+table EntityTargetFB {
+  target: uint;  // entity id
+}
+
+table OnePointSkillshotFB {
+  target: PositionData;
+}
+
+table TwoPointSkillshotFB {
+  target1: PositionData;
+  target2: PositionData;
+}
+
+union GameActionDataFB {
+  MoveActionFB,
+  AbilityActionFB,
+  AutoAttackActionFB,
+  StopActionFB
+}
+
+table MoveActionFB {
+  target_position: PositionData;
+}
+
+table AbilityActionFB {
+  slot: AbilitySlotData;
+  target: AbilityTargetDataFB;
+}
+
+table AutoAttackActionFB {
+  target: uint;  // entity id
+}
+
+table StopActionFB {}
+
+// Wrapper for an action with its source entity
+table GameActionFB {
+  source: uint;  // entity id
+  action: GameActionDataFB;
+}
+
+root_type GameActionFB;

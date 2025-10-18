@@ -4,7 +4,11 @@
 #include <iostream>
 #include <thread>
 #include "EcsComponents.h"
+#include "GameAction.h"
+#include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
+
+// todo let's NOT play league of legends through command line
 
 auto main() -> int {
   if (enet_initialize() != 0) {
@@ -45,13 +49,42 @@ auto main() -> int {
 
   entt::registry registry;
 
-  spdlog::info("Receiving game state updates. Press Enter to quit.");
+  spdlog::info("Receiving game state updates.");
+  spdlog::info("Commands: 'move X Y' to send move action, 'quit' to exit");
 
   bool running = true;
-  std::thread inputThread([&running]() {
+  std::thread inputThread([&running, peer]() {
     std::string input;
-    std::getline(std::cin, input);
-    running = false;
+    while (running && std::getline(std::cin, input)) {
+      if (input == "quit") {
+        running = false;
+        break;
+      }
+
+      // Parse "move X Y" command
+      if (input.starts_with("move")) {
+        double x = 0.0;
+        double y = 0.0;
+        if (sscanf(input.c_str(), "move %lf %lf", &x, &y) == 2) {
+          // Create a move action
+          lol_at_home_shared::MoveAction action{
+              .Source = static_cast<entt::entity>(0),  // Test entity
+              .TargetPosition = {x, y}};
+
+          auto bytes =
+              lol_at_home_shared::GameActionSerializer::Serialize(action);
+
+          ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
+                                                  ENET_PACKET_FLAG_RELIABLE);
+          enet_peer_send(peer, 0, packet);
+
+          spdlog::info("Sent move action to (" + std::to_string(x) + ", " +
+                       std::to_string(y) + ")");
+        } else {
+          spdlog::warn("Invalid move command. Usage: move X Y");
+        }
+      }
+    }
   });
 
   while (running) {

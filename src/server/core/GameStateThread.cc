@@ -20,7 +20,7 @@ void GameStateThread::Stop() {
   isRunning_ = false;
 }
 
-void GameStateThread::HandleInput(GameActionVariant input) {
+void GameStateThread::HandleInput(lol_at_home_shared::GameActionVariant input) {
   if (!isRunning_) {
     spdlog::warn("what are you doing bruh");
     return;
@@ -63,8 +63,8 @@ void GameStateThread::runGameLoop() {
 }
 
 auto GameStateThread::getAndClearQueuedActions()
-    -> std::vector<GameActionVariant> {
-  std::vector<GameActionVariant> inputs;
+    -> std::vector<lol_at_home_shared::GameActionVariant> {
+  std::vector<lol_at_home_shared::GameActionVariant> inputs;
 
   {
     std::lock_guard<std::mutex> lock(actionQueueMutex_);

@@ -2,8 +2,8 @@
 
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
+#include "GameAction.h"
 #include "abilities/AbilityImpl.h"
-#include "actions/GameAction.h"
 
 namespace lol_at_home_server {
 
@@ -12,7 +12,7 @@ class GameActionProcessor {
   explicit GameActionProcessor(entt::registry& registry)
       : registry_(registry) {}
 
-  void operator()(const MoveAction& action) {
+  void operator()(const lol_at_home_shared::MoveAction& action) {
     if (!registry_.valid(action.Source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
@@ -27,7 +27,7 @@ class GameActionProcessor {
         action.Source, action.TargetPosition);
   }
 
-  void operator()(const AbilityAction& action) {
+  void operator()(const lol_at_home_shared::AbilityAction& action) {
     if (!registry_.valid(action.Source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
@@ -55,11 +55,11 @@ class GameActionProcessor {
     abilityImpl->Execute(registry_, ability, action.Target);
   }
 
-  void operator()(const AutoAttackAction& action) {
+  void operator()(const lol_at_home_shared::AutoAttackAction& action) {
     // todo
   }
 
-  void operator()(const StopGameAction& action) {
+  void operator()(const lol_at_home_shared::StopGameAction& action) {
     // todo
   }
 
