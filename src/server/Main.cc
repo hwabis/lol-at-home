@@ -11,6 +11,7 @@ auto main() -> int {
   auto entity = state.Registry.create();
   state.Registry.emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
   state.Registry.emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
+  state.Registry.emplace<lol_at_home_shared::Movable>(entity, 300.0);
 
   lol_at_home_server::GameStateThread game{
       std::move(state), lol_at_home_server::GameStateThreadConfig{}};
