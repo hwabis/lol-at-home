@@ -1,5 +1,6 @@
 #include "EnetNetworkManager.h"
 #include <spdlog/spdlog.h>
+#include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
 
 namespace lol_at_home_server {
@@ -66,11 +67,23 @@ void EnetNetworkManager::handleIncoming() {
       }
 
       case ENET_EVENT_TYPE_RECEIVE: {
-        spdlog::info("Received something from client");
+        spdlog::info("Received " + std::to_string(event.packet->dataLength) +
+                     " bytes from client");
 
-        lol_at_home_shared::GameActionVariant action;
-        // todo deserialize event.packet->data into action
-        onActionReceived_(action);
+        try {
+          std::vector<std::byte> data(
+              reinterpret_cast<const std::byte*>(event.packet->data),
+              reinterpret_cast<const std::byte*>(event.packet->data) +
+                  event.packet->dataLength);
+          auto action =
+              lol_at_home_shared::GameActionSerializer::Deserialize(data);
+          spdlog::info("Successfully deserialized action");
+
+          onActionReceived_(action);
+        } catch (const std::exception& e) {
+          spdlog::error("Failed to deserialize action: " +
+                        std::string(e.what()));
+        }
 
         enet_packet_destroy(event.packet);
         break;
