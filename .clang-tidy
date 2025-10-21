@@ -11,3 +11,5 @@ Checks: >
   portability-*,
   readability-*,
   clang-analyzer-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-non-private-member-variables-in-classes,

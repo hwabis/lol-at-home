@@ -8,8 +8,6 @@
 #include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
 
-// todo let's NOT play league of legends through command line
-
 auto main() -> int {
   if (enet_initialize() != 0) {
     spdlog::error("Failed to initialize ENet");
@@ -65,15 +63,13 @@ auto main() -> int {
       if (input.starts_with("move")) {
         double x = 0.0;
         double y = 0.0;
-        if (sscanf(input.c_str(), "move %lf %lf", &x, &y) == 2) {
-          // Create a move action
+        std::istringstream iss(input.substr(5));  // skip "move "
+        if (iss >> x >> y) {
           lol_at_home_shared::MoveAction action{
-              .Source = static_cast<entt::entity>(0),  // Test entity
-              .TargetPosition = {x, y}};
+              .Source = static_cast<entt::entity>(0), .TargetPosition = {x, y}};
 
           auto bytes =
               lol_at_home_shared::GameActionSerializer::Serialize(action);
-
           ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
                                                   ENET_PACKET_FLAG_RELIABLE);
           enet_peer_send(peer, 0, packet);

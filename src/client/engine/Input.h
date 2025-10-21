@@ -1,0 +1,29 @@
+#pragma once
+
+#include <SDL3/SDL.h>
+#include <span>
+#include "Vector2.h"
+
+namespace lol_at_home_engine {
+
+class Input {
+ public:
+  void Update();
+
+  [[nodiscard]] auto IsMouseButtonPressed(int button) const -> bool;
+  [[nodiscard]] auto IsMouseButtonReleased(int button) const -> bool;
+  [[nodiscard]] auto GetMousePosition() const -> Vector2;
+
+  [[nodiscard]] auto IsKeyPressed(SDL_Keycode key) const -> bool;
+  [[nodiscard]] auto IsKeyReleased(SDL_Keycode key) const -> bool;
+
+ private:
+  SDL_MouseButtonFlags currentMouseState_{0};
+  SDL_MouseButtonFlags previousMouseState_{0};
+  Vector2 mousePosition_{.X = 0.0, .Y = 0.0};
+
+  std::span<const bool> currentKeyState_;
+  std::span<const bool> previousKeyState_;
+};
+
+}  // namespace lol_at_home_engine

@@ -12,6 +12,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(unofficial-enet CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(flatbuffers CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(tests)
