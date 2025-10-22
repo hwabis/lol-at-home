@@ -4,6 +4,7 @@ add_library(lol-at-home-engine
   Camera.cc
   Renderer.cc
   Input.cc
+  Game.cc
 )
 
 set_target_defaults(lol-at-home-engine)
@@ -14,4 +15,5 @@ target_include_directories(lol-at-home-engine PUBLIC
 
 target_link_libraries(lol-at-home-engine PRIVATE
   SDL3::SDL3
+  spdlog::spdlog
 )
