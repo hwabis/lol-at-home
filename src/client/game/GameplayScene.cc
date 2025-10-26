@@ -30,8 +30,8 @@ void GameplayScene::OnStart() {
 
   connectToServer();
 
-  camera_->SetPosition({.X = 7500.0, .Y = 7500.0});
-  camera_->SetZoom(0.5F);
+  camera_->SetPosition({.X = 100.0, .Y = 200.0});
+  camera_->SetZoom(1.0F);
 }
 
 void GameplayScene::Update(double deltaTime) {

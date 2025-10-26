@@ -13,7 +13,7 @@ struct GameStateThreadConfig {
 
  private:
   static constexpr int defaultUpdateInterval_ = 33;
-  static constexpr int defaultFullStateBroadcastInterval_ = 33;
+  static constexpr int defaultFullStateBroadcastInterval_ = 1;
 };
 
 }  // namespace lol_at_home_server

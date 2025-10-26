@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include <cmath>
 
 namespace lol_at_home_engine {
 
@@ -20,31 +21,13 @@ void Renderer::DrawCircle(Vector2 worldPos, double radius, Color color) {
 
   setSDLColor(color);
 
-  // Draw filled circle using midpoint algorithm
-  auto drawCirclePoints = [&](int cx, int cy, int x, int y) {
-    SDL_RenderLine(sdlRenderer_, cx - x, cy + y, cx + x, cy + y);
-    SDL_RenderLine(sdlRenderer_, cx - x, cy - y, cx + x, cy - y);
-  };
-
   int cx = static_cast<int>(screenPos.X);
   int cy = static_cast<int>(screenPos.Y);
   int r = static_cast<int>(screenRadius);
 
-  int x = 0;
-  int y = r;
-  int d = 3 - 2 * r;
-
-  drawCirclePoints(cx, cy, x, y);
-
-  while (y >= x) {
-    x++;
-    if (d > 0) {
-      y--;
-      d = d + 4 * (x - y) + 10;
-    } else {
-      d = d + 4 * x + 6;
-    }
-    drawCirclePoints(cx, cy, x, y);
+  for (int y = -r; y <= r; y++) {
+    int x = static_cast<int>(std::sqrt(r * r - y * y));
+    SDL_RenderLine(sdlRenderer_, cx - x, cy + y, cx + x, cy + y);
   }
 }
 

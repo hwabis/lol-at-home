@@ -61,8 +61,11 @@ void EnetNetworkManager::handleIncoming() {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
-        std::lock_guard lock(peersMutex_);
-        peers_.push_back(event.peer);
+        {
+          std::lock_guard lock(peersMutex_);
+          peers_.push_back(event.peer);
+        }
+
         break;
       }
 
