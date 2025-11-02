@@ -7,6 +7,8 @@ namespace lol_at_home_server {
 auto GameState::ProcessActionsAndUpdate(
     const std::vector<lol_at_home_shared::GameActionVariant>& actions,
     double deltaTimeMs) -> GameStateDelta {
+  std::lock_guard<std::mutex> lock(registryMutex_);
+
   GameStateDelta gameStateDelta;
 
   for (const auto& action : actions) {
@@ -21,6 +23,8 @@ auto GameState::ProcessActionsAndUpdate(
 }
 
 auto GameState::CreatePlayerEntity() -> entt::entity {
+  std::lock_guard<std::mutex> lock(registryMutex_);
+
   auto entity = Registry.create();
 
   Registry.emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);

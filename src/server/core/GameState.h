@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
+#include <mutex>
 #include "GameAction.h"
 #include "core/GameStateDelta.h"
 
@@ -21,6 +22,8 @@ class GameState {
                             std::vector<entt::entity>& dirtyEntities);
   void updateHealthSystem(double deltaTimeMs,
                           std::vector<entt::entity>& dirtyEntities);
+
+  std::mutex registryMutex_;
 };
 
 }  // namespace lol_at_home_server
