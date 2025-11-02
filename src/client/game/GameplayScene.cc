@@ -1,5 +1,6 @@
 #include "GameplayScene.h"
 #include <spdlog/spdlog.h>
+#include "ClientComponents.h"
 #include "EcsComponents.h"
 #include "GameAction.h"
 #include "GameActionSerializer.h"
@@ -40,6 +41,7 @@ void GameplayScene::OnStart() {
 void GameplayScene::Update(double deltaTime) {
   handleInput();
   handleNetwork();
+  updateInterpolation(deltaTime);
 }
 
 void GameplayScene::Render(lol_at_home_engine::Renderer& renderer) {
@@ -172,10 +174,35 @@ void GameplayScene::handleNetwork() {
   }
 }
 
+void GameplayScene::updateInterpolation(double deltaTime) {
+  constexpr double interpSpeed = 0.5;
+
+  auto view = registry_.view<lol_at_home_shared::Position>();
+  for (auto entity : view) {
+    const auto& serverPos = view.get<lol_at_home_shared::Position>(entity);
+
+    auto* visualPos = registry_.try_get<VisualPosition>(entity);
+    if (visualPos == nullptr) {
+      registry_.emplace<VisualPosition>(entity, serverPos);
+      continue;
+    }
+
+    visualPos->Position.X =
+        lerp(visualPos->Position.X, serverPos.X, interpSpeed);
+    visualPos->Position.Y =
+        lerp(visualPos->Position.Y, serverPos.Y, interpSpeed);
+  }
+}
+
 void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
   auto view = registry_.view<lol_at_home_shared::Position>();
   for (auto entity : view) {
-    const auto& pos = view.get<lol_at_home_shared::Position>(entity);
+    lol_at_home_shared::Position renderPos;
+    if (auto* visualPos = registry_.try_get<VisualPosition>(entity)) {
+      renderPos = visualPos->Position;
+    } else {
+      renderPos = view.get<lol_at_home_shared::Position>(entity);
+    }
 
     lol_at_home_engine::Color color{.r = 100, .g = 200, .b = 255, .a = 255};
     if (auto* team = registry_.try_get<lol_at_home_shared::Team>(entity)) {
@@ -188,11 +215,12 @@ void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
                         .r = 255, .g = 100, .b = 100, .a = 255};
     }
 
-    renderer.DrawCircle({.X = pos.X, .Y = pos.Y}, 50.0, color);
+    renderer.DrawCircle({.X = renderPos.X, .Y = renderPos.Y}, 50.0, color);
 
     if (auto* health = registry_.try_get<lol_at_home_shared::Health>(entity)) {
       double healthPercent = health->CurrentHealth / health->MaxHealth;
-      lol_at_home_engine::Vector2 barPos{.X = pos.X - 30.0, .Y = pos.Y - 70.0};
+      lol_at_home_engine::Vector2 barPos{.X = renderPos.X - 30.0,
+                                         .Y = renderPos.Y - 70.0};
       lol_at_home_engine::Vector2 barSize{.X = 60.0 * healthPercent, .Y = 5.0};
 
       renderer.DrawRect(barPos, barSize, {.r = 0, .g = 255, .b = 0, .a = 255});
@@ -203,11 +231,15 @@ void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
           {.X = moving->TargetPosition.X, .Y = moving->TargetPosition.Y}, 10.0,
           {.r = 255, .g = 255, .b = 0, .a = 255});
       renderer.DrawLine(
-          {.X = pos.X, .Y = pos.Y},
+          {.X = renderPos.X, .Y = renderPos.Y},
           {.X = moving->TargetPosition.X, .Y = moving->TargetPosition.Y},
           {.r = 255, .g = 255, .b = 0, .a = 128});
     }
   }
+}
+
+auto GameplayScene::lerp(double a, double b, double t) -> double {
+  return a + ((b - a) * t);
 }
 
 }  // namespace lol_at_home_game

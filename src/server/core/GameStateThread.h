@@ -12,14 +12,15 @@ namespace lol_at_home_server {
 
 class GameStateThread {
  public:
-  GameStateThread(GameState gameState, GameStateThreadConfig config);
+  GameStateThread(std::unique_ptr<GameState> gameState,
+                  GameStateThreadConfig config);
   void Start(std::function<void(const entt::registry&,
                                 const std::vector<entt::entity>&)> broadcastFn);
   void Stop();
   void HandleInput(lol_at_home_shared::GameActionVariant input);
 
   auto CreatePlayerEntity() -> entt::entity {
-    return gameState_.CreatePlayerEntity();
+    return gameState_->CreatePlayerEntity();
   }
 
  private:
@@ -31,7 +32,7 @@ class GameStateThread {
   std::atomic<bool> isRunning_ = false;
   std::queue<lol_at_home_shared::GameActionVariant> actionQueue_;
   std::mutex actionQueueMutex_;
-  GameState gameState_;
+  std::unique_ptr<GameState> gameState_;
   GameStateThreadConfig config_;
   std::function<void(const entt::registry&, const std::vector<entt::entity>&)>
       broadcastFn_;

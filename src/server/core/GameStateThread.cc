@@ -4,9 +4,9 @@
 
 namespace lol_at_home_server {
 
-GameStateThread::GameStateThread(GameState startGameState,
+GameStateThread::GameStateThread(std::unique_ptr<GameState> gameState,
                                  GameStateThreadConfig config)
-    : gameState_(std::move(startGameState)), config_(config) {}
+    : gameState_(std::move(gameState)), config_(config) {}
 
 void GameStateThread::Start(
     std::function<void(const entt::registry&, const std::vector<entt::entity>&)>
@@ -43,14 +43,14 @@ void GameStateThread::runGameLoop() {
     lastFrameTime = frameStart;
 
     auto actions = getAndClearQueuedActions();
-    auto delta = gameState_.ProcessActionsAndUpdate(actions, deltaTimeMs);
+    auto delta = gameState_->ProcessActionsAndUpdate(actions, deltaTimeMs);
     if (!delta.ChangedEntities.empty()) {
-      broadcastFn_(gameState_.Registry, delta.ChangedEntities);
+      broadcastFn_(gameState_->Registry, delta.ChangedEntities);
     }
 
     if (frameStart - lastFullStateBroadcast >=
         config_.FullStateBroadcastInterval) {
-      broadcastFn_(gameState_.Registry, {});
+      broadcastFn_(gameState_->Registry, {});
       lastFullStateBroadcast = frameStart;
     }
 
