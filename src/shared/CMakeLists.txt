@@ -22,6 +22,7 @@ add_library(lol-at-home-shared
   ${GENERATED_DIR}/game_state_generated.h
   GameActionSerializer.cc
   GameStateSerializer.cc
+  PlayerAssignmentSerializer.cc
 )
 
 set_target_defaults(lol-at-home-shared)

@@ -4,6 +4,9 @@
 #include "GameAction.h"
 #include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
+#include "NetworkChannels.h"
+#include "PlayerAssignment.h"
+#include "PlayerAssignmentSerializer.h"
 #include "Renderer.h"
 
 namespace lol_at_home_game {
@@ -92,7 +95,7 @@ void GameplayScene::connectToServer() {
 }
 
 void GameplayScene::handleInput() {
-  if (!connected_) {
+  if (!connected_ || myEntityId_ == entt::null) {
     return;
   }
 
@@ -102,7 +105,7 @@ void GameplayScene::handleInput() {
         camera_->ScreenToWorld(screenPos, renderer_.GetScreenSize());
 
     lol_at_home_shared::MoveAction action{
-        .Source = static_cast<entt::entity>(0),
+        .Source = myEntityId_,
         .TargetPosition = {.X = worldPos.X, .Y = worldPos.Y}};
 
     auto bytes = lol_at_home_shared::GameActionSerializer::Serialize(action);
@@ -124,13 +127,32 @@ void GameplayScene::handleNetwork() {
   while (enet_host_service(client_, &event, 0) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_RECEIVE: {
-        try {
-          std::vector<std::byte> data(
-              reinterpret_cast<const std::byte*>(event.packet->data),
-              reinterpret_cast<const std::byte*>(event.packet->data) +
-                  event.packet->dataLength);
+        std::vector<std::byte> data(
+            reinterpret_cast<const std::byte*>(event.packet->data),
+            reinterpret_cast<const std::byte*>(event.packet->data) +
+                event.packet->dataLength);
 
-          lol_at_home_shared::GameStateSerializer::Deserialize(registry_, data);
+        try {
+          switch (event.channelID) {
+            case lol_at_home_shared::NetworkChannels::Control: {
+              auto assignment =
+                  lol_at_home_shared::PlayerAssignmentSerializer::Deserialize(
+                      data);
+              myEntityId_ = assignment.AssignedEntity;
+              spdlog::info("Assigned to entity: " +
+                           std::to_string(static_cast<uint32_t>(myEntityId_)));
+              break;
+            }
+            case lol_at_home_shared::NetworkChannels::GameState: {
+              lol_at_home_shared::GameStateSerializer::Deserialize(registry_,
+                                                                   data);
+              break;
+            }
+            default: {
+              spdlog::error(std::string("Received unknown channelID: ") +
+                            std::to_string(event.channelID));
+            }
+          }
         } catch (const std::exception& e) {
           spdlog::error(std::string("Failed to deserialize: ") + e.what());
         }

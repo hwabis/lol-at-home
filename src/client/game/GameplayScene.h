@@ -41,6 +41,7 @@ class GameplayScene : public lol_at_home_engine::Scene {
   ENetHost* client_{nullptr};
   ENetPeer* peer_{nullptr};
   bool connected_{false};
+  entt::entity myEntityId_{entt::null};
 };
 
 }  // namespace lol_at_home_game

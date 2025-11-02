@@ -17,7 +17,8 @@ class EnetNetworkManager {
   auto operator=(EnetNetworkManager&&) -> EnetNetworkManager& = delete;
 
   void Start(std::function<void(const lol_at_home_shared::GameActionVariant&)>
-                 onActionReceived);
+                 onActionReceived,
+             std::function<entt::entity()> onClientConnected);
   void Stop();
   void Send(const entt::registry& registry,
             const std::vector<entt::entity>& entities);
@@ -39,6 +40,7 @@ class EnetNetworkManager {
   ENetHost* host_;
   std::vector<ENetPeer*> peers_;
   std::mutex peersMutex_;
+  std::function<entt::entity()> onClientConnected_;
 };
 
 }  // namespace lol_at_home_server

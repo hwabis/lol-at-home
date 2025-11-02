@@ -20,6 +20,19 @@ auto GameState::ProcessActionsAndUpdate(
   return gameStateDelta;
 }
 
+auto GameState::CreatePlayerEntity() -> entt::entity {
+  auto entity = Registry.create();
+
+  Registry.emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
+  Registry.emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
+  Registry.emplace<lol_at_home_shared::Movable>(entity, 300.0);
+
+  spdlog::info("Created player entity: " +
+               std::to_string(static_cast<uint32_t>(entity)));
+
+  return entity;
+}
+
 void GameState::updateMovementSystem(double deltaTimeMs,
                                      std::vector<entt::entity>& dirtyEntities) {
   auto view =

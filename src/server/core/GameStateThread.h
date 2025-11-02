@@ -18,6 +18,10 @@ class GameStateThread {
   void Stop();
   void HandleInput(lol_at_home_shared::GameActionVariant input);
 
+  auto CreatePlayerEntity() -> entt::entity {
+    return gameState_.CreatePlayerEntity();
+  }
+
  private:
   void runGameLoop();
   auto getAndClearQueuedActions()

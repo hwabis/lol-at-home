@@ -2,6 +2,9 @@
 #include <spdlog/spdlog.h>
 #include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
+#include "NetworkChannels.h"
+#include "PlayerAssignment.h"
+#include "PlayerAssignmentSerializer.h"
 
 namespace lol_at_home_server {
 
@@ -17,9 +20,11 @@ EnetNetworkManager::~EnetNetworkManager() {
 
 void EnetNetworkManager::Start(
     std::function<void(const lol_at_home_shared::GameActionVariant&)>
-        onActionReceived) {
+        onActionReceived,
+    std::function<entt::entity()> onClientConnected) {
   isRunning_ = true;
   onActionReceived_ = std::move(onActionReceived);
+  onClientConnected_ = std::move(onClientConnected);
   networkThread_ = std::jthread([this] { runNetworkLoop(); });
 }
 
@@ -61,6 +66,17 @@ void EnetNetworkManager::handleIncoming() {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
+
+        auto entity = onClientConnected_();
+
+        lol_at_home_shared::PlayerAssignment assignment{entity};
+        auto bytes = lol_at_home_shared::PlayerAssignmentSerializer::Serialize(
+            assignment);
+        ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
+                                                ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(event.peer, lol_at_home_shared::NetworkChannels::Control,
+                       packet);
+
         {
           std::lock_guard lock(peersMutex_);
           peers_.push_back(event.peer);

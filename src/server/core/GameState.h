@@ -11,7 +11,9 @@ class GameState {
   auto ProcessActionsAndUpdate(
       const std::vector<lol_at_home_shared::GameActionVariant>& actions,
       double deltaTimeMs) -> GameStateDelta;
-  // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+
+  auto CreatePlayerEntity() -> entt::entity;
+
   entt::registry Registry;
 
  private:
