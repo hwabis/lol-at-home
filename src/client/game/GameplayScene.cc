@@ -175,9 +175,8 @@ void GameplayScene::handleNetwork() {
 }
 
 void GameplayScene::updateInterpolation(double deltaTime) {
-  constexpr double interpSpeed = 0.5;
-
   auto view = registry_.view<lol_at_home_shared::Position>();
+
   for (auto entity : view) {
     const auto& serverPos = view.get<lol_at_home_shared::Position>(entity);
 
@@ -187,10 +186,35 @@ void GameplayScene::updateInterpolation(double deltaTime) {
       continue;
     }
 
-    visualPos->Position.X =
-        lerp(visualPos->Position.X, serverPos.X, interpSpeed);
-    visualPos->Position.Y =
-        lerp(visualPos->Position.Y, serverPos.Y, interpSpeed);
+    double dxToServer = serverPos.X - visualPos->Position.X;
+    double dyToServer = serverPos.Y - visualPos->Position.Y;
+    double distance =
+        std::sqrt(dxToServer * dxToServer + dyToServer * dyToServer);
+
+    if (distance < 0.5) {
+      visualPos->Position = serverPos;
+      continue;
+    }
+
+    double speed = 0;
+    if (auto* movable =
+            registry_.try_get<lol_at_home_shared::Movable>(entity)) {
+      speed = movable->Speed;
+    } else {
+      visualPos->Position = serverPos;
+      continue;
+    }
+
+    double deltaSec = deltaTime / 1000.0;
+    double moveDistance = speed * deltaSec;
+
+    if (moveDistance >= distance) {
+      visualPos->Position = serverPos;
+    } else {
+      double ratio = moveDistance / distance;
+      visualPos->Position.X += dxToServer * ratio;
+      visualPos->Position.Y += dyToServer * ratio;
+    }
   }
 }
 
@@ -236,10 +260,6 @@ void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
           {.r = 255, .g = 255, .b = 0, .a = 128});
     }
   }
-}
-
-auto GameplayScene::lerp(double a, double b, double t) -> double {
-  return a + ((b - a) * t);
 }
 
 }  // namespace lol_at_home_game

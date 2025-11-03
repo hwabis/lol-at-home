@@ -33,7 +33,6 @@ class GameplayScene : public lol_at_home_engine::Scene {
   void handleNetwork();
   void renderEntities(lol_at_home_engine::Renderer& renderer);
   void updateInterpolation(double deltaTime);
-  static auto lerp(double a, double b, double t) -> double;
 
   std::shared_ptr<lol_at_home_engine::Camera> camera_;
   lol_at_home_engine::Input& input_;
