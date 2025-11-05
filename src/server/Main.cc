@@ -19,7 +19,8 @@ auto main() -> int {
     net.Send(registry, entities);
   });
   net.Start([&game](auto action) { game.HandleInput(action); },
-            [&game]() { return game.CreatePlayerEntity(); });
+            [&game]() { return game.CreatePlayerEntity(); },
+            [&game]() { return game.GetFullStateSerialized(); });
   spdlog::info("Server running on port 12345");
 
   std::string input;

@@ -12,8 +12,8 @@ class GameState {
   auto ProcessActionsAndUpdate(
       const std::vector<lol_at_home_shared::GameActionVariant>& actions,
       double deltaTimeMs) -> GameStateDelta;
-
   auto CreatePlayerEntity() -> entt::entity;
+  auto SerializeFullState() -> std::vector<std::byte>;
 
   entt::registry Registry;
 

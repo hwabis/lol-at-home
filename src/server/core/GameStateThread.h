@@ -23,6 +23,10 @@ class GameStateThread {
     return gameState_->CreatePlayerEntity();
   }
 
+  auto GetFullStateSerialized() -> std::vector<std::byte> {
+    return gameState_->SerializeFullState();
+  }
+
  private:
   void runGameLoop();
   auto getAndClearQueuedActions()

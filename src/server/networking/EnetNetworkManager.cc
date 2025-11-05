@@ -21,10 +21,12 @@ EnetNetworkManager::~EnetNetworkManager() {
 void EnetNetworkManager::Start(
     std::function<void(const lol_at_home_shared::GameActionVariant&)>
         onActionReceived,
-    std::function<entt::entity()> onClientConnected) {
+    std::function<entt::entity()> onClientConnected,
+    std::function<std::vector<std::byte>()> onGetFullState) {
   isRunning_ = true;
   onActionReceived_ = std::move(onActionReceived);
   onClientConnected_ = std::move(onClientConnected);
+  onGetFullState_ = std::move(onGetFullState);
   networkThread_ = std::jthread([this] { runNetworkLoop(); });
 }
 
@@ -70,12 +72,23 @@ void EnetNetworkManager::handleIncoming() {
         auto entity = onClientConnected_();
 
         lol_at_home_shared::PlayerAssignment assignment{entity};
-        auto bytes = lol_at_home_shared::PlayerAssignmentSerializer::Serialize(
-            assignment);
-        ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
-                                                ENET_PACKET_FLAG_RELIABLE);
+        auto assignmentBytes =
+            lol_at_home_shared::PlayerAssignmentSerializer::Serialize(
+                assignment);
+        ENetPacket* assignmentPacket =
+            enet_packet_create(assignmentBytes.data(), assignmentBytes.size(),
+                               ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(event.peer, lol_at_home_shared::NetworkChannels::Control,
-                       packet);
+                       assignmentPacket);
+
+        auto stateBytes = onGetFullState_();
+        ENetPacket* statePacket = enet_packet_create(
+            stateBytes.data(), stateBytes.size(), ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(event.peer,
+                       lol_at_home_shared::NetworkChannels::GameState,
+                       statePacket);
+
+        enet_host_flush(host_);
 
         {
           std::lock_guard lock(peersMutex_);

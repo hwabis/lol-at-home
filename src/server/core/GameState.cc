@@ -1,5 +1,6 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
+#include "GameStateSerializer.h"
 #include "actions/GameActionProcessor.h"
 
 namespace lol_at_home_server {
@@ -35,6 +36,11 @@ auto GameState::CreatePlayerEntity() -> entt::entity {
                std::to_string(static_cast<uint32_t>(entity)));
 
   return entity;
+}
+
+auto GameState::SerializeFullState() -> std::vector<std::byte> {
+  std::lock_guard<std::mutex> lock(registryMutex_);
+  return lol_at_home_shared::GameStateSerializer::Serialize(Registry, {});
 }
 
 void GameState::updateMovementSystem(double deltaTimeMs,

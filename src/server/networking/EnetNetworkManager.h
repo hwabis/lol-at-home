@@ -18,7 +18,8 @@ class EnetNetworkManager {
 
   void Start(std::function<void(const lol_at_home_shared::GameActionVariant&)>
                  onActionReceived,
-             std::function<entt::entity()> onClientConnected);
+             std::function<entt::entity()> onClientConnected,
+             std::function<std::vector<std::byte>()> onGetFullState);
   void Stop();
   void Send(const entt::registry& registry,
             const std::vector<entt::entity>& entities);
@@ -35,12 +36,13 @@ class EnetNetworkManager {
   std::atomic<bool> isRunning_ = false;
   std::function<void(const lol_at_home_shared::GameActionVariant&)>
       onActionReceived_;
+  std::function<entt::entity()> onClientConnected_;
+  std::function<std::vector<std::byte>()> onGetFullState_;
   std::vector<std::vector<std::byte>> outgoingBytes_;
   std::mutex outgoingMutex_;
   ENetHost* host_;
   std::vector<ENetPeer*> peers_;
   std::mutex peersMutex_;
-  std::function<entt::entity()> onClientConnected_;
 };
 
 }  // namespace lol_at_home_server
