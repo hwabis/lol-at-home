@@ -5,49 +5,36 @@
 
 namespace lol_at_home_server {
 
-auto GameState::ProcessActionsAndUpdate(
-    const std::vector<lol_at_home_shared::GameActionVariant>& actions,
-    double deltaTimeMs) -> GameStateDelta {
-  std::lock_guard<std::mutex> lock(registryMutex_);
+auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
+  processInbound();
 
-  GameStateDelta gameStateDelta;
+  std::vector<entt::entity> dirtyEntities;
+  updateSimulation(timeElapsed, dirtyEntities);
 
-  for (const auto& action : actions) {
-    std::visit(GameActionProcessor{Registry}, action);
-    gameStateDelta.Actions.push_back(action);
-  }
-
-  updateMovementSystem(deltaTimeMs, gameStateDelta.ChangedEntities);
-  updateHealthSystem(deltaTimeMs, gameStateDelta.ChangedEntities);
-
-  return gameStateDelta;
+  pushOutbound(dirtyEntities);
 }
 
-auto GameState::CreatePlayerEntity() -> entt::entity {
-  std::lock_guard<std::mutex> lock(registryMutex_);
+void GameState::processInbound() {
+  std::vector<InboundPacket> inboundPackets = inbound_->PopAll();
 
-  auto entity = Registry.create();
-
-  Registry.emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
-  Registry.emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
-  Registry.emplace<lol_at_home_shared::Movable>(entity, 300.0);
-
-  spdlog::info("Created player entity: " +
-               std::to_string(static_cast<uint32_t>(entity)));
-
-  return entity;
+  // todo make the visitor
 }
 
-auto GameState::SerializeFullState() -> std::vector<std::byte> {
-  std::lock_guard<std::mutex> lock(registryMutex_);
-  return lol_at_home_shared::GameStateSerializer::Serialize(Registry, {});
+void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
+                                 std::vector<entt::entity>& dirtyEntities) {
+  updateMovementSystem(timeElapsed, dirtyEntities);
+  updateHealthSystem(timeElapsed, dirtyEntities);
 }
 
-void GameState::updateMovementSystem(double deltaTimeMs,
+void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
+
+}
+
+void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
                                      std::vector<entt::entity>& dirtyEntities) {
   auto view =
-      Registry.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
-                    lol_at_home_shared::Moving>();
+      registry_.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
+                     lol_at_home_shared::Moving>();
 
   for (auto entity : view) {
     auto& pos = view.get<lol_at_home_shared::Position>(entity);
@@ -59,11 +46,11 @@ void GameState::updateMovementSystem(double deltaTimeMs,
     double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
     if (distance < 1.0) {
-      Registry.remove<lol_at_home_shared::Moving>(entity);
+      registry_.remove<lol_at_home_shared::Moving>(entity);
       pos = moving.TargetPosition;
     } else {
       constexpr int msPerSec = 1000;  // todo not sure yet on how the units work
-      double moveDistance = movable.Speed * (deltaTimeMs / msPerSec);
+      double moveDistance = movable.Speed * (timeElapsed / msPerSec);
       double ratio = std::min(moveDistance / distance, 1.0);
 
       pos.X += deltaX * ratio;
@@ -74,9 +61,9 @@ void GameState::updateMovementSystem(double deltaTimeMs,
   }
 }
 
-void GameState::updateHealthSystem(double deltaTimeMs,
+void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
                                    std::vector<entt::entity>& dirtyEntities) {
-  auto view = Registry.view<lol_at_home_shared::Health>();
+  auto view = registry_.view<lol_at_home_shared::Health>();
 
   for (auto entity : view) {
     auto& health = view.get<lol_at_home_shared::Health>(entity);
@@ -84,7 +71,7 @@ void GameState::updateHealthSystem(double deltaTimeMs,
     if (health.CurrentHealth < health.MaxHealth) {
       constexpr double msInSec = 1000.0;
       health.CurrentHealth = std::min(
-          health.MaxHealth, health.CurrentHealth + ((deltaTimeMs / msInSec) *
+          health.MaxHealth, health.CurrentHealth + ((timeElapsed / msInSec) *
                                                     health.HealthRegenPerSec));
       dirtyEntities.push_back(entity);
     }

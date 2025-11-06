@@ -1,29 +1,35 @@
 #pragma once
 
-#include <entt/entt.hpp>
-#include <mutex>
+#include <enet/enet.h>
 #include "GameAction.h"
-#include "core/GameStateDelta.h"
+#include "InboundPacket.h"
+#include "OutboundPacket.h"
+#include "util/IPeriodic.h"
+#include "util/ThreadSafeQueue.h"
 
 namespace lol_at_home_server {
 
-class GameState {
+class GameState : IPeriodic {
  public:
-  auto ProcessActionsAndUpdate(
-      const std::vector<lol_at_home_shared::GameActionVariant>& actions,
-      double deltaTimeMs) -> GameStateDelta;
-  auto CreatePlayerEntity() -> entt::entity;
-  auto SerializeFullState() -> std::vector<std::byte>;
-
-  entt::registry Registry;
+  GameState(std::shared_ptr<ThreadSafeQueue<InboundPacket>> incomingActions,
+            std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outgoingStates);
+  auto Cycle(std::chrono::milliseconds timeElapsed) -> void override;
 
  private:
-  void updateMovementSystem(double deltaTimeMs,
+  void processInbound();
+  void updateSimulation(std::chrono::milliseconds timeElapsed,
+                        std::vector<entt::entity>& dirtyEntities);
+  void pushOutbound(const std::vector<entt::entity>& dirtyEntities);
+
+  void updateMovementSystem(std::chrono::milliseconds timeElapsed,
                             std::vector<entt::entity>& dirtyEntities);
-  void updateHealthSystem(double deltaTimeMs,
+  void updateHealthSystem(std::chrono::milliseconds timeElapsed,
                           std::vector<entt::entity>& dirtyEntities);
 
-  std::mutex registryMutex_;
+  entt::registry registry_;
+  std::unordered_map<ENetPeer*, entt::entity> peerToEntityMap_;
+  std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound_;
+  std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound_;
 };
 
 }  // namespace lol_at_home_server

@@ -12,5 +12,3 @@ Checks: >
   readability-*,
   clang-analyzer-*,
   -bugprone-easily-swappable-parameters,
-  -cppcoreguidelines-non-private-member-variables-in-classes,
-  -misc-non-private-member-variables-in-classes,
