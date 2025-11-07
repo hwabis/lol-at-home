@@ -7,11 +7,12 @@ namespace lol_at_home_server {
 
 class PeriodicDriver {
  public:
-  PeriodicDriver(std::shared_ptr<IPeriodic> periodic,
+  PeriodicDriver(std::unique_ptr<IPeriodic> periodic,
                  std::chrono::milliseconds period)
       : periodic_(std::move(periodic)), period_(period) {}
 
   virtual ~PeriodicDriver() { stop(); }
+
   PeriodicDriver(const PeriodicDriver&) = delete;
   auto operator=(const PeriodicDriver&) -> PeriodicDriver& = delete;
   PeriodicDriver(const PeriodicDriver&&) = delete;
@@ -49,7 +50,7 @@ class PeriodicDriver {
     }
   }
 
-  std::shared_ptr<IPeriodic> periodic_;
+  std::unique_ptr<IPeriodic> periodic_;
   std::chrono::milliseconds period_;
   std::jthread driverThread_;
 };

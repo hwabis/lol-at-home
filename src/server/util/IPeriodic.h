@@ -6,7 +6,9 @@ namespace lol_at_home_server {
 
 class IPeriodic {
  public:
+  IPeriodic() = default;
   virtual ~IPeriodic() = default;
+
   IPeriodic(const IPeriodic&) = delete;
   auto operator=(const IPeriodic&) -> IPeriodic& = delete;
   IPeriodic(const IPeriodic&&) = delete;

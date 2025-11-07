@@ -1,7 +1,6 @@
 #pragma once
 
 #include <mutex>
-#include <optional>
 #include <queue>
 
 namespace lol_at_home_server {
@@ -9,7 +8,9 @@ namespace lol_at_home_server {
 template <typename T>
 class ThreadSafeQueue {
  public:
+  ThreadSafeQueue() = default;
   virtual ~ThreadSafeQueue() = default;
+
   ThreadSafeQueue(const ThreadSafeQueue&) = delete;
   auto operator=(const ThreadSafeQueue&) -> ThreadSafeQueue& = delete;
   ThreadSafeQueue(const ThreadSafeQueue&&) = delete;
@@ -20,18 +21,17 @@ class ThreadSafeQueue {
     queue_.push(value);
   }
 
-  auto PopAll() -> std::vector<T> {
+  auto PopAll() -> std::queue<T> {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    std::vector<T> allItems;
-    allItems.reserve(queue_.size());
+    std::queue<T> result;
 
     while (!queue_.empty()) {
-      allItems.push_back(std::move(queue_.front()));
+      result.push(std::move(queue_.front()));
       queue_.pop();
     }
 
-    return allItems;
+    return result;
   }
 
   [[nodiscard]] auto Empty() const -> bool {

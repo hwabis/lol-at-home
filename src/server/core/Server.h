@@ -1,9 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "GameAction.h"
-#include "GameState.h"
-#include "OutboundPacket.h"
+#include "core/InboundPacket.h"
+#include "core/OutboundPacket.h"
 #include "util/ThreadSafeQueue.h"
 
 namespace lol_at_home_server {

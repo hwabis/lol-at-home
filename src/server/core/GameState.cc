@@ -1,9 +1,14 @@
+#define NOMINMAX
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
-#include "GameStateSerializer.h"
-#include "actions/GameActionProcessor.h"
+#include <algorithm>
+#include <utility>
 
 namespace lol_at_home_server {
+
+GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound,
+                     std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound)
+    : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {}
 
 auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
   processInbound();
@@ -15,7 +20,7 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
 }
 
 void GameState::processInbound() {
-  std::vector<InboundPacket> inboundPackets = inbound_->PopAll();
+  std::queue<InboundPacket> inboundPackets = inbound_->PopAll();
 
   // todo make the visitor
 }
@@ -27,7 +32,7 @@ void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
 }
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
-
+  // todo push to outbound
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
@@ -50,7 +55,7 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
       pos = moving.TargetPosition;
     } else {
       constexpr int msPerSec = 1000;  // todo not sure yet on how the units work
-      double moveDistance = movable.Speed * (timeElapsed / msPerSec);
+      double moveDistance = movable.Speed * (timeElapsed.count() / msPerSec);
       double ratio = std::min(moveDistance / distance, 1.0);
 
       pos.X += deltaX * ratio;
@@ -71,8 +76,9 @@ void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
     if (health.CurrentHealth < health.MaxHealth) {
       constexpr double msInSec = 1000.0;
       health.CurrentHealth = std::min(
-          health.MaxHealth, health.CurrentHealth + ((timeElapsed / msInSec) *
-                                                    health.HealthRegenPerSec));
+          health.MaxHealth,
+          health.CurrentHealth +
+              ((timeElapsed.count() / msInSec) * health.HealthRegenPerSec));
       dirtyEntities.push_back(entity);
     }
   }
