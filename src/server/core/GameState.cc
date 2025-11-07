@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <utility>
+#include "core/InboundVisitor.h"
 
 namespace lol_at_home_server {
 
@@ -22,7 +23,13 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
 void GameState::processInbound() {
   std::queue<InboundPacket> inboundPackets = inbound_->PopAll();
 
-  // todo make the visitor
+  while (!inboundPackets.empty()) {
+    InboundPacket packet = inboundPackets.front();
+    inboundPackets.pop();
+
+    std::visit(InboundVisitor{packet.peer, &registry_, &peerToEntityMap_},
+               packet.action);
+  }
 }
 
 void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
@@ -32,7 +39,14 @@ void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
 }
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
-  // todo push to outbound
+  std::queue<OutboundPacket> outboundPackets = outbound_->PopAll();
+
+  while (!outboundPackets.empty()) {
+    OutboundPacket packet = outboundPackets.front();
+    outboundPackets.pop();
+
+    // todo: serialize, create outbound packet
+  }
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,

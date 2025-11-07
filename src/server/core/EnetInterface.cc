@@ -1,5 +1,6 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
+#include "GameActionSerializer.h"
 
 namespace lol_at_home_server {
 
@@ -33,9 +34,8 @@ void EnetInterface::populateInbound() {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
-        // todo PlayerAssignmentSerializer::Serialize or something, push to
-        // inbound? no idea how we're doing proper server-side player assignment
-        // yet send the peer the full game state?
+        inbound_->Push(InboundPacket{.peer = event.peer,
+                                     .action = ClientConnectedEvent{}});
         break;
       }
 
@@ -43,11 +43,31 @@ void EnetInterface::populateInbound() {
         spdlog::info("Received " + std::to_string(event.packet->dataLength) +
                      " bytes from client");
 
-        // todo GameActionSerializer::Deserialize i guess, push to inbound
+        std::vector<std::byte> data(
+            reinterpret_cast<const std::byte*>(event.packet->data),
+            reinterpret_cast<const std::byte*>(event.packet->data) +
+                event.packet->dataLength);
+        std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
+            lol_at_home_shared::GameActionSerializer::Deserialize(data);
+
+        if (actionVariant.has_value()) {
+          inbound_->Push(
+              InboundPacket{.peer = event.peer, .action = *actionVariant});
+        }
 
         enet_packet_destroy(event.packet);
         break;
       }
+
+      case ENET_EVENT_TYPE_DISCONNECT: {
+        spdlog::info("Client disconnected");
+        inbound_->Push(InboundPacket{.peer = event.peer,
+                                     .action = ClientDisconnectedEvent{}});
+        break;
+      }
+
+      case ENET_EVENT_TYPE_NONE:
+        break;
     }
   }
 }

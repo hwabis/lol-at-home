@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstddef>
+#include <optional>
 #include <vector>
 #include "GameAction.h"
 
@@ -14,7 +14,7 @@ class GameActionSerializer {
       -> std::vector<std::byte>;
 
   static auto Deserialize(const std::vector<std::byte>& data)
-      -> GameActionVariant;
+      -> std::optional<GameActionVariant>;
 };
 
 }  // namespace lol_at_home_shared

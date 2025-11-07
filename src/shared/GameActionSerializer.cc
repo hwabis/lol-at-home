@@ -108,18 +108,13 @@ auto GameActionSerializer::Serialize(const GameActionVariant& actionVariant)
 }
 
 auto GameActionSerializer::Deserialize(const std::vector<std::byte>& data)
-    -> GameActionVariant {
-  auto* action = GetGameActionFB(data.data());
-
-  if (action == nullptr) {
-    throw std::runtime_error("Invalid action data");
-  }
-
-  entt::entity source = static_cast<entt::entity>(action->source());
+    -> std::optional<GameActionVariant> {
+  const lol_at_home_shared::GameActionFB* action = GetGameActionFB(data.data());
+  auto source = static_cast<entt::entity>(action->source());
 
   switch (action->action_type()) {
     case GameActionDataFB::MoveActionFB: {
-      auto* moveData = action->action_as_MoveActionFB();
+      const auto* moveData = action->action_as_MoveActionFB();
       return MoveAction{
           .Source = source,
           .TargetPosition = {.X = moveData->target_position()->x(),
@@ -175,8 +170,8 @@ auto GameActionSerializer::Deserialize(const std::vector<std::byte>& data)
     case GameActionDataFB::StopActionFB:
       return StopGameAction{.Source = source};
 
-    default:
-      throw std::runtime_error("Unknown action type");
+    case GameActionDataFB::NONE:
+      return std::nullopt;
   }
 }
 

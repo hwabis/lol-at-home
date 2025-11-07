@@ -86,3 +86,8 @@ table GameStateSnapshot {
 }
 
 root_type GameStateSnapshot;
+
+// todo suffix all this with FB as well
+// todo change all namespaces to lah::server or whatever
+// todo is there a way to fix this, whenever we add a component, we have to remember to add it to
+// the code, fbs file, serializer, ecs system, prob other things im forgetting
