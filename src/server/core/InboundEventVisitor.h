@@ -4,14 +4,18 @@
 #include <entt/entt.hpp>
 #include <unordered_map>
 #include "InboundPacket.h"
+#include "OutboundPacket.h"
+#include "util/ThreadSafeQueue.h"
 
 namespace lol_at_home_server {
 
-class InboundVisitor {
+class InboundEventVisitor {
  public:
-  InboundVisitor(ENetPeer* peer,
-                 entt::registry* registry,
-                 std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap);
+  InboundEventVisitor(
+      ENetPeer* peer,
+      entt::registry* registry,
+      std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
+      ThreadSafeQueue<OutboundPacket>* outbound);
 
   void operator()(const ClientConnectedEvent& event) const;
   void operator()(const ClientDisconnectedEvent& event) const;
@@ -21,6 +25,7 @@ class InboundVisitor {
   ENetPeer* peer_;
   entt::registry* registry_;
   std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap_;
+  ThreadSafeQueue<OutboundPacket>* outbound_;
 };
 
 }  // namespace lol_at_home_server

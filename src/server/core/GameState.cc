@@ -3,7 +3,9 @@
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <utility>
-#include "core/InboundVisitor.h"
+#include "GameStateSerializer.h"
+#include "NetworkChannels.h"
+#include "core/InboundEventVisitor.h"
 
 namespace lol_at_home_server {
 
@@ -27,7 +29,8 @@ void GameState::processInbound() {
     InboundPacket packet = inboundPackets.front();
     inboundPackets.pop();
 
-    std::visit(InboundVisitor{packet.peer, &registry_, &peerToEntityMap_},
+    std::visit(InboundEventVisitor{packet.peer, &registry_, &peerToEntityMap_,
+                                   outbound_.get()},
                packet.action);
   }
 }
@@ -39,14 +42,18 @@ void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
 }
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
-  std::queue<OutboundPacket> outboundPackets = outbound_->PopAll();
-
-  while (!outboundPackets.empty()) {
-    OutboundPacket packet = outboundPackets.front();
-    outboundPackets.pop();
-
-    // todo: serialize, create outbound packet
+  if (dirtyEntities.empty()) {
+    return;
   }
+
+  auto stateBytes = lol_at_home_shared::GameStateSerializer::Serialize(
+      registry_, dirtyEntities);
+
+  outbound_->Push(
+      OutboundPacket{.data = stateBytes,
+                     .peer = nullptr,
+                     .channel = lol_at_home_shared::NetworkChannels::GameState,
+                     .flags = ENET_PACKET_FLAG_RELIABLE});
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,

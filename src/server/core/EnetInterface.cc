@@ -24,8 +24,23 @@ auto EnetInterface::Cycle(std::chrono::milliseconds timeElapsed) -> void {
 }
 
 void EnetInterface::sendOutbound() {
-  // todo pop all outbound_, serialize and send or smth lol
-  // enet_peer_send or enet_host_broadcast?
+  std::queue<OutboundPacket> packets = outbound_->PopAll();
+
+  while (!packets.empty()) {
+    OutboundPacket packet = std::move(packets.front());
+    packets.pop();
+
+    ENetPacket* enetPacket = enet_packet_create(
+        packet.data.data(), packet.data.size(), packet.flags);
+
+    if (packet.peer == nullptr) {
+      enet_host_broadcast(host_, packet.channel, enetPacket);
+    } else {
+      enet_peer_send(packet.peer, packet.channel, enetPacket);
+    }
+  }
+
+  enet_host_flush(host_);
 }
 
 void EnetInterface::populateInbound() {

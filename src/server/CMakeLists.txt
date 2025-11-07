@@ -3,7 +3,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 add_executable(lol-at-home-server
   core/EnetInterface.cc
   core/GameState.cc
-  core/InboundVisitor.cc
+  core/InboundEventVisitor.cc
   core/Server.cc
   Main.cc
 )

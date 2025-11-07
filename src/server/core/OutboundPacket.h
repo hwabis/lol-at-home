@@ -6,9 +6,11 @@
 namespace lol_at_home_server {
 
 struct OutboundPacket {
+  // todo turn this into OutboundEventVariant if server ever needs to send
+  // stuff other than game state (e.g. chat)
   std::vector<std::byte> data;
-  ENetPeer* peer = nullptr;  // Target. nullptr = broadcast
-  uint8_t channel;
+  ENetPeer* peer = nullptr;  // nullptr = broadcast // todo rename to target
+  uint8_t channel;           // todo enum-ify
   ENetPacketFlag flags;
 };
 

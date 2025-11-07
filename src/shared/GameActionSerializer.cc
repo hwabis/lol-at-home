@@ -2,6 +2,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include "game_actions_generated.h"
 
+// todo what the bofa is happening in here
 namespace lol_at_home_shared {
 
 namespace {
