@@ -125,11 +125,11 @@ TEST_F(GameStateSerializerTest, SerializeDeserializeTeam) {
 
   auto* blueTeam = newRegistry.try_get<Team>(blueEntity);
   ASSERT_NE(blueTeam, nullptr);
-  EXPECT_EQ(blueTeam->TeamColor, Team::Color::Blue);
+  EXPECT_EQ(blueTeam->TeamColorFB, Team::Color::Blue);
 
   auto* redTeam = newRegistry.try_get<Team>(redEntity);
   ASSERT_NE(redTeam, nullptr);
-  EXPECT_EQ(redTeam->TeamColor, Team::Color::Red);
+  EXPECT_EQ(redTeam->TeamColorFB, Team::Color::Red);
 }
 
 TEST_F(GameStateSerializerTest, SerializeDeserializeAbilities) {
@@ -209,7 +209,7 @@ TEST_F(GameStateSerializerTest, SerializeDeserializeMultipleComponents) {
 
   auto* team = newRegistry.try_get<Team>(entity);
   ASSERT_NE(team, nullptr);
-  EXPECT_EQ(team->TeamColor, Team::Color::Red);
+  EXPECT_EQ(team->TeamColorFB, Team::Color::Red);
 }
 
 TEST_F(GameStateSerializerTest, SerializeDeserializeMultipleEntities) {

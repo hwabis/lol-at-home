@@ -1,0 +1,88 @@
+namespace lol_at_home_shared;
+
+struct PositionDataFB {
+  x: double;
+  y: double;
+}
+
+struct HealthDataFB {
+  current_health: double;
+  max_health: double;
+  health_regen_per_sec: double;
+}
+
+struct ManaDataFB {
+  mana: double;
+  max_mana: double;
+  mana_regen_per_sec: double;
+}
+
+struct MovableDataFB {
+  speed: double;
+}
+
+struct MovingDataFB {
+  target_x: double;
+  target_y: double;
+}
+
+enum TeamColorFB: ubyte {
+  Blue = 0,
+  Red = 1
+}
+
+struct TeamDataFB {
+  color: TeamColorFB;
+}
+
+enum AbilityTagDataFB: ubyte {
+  GAREN_Q = 0,
+  GAREN_W = 1,
+  GAREN_E = 2,
+  GAREN_R = 3
+}
+
+enum AbilitySlotDataFB: ubyte {
+  Q = 0,
+  W = 1,
+  E = 2,
+  R = 3,
+  Summ1 = 4,
+  Summ2 = 5
+}
+
+struct AbilityDataFB {
+  id: AbilityTagDataFB;
+  cooldown_remaining: float;
+  rank: int;
+  current_charges: int;
+  max_charges: ubyte;
+}
+
+table AbilityEntryFB {
+  slot: AbilitySlotDataFB;
+  ability: AbilityDataFB;
+}
+
+table AbilitiesDataFB {
+  abilities: [AbilityEntryFB];
+}
+
+// An entity with all its components (optional for each)
+table EntityFB {
+  id: uint;  // entt::entity as uint32
+  position: PositionDataFB;
+  health: HealthDataFB;
+  mana: ManaDataFB;
+  movable: MovableDataFB;
+  moving: MovingDataFB;
+  team: TeamDataFB;
+  abilities: AbilitiesDataFB;
+}
+
+table GameStateSnapshotFB {
+  entities: [EntityFB];
+  is_full_snapshot: bool;
+}
+
+root_type GameStateSnapshotFB;

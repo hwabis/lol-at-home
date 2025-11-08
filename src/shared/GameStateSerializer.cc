@@ -8,76 +8,78 @@ namespace {
 auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
                      const entt::registry& registry,
                      entt::entity entity)
-    -> std::optional<flatbuffers::Offset<Entity>> {
-  PositionData posData{};
-  const PositionData* posPtr = nullptr;
+    -> std::optional<flatbuffers::Offset<EntityFB>> {
+  PositionDataFB posData{};
+  const PositionDataFB* posPtr = nullptr;
   if (const auto* pos = registry.try_get<Position>(entity)) {
-    posData = PositionData(pos->X, pos->Y);
+    posData = PositionDataFB(pos->X, pos->Y);
     posPtr = &posData;
   }
 
-  HealthData healthData{};
-  const HealthData* healthPtr = nullptr;
+  HealthDataFB HealthData{};
+  const HealthDataFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
-    healthData = HealthData(health->CurrentHealth, health->MaxHealth,
-                            health->HealthRegenPerSec);
-    healthPtr = &healthData;
+    HealthData = HealthDataFB(health->CurrentHealth, health->MaxHealth,
+                              health->HealthRegenPerSec);
+    healthPtr = &HealthData;
   }
 
-  ManaData manaData{};
-  const ManaData* manaPtr = nullptr;
+  ManaDataFB ManaData{};
+  const ManaDataFB* manaPtr = nullptr;
   if (const auto* mana = registry.try_get<Mana>(entity)) {
-    manaData = ManaData(mana->Mana, mana->MaxMana, mana->ManaRegenPerSec);
-    manaPtr = &manaData;
+    ManaData = ManaDataFB(mana->Mana, mana->MaxMana, mana->ManaRegenPerSec);
+    manaPtr = &ManaData;
   }
 
-  MovableData movableData{};
-  const MovableData* movablePtr = nullptr;
+  MovableDataFB MovableData{};
+  const MovableDataFB* movablePtr = nullptr;
   if (const auto* movable = registry.try_get<Movable>(entity)) {
-    movableData = MovableData(movable->Speed);
-    movablePtr = &movableData;
+    MovableData = MovableDataFB(movable->Speed);
+    movablePtr = &MovableData;
   }
 
-  MovingData movingData{};
-  const MovingData* movingPtr = nullptr;
+  MovingDataFB MovingData{};
+  const MovingDataFB* movingPtr = nullptr;
   if (const auto* moving = registry.try_get<Moving>(entity)) {
-    movingData = MovingData(moving->TargetPosition.X, moving->TargetPosition.Y);
-    movingPtr = &movingData;
+    MovingData =
+        MovingDataFB(moving->TargetPosition.X, moving->TargetPosition.Y);
+    movingPtr = &MovingData;
   }
 
-  TeamData teamData{};
-  const TeamData* teamPtr = nullptr;
+  TeamDataFB TeamData{};
+  const TeamDataFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
-    teamData = TeamData(team->TeamColor == Team::Color::Blue ? TeamColor::Blue
-                                                             : TeamColor::Red);
-    teamPtr = &teamData;
+    TeamData =
+        TeamDataFB(team->TeamColorFB == Team::Color::Blue ? TeamColorFB::Blue
+                                                          : TeamColorFB::Red);
+    teamPtr = &TeamData;
   }
 
-  flatbuffers::Offset<AbilitiesData> abilitiesOffset = 0;
+  flatbuffers::Offset<AbilitiesDataFB> abilitiesOffset = 0;
   if (const auto* abilities = registry.try_get<Abilities>(entity)) {
-    std::vector<flatbuffers::Offset<AbilityEntry>> abilityEntries;
+    std::vector<flatbuffers::Offset<AbilityEntryFB>> abilityEntries;
 
     for (const auto& [slot, ability] : abilities->Abilities) {
-      auto tagData = static_cast<AbilityTagData>(ability.Tag);
+      auto tagData = static_cast<AbilityTagDataFB>(ability.Tag);
       auto cooldown = ability.CooldownRemaining;
       auto rank = ability.Rank;
       auto charges = ability.CurrentCharges;
       auto maxCharges = ability.MaxCharges;
 
-      AbilityData abilityData(tagData, cooldown, rank, charges, maxCharges);
+      AbilityDataFB AbilityDataFB(tagData, cooldown, rank, charges, maxCharges);
 
-      auto entry = CreateAbilityEntry(
-          builder, static_cast<AbilitySlotData>(slot), &abilityData);
+      auto entry = CreateAbilityEntryFB(
+          builder, static_cast<AbilitySlotDataFB>(slot), &AbilityDataFB);
       abilityEntries.push_back(entry);
     }
 
     auto entriesVector = builder.CreateVector(abilityEntries);
-    abilitiesOffset = CreateAbilitiesData(builder, entriesVector);
+    abilitiesOffset = CreateAbilitiesDataFB(builder, entriesVector);
   }
 
   auto entityOffset =
-      CreateEntity(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
-                   manaPtr, movablePtr, movingPtr, teamPtr, abilitiesOffset);
+      CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
+                     manaPtr, movablePtr, movingPtr, teamPtr, abilitiesOffset);
 
   return entityOffset;
 }
@@ -89,7 +91,7 @@ auto GameStateSerializer::Serialize(const entt::registry& registry,
   constexpr size_t bufferSize = 1024;
   flatbuffers::FlatBufferBuilder builder(bufferSize);
 
-  std::vector<flatbuffers::Offset<Entity>> entityOffsets;
+  std::vector<flatbuffers::Offset<EntityFB>> entityOffsets;
 
   if (entities.empty()) {
     for (auto entity : registry.view<entt::entity>()) {
@@ -113,22 +115,20 @@ auto GameStateSerializer::Serialize(const entt::registry& registry,
 
   auto entitiesVector = builder.CreateVector(entityOffsets);
   auto snapshot =
-      CreateGameStateSnapshot(builder, entitiesVector, entities.empty());
+      CreateGameStateSnapshotFB(builder, entitiesVector, entities.empty());
 
   builder.Finish(snapshot);
 
   auto* buf = builder.GetBufferPointer();
   auto size = builder.GetSize();
   return {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       reinterpret_cast<const std::byte*>(buf),
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-bounds-pointer-arithmetic)
       reinterpret_cast<const std::byte*>(buf) + size};
 }
 
 void GameStateSerializer::Deserialize(entt::registry& registry,
                                       const std::vector<std::byte>& data) {
-  const auto* snapshot = GetGameStateSnapshot(data.data());
+  const auto* snapshot = GetGameStateSnapshotFB(data.data());
 
   if (snapshot == nullptr || snapshot->entities() == nullptr) {
     return;
@@ -171,7 +171,7 @@ void GameStateSerializer::Deserialize(entt::registry& registry,
     }
 
     if (entityData->team() != nullptr) {
-      Team::Color color = entityData->team()->color() == TeamColor::Blue
+      Team::Color color = entityData->team()->color() == TeamColorFB::Blue
                               ? Team::Color::Blue
                               : Team::Color::Red;
       registry.emplace_or_replace<Team>(entity, color);
@@ -180,18 +180,18 @@ void GameStateSerializer::Deserialize(entt::registry& registry,
     if (entityData->abilities() != nullptr) {
       Abilities abilities;
 
-      for (const auto* abilityEntry : *entityData->abilities()->abilities()) {
-        auto slot =
-            static_cast<lol_at_home_shared::AbilitySlot>(abilityEntry->slot());
-        const auto* abilityData = abilityEntry->ability();
+      for (const auto* AbilityEntryFB : *entityData->abilities()->abilities()) {
+        auto slot = static_cast<lol_at_home_shared::AbilitySlot>(
+            AbilityEntryFB->slot());
+        const auto* AbilityDataFB = AbilityEntryFB->ability();
 
         Abilities::Ability ability{
-            .Tag =
-                static_cast<lol_at_home_shared::AbilityTag>(abilityData->id()),
-            .CooldownRemaining = abilityData->cooldown_remaining(),
-            .Rank = abilityData->rank(),
-            .CurrentCharges = abilityData->current_charges(),
-            .MaxCharges = abilityData->max_charges()};
+            .Tag = static_cast<lol_at_home_shared::AbilityTag>(
+                AbilityDataFB->id()),
+            .CooldownRemaining = AbilityDataFB->cooldown_remaining(),
+            .Rank = AbilityDataFB->rank(),
+            .CurrentCharges = AbilityDataFB->current_charges(),
+            .MaxCharges = AbilityDataFB->max_charges()};
 
         abilities.Abilities[slot] = ability;
       }

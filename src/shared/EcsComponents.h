@@ -34,7 +34,7 @@ struct Moving {
 
 struct Team {
   enum class Color : uint8_t { Blue, Red };
-  Color TeamColor;
+  Color TeamColorFB;
 };
 
 struct DamagingArea {

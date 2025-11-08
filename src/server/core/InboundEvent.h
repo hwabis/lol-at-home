@@ -12,7 +12,7 @@ using InboundEventVariant = std::variant<ClientConnectedEvent,
                                          ClientDisconnectedEvent,
                                          lol_at_home_shared::GameActionVariant>;
 
-struct InboundPacket {
+struct InboundEvent {
   ENetPeer* peer{};
   InboundEventVariant action;
 };

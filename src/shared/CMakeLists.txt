@@ -1,8 +1,8 @@
 include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 set(FBS_FILES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/game_state.fbs
-  ${CMAKE_CURRENT_SOURCE_DIR}/game_actions.fbs
+  ${CMAKE_CURRENT_SOURCE_DIR}/fbs/game_actions.fbs
+  ${CMAKE_CURRENT_SOURCE_DIR}/fbs/game_state.fbs
 )
 find_program(FLATC flatc REQUIRED)
 set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)

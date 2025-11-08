@@ -3,7 +3,7 @@
 #include <enet/enet.h>
 #include <entt/entt.hpp>
 #include <unordered_map>
-#include "InboundPacket.h"
+#include "InboundEvent.h"
 #include "OutboundPacket.h"
 #include "util/ThreadSafeQueue.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <enet/enet.h>
-#include "InboundPacket.h"
+#include "InboundEvent.h"
 #include "OutboundPacket.h"
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
@@ -10,7 +10,7 @@ namespace lol_at_home_server {
 
 class GameState : public IPeriodic {
  public:
-  GameState(std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound_,
+  GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound_,
             std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound_);
 
   auto Cycle(std::chrono::milliseconds timeElapsed) -> void override;
@@ -28,7 +28,7 @@ class GameState : public IPeriodic {
 
   entt::registry registry_;
   std::unordered_map<ENetPeer*, entt::entity> peerToEntityMap_;
-  std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound_;
+  std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound_;
   std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound_;
 };
 

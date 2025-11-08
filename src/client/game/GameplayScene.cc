@@ -230,7 +230,7 @@ void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
 
     lol_at_home_engine::Color color{.r = 100, .g = 200, .b = 255, .a = 255};
     if (auto* team = registry_.try_get<lol_at_home_shared::Team>(entity)) {
-      color = team->TeamColor == lol_at_home_shared::Team::Color::Blue
+      color = team->TeamColorFB == lol_at_home_shared::Team::Color::Blue
                   ? lol_at_home_engine::Color{.r = 100,
                                               .g = 150,
                                               .b = 255,

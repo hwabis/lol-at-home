@@ -9,7 +9,7 @@
 
 namespace lol_at_home_server {
 
-GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound,
+GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
                      std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound)
     : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {}
 
@@ -23,11 +23,11 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
 }
 
 void GameState::processInbound() {
-  std::queue<InboundPacket> inboundPackets = inbound_->PopAll();
+  std::queue<InboundEvent> InboundEvents = inbound_->PopAll();
 
-  while (!inboundPackets.empty()) {
-    InboundPacket packet = inboundPackets.front();
-    inboundPackets.pop();
+  while (!InboundEvents.empty()) {
+    InboundEvent packet = InboundEvents.front();
+    InboundEvents.pop();
 
     std::visit(InboundEventVisitor{packet.peer, &registry_, &peerToEntityMap_,
                                    outbound_.get()},
@@ -75,7 +75,8 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
       registry_.remove<lol_at_home_shared::Moving>(entity);
       pos = moving.TargetPosition;
     } else {
-      constexpr int msPerSec = 1000;  // todo not sure yet on how the units work
+      // todo not sure yet on how the units work
+      constexpr double msPerSec = 1000.0;
       double moveDistance = movable.Speed * (timeElapsed.count() / msPerSec);
       double ratio = std::min(moveDistance / distance, 1.0);
 

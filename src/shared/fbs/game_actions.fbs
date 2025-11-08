@@ -1,11 +1,11 @@
 namespace lol_at_home_shared;
 
-struct PositionData {
+struct PositionDataFB {
   x: double;
   y: double;
 }
 
-enum AbilitySlotData: ubyte {
+enum AbilitySlotDataFB: ubyte {
   Q = 0,
   W = 1,
   E = 2,
@@ -28,12 +28,12 @@ table EntityTargetFB {
 }
 
 table OnePointSkillshotFB {
-  target: PositionData;
+  target: PositionDataFB;
 }
 
 table TwoPointSkillshotFB {
-  target1: PositionData;
-  target2: PositionData;
+  target1: PositionDataFB;
+  target2: PositionDataFB;
 }
 
 union GameActionDataFB {
@@ -44,11 +44,11 @@ union GameActionDataFB {
 }
 
 table MoveActionFB {
-  target_position: PositionData;
+  target_position: PositionDataFB;
 }
 
 table AbilityActionFB {
-  slot: AbilitySlotData;
+  slot: AbilitySlotDataFB;
   target: AbilityTargetDataFB;
 }
 

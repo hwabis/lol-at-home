@@ -1,7 +1,7 @@
 #pragma once
 
 #include <enet/enet.h>
-#include "InboundPacket.h"
+#include "InboundEvent.h"
 #include "OutboundPacket.h"
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
@@ -11,7 +11,7 @@ namespace lol_at_home_server {
 class EnetInterface : public IPeriodic {
  public:
   EnetInterface(
-      std::shared_ptr<ThreadSafeQueue<InboundPacket>> incomingActions,
+      std::shared_ptr<ThreadSafeQueue<InboundEvent>> incomingActions,
       std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outgoingStates);
 
   ~EnetInterface() override;
@@ -28,7 +28,7 @@ class EnetInterface : public IPeriodic {
   auto populateInbound() -> void;
 
   ENetHost* host_;
-  std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound_;
+  std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound_;
   std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound_;
 };
 

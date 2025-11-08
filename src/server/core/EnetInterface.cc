@@ -5,7 +5,7 @@
 namespace lol_at_home_server {
 
 EnetInterface::EnetInterface(
-    std::shared_ptr<ThreadSafeQueue<InboundPacket>> inbound,
+    std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
     std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound)
     : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {
   enet_initialize();
@@ -49,7 +49,7 @@ void EnetInterface::populateInbound() {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
-        inbound_->Push(InboundPacket{.peer = event.peer,
+        inbound_->Push(InboundEvent{.peer = event.peer,
                                      .action = ClientConnectedEvent{}});
         break;
       }
@@ -67,7 +67,7 @@ void EnetInterface::populateInbound() {
 
         if (actionVariant.has_value()) {
           inbound_->Push(
-              InboundPacket{.peer = event.peer, .action = *actionVariant});
+              InboundEvent{.peer = event.peer, .action = *actionVariant});
         }
 
         enet_packet_destroy(event.packet);
@@ -76,7 +76,7 @@ void EnetInterface::populateInbound() {
 
       case ENET_EVENT_TYPE_DISCONNECT: {
         spdlog::info("Client disconnected");
-        inbound_->Push(InboundPacket{.peer = event.peer,
+        inbound_->Push(InboundEvent{.peer = event.peer,
                                      .action = ClientDisconnectedEvent{}});
         break;
       }
