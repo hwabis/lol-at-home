@@ -25,7 +25,7 @@ EnetInterface::~EnetInterface() {
   enet_deinitialize();
 }
 
-auto EnetInterface::Cycle(std::chrono::milliseconds timeElapsed) -> void {
+auto EnetInterface::Cycle(std::chrono::milliseconds /*timeElapsed*/) -> void {
   sendOutbound();
   populateInbound();
 }
@@ -48,7 +48,7 @@ void EnetInterface::sendOutbound() {
       OutboundEvent event = std::move(events.front());
       events.pop();
 
-      builder.Clear(); 
+      builder.Clear();
       std::visit(visitor, event.event);
 
       auto* buf = builder.GetBufferPointer();

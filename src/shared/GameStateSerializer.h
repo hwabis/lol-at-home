@@ -4,6 +4,7 @@
 #include <tuple>
 #include <vector>
 #include "EcsComponents.h"
+#include "game_state_generated.h"
 
 namespace lol_at_home_shared {
 
@@ -13,6 +14,11 @@ using SerializableComponents =
 class GameStateSerializer {
  public:
   GameStateSerializer() = delete;
+
+  static auto Serialize(flatbuffers::FlatBufferBuilder& builder,
+                        const entt::registry& registry,
+                        const std::vector<entt::entity>& dirtyEntities)
+      -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB>;
 
   // todo obliterate
   static auto Serialize(const entt::registry& registry,

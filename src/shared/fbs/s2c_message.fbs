@@ -18,7 +18,7 @@ table ServerNotificationFB {
 }
 
 union S2CDataFB {
-  GameStateSnapshot,
+  GameStateSnapshotFB,
   PlayerAssignmentFB,
   ChatBroadcastFB,
   ServerNotificationFB

@@ -1,0 +1,15 @@
+namespace lol_at_home_shared;
+
+struct PositionDataFB {
+  x: double;
+  y: double;
+}
+
+enum AbilitySlotDataFB: ubyte {
+  Q = 0,
+  W = 1,
+  E = 2,
+  R = 3,
+  Summ1 = 4,
+  Summ2 = 5
+}

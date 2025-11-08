@@ -85,6 +85,40 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
 }
 }  // namespace
 
+auto GameStateSerializer::Serialize(
+    flatbuffers::FlatBufferBuilder& builder,
+    const entt::registry& registry,
+    const std::vector<entt::entity>& dirtyEntities)
+    -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB> {
+  std::vector<flatbuffers::Offset<lol_at_home_shared::EntityFB>> entityOffsets;
+
+  if (dirtyEntities.empty()) {
+    for (auto entity : registry.view<entt::entity>()) {
+      auto offset = serializeEntity(builder, registry, entity);
+      if (offset.has_value()) {
+        entityOffsets.push_back(*offset);
+      }
+    }
+  } else {
+    for (auto entity : dirtyEntities) {
+      if (!registry.valid(entity)) {
+        // todo it was deleted i guess ??? then how did it get into dirty
+        // entities in the first place? and how do we communicate this to client
+        continue;
+      }
+
+      auto offset = serializeEntity(builder, registry, entity);
+      if (offset.has_value()) {
+        entityOffsets.push_back(*offset);
+      }
+    }
+  }
+
+  auto entitiesVector = builder.CreateVector(entityOffsets);
+  auto snapshot = CreateGameStateSnapshotFB(builder, entitiesVector);
+  return snapshot;
+}
+
 auto GameStateSerializer::Serialize(const entt::registry& registry,
                                     const std::vector<entt::entity>& entities)
     -> std::vector<std::byte> {
@@ -114,8 +148,7 @@ auto GameStateSerializer::Serialize(const entt::registry& registry,
   }
 
   auto entitiesVector = builder.CreateVector(entityOffsets);
-  auto snapshot =
-      CreateGameStateSnapshotFB(builder, entitiesVector, entities.empty());
+  auto snapshot = CreateGameStateSnapshotFB(builder, entitiesVector);
 
   builder.Finish(snapshot);
 

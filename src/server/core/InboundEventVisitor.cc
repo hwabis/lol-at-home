@@ -17,7 +17,8 @@ InboundEventVisitor::InboundEventVisitor(
       peerToEntityMap_(peerToEntityMap),
       outbound_(outbound) {}
 
-void InboundEventVisitor::operator()(const ClientConnectedEvent& event) const {
+void InboundEventVisitor::operator()(
+    const ClientConnectedEvent& /*event*/) const {
   entt::entity entity = registry_->create();
   registry_->emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
   registry_->emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
