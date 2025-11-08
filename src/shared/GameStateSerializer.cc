@@ -88,7 +88,8 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
 auto GameStateSerializer::Serialize(
     flatbuffers::FlatBufferBuilder& builder,
     const entt::registry& registry,
-    const std::vector<entt::entity>& dirtyEntities)
+    const std::vector<entt::entity>& dirtyEntities,
+    const std::vector<entt::entity>& deletedEntities)
     -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB> {
   std::vector<flatbuffers::Offset<lol_at_home_shared::EntityFB>> entityOffsets;
 
@@ -102,8 +103,7 @@ auto GameStateSerializer::Serialize(
   } else {
     for (auto entity : dirtyEntities) {
       if (!registry.valid(entity)) {
-        // todo it was deleted i guess ??? then how did it get into dirty
-        // entities in the first place? and how do we communicate this to client
+        // It was deleted; it should be in deletedEntities so we'll get to it
         continue;
       }
 
@@ -114,8 +114,17 @@ auto GameStateSerializer::Serialize(
     }
   }
 
+  std::vector<uint32_t> deletedIds;
+  deletedIds.reserve(deletedEntities.size());
+  for (auto entity : deletedEntities) {
+    deletedIds.push_back(static_cast<uint32_t>(entity));
+  }
+
   auto entitiesVector = builder.CreateVector(entityOffsets);
-  auto snapshot = CreateGameStateSnapshotFB(builder, entitiesVector);
+  auto deletedVector = builder.CreateVector(deletedIds);
+
+  auto snapshot =
+      CreateGameStateSnapshotFB(builder, entitiesVector, deletedVector);
   return snapshot;
 }
 

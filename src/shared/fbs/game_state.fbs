@@ -68,6 +68,7 @@ table EntityFB {
 
 table GameStateSnapshotFB {
   entities: [EntityFB];
+  deleted_entity_ids: [uint];
 }
 
 root_type GameStateSnapshotFB;

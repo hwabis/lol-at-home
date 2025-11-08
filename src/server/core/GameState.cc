@@ -21,9 +21,10 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
   processInbound();
 
   std::vector<entt::entity> dirtyEntities;
-  updateSimulation(timeElapsed, dirtyEntities);
+  std::vector<entt::entity> deletedEntities;
+  updateSimulation(timeElapsed, dirtyEntities, deletedEntities);
 
-  pushOutbound(dirtyEntities);
+  pushOutbound(dirtyEntities, deletedEntities);
 }
 
 void GameState::processInbound() {
@@ -40,18 +41,22 @@ void GameState::processInbound() {
 }
 
 void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
-                                 std::vector<entt::entity>& dirtyEntities) {
+                                 std::vector<entt::entity>& dirtyEntities,
+                                 std::vector<entt::entity>& deletedEntities) {
   updateMovementSystem(timeElapsed, dirtyEntities);
-  updateHealthSystem(timeElapsed, dirtyEntities);
+  updateHealthSystem(timeElapsed, dirtyEntities, deletedEntities);
 }
 
-void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
+void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
+                             const std::vector<entt::entity>& deletedEntities) {
   if (dirtyEntities.empty()) {
     return;
   }
 
-  outbound_->Push(OutboundEvent{.target = nullptr,
-                                .event = SendGameStateEvent{dirtyEntities}});
+  outbound_->Push(OutboundEvent{
+      .target = nullptr,
+      .event = SendGameStateEvent{.dirtyEntities = dirtyEntities,
+                                  .deletedEntities = deletedEntities}});
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
@@ -88,7 +93,8 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
 }
 
 void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
-                                   std::vector<entt::entity>& dirtyEntities) {
+                                   std::vector<entt::entity>& dirtyEntities,
+                                   std::vector<entt::entity>& deletedEntities) {
   auto view = registry_->GetRegistry().view<lol_at_home_shared::Health>();
 
   for (auto entity : view) {
@@ -101,6 +107,9 @@ void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
           health.CurrentHealth +
               ((timeElapsed.count() / msInSec) * health.HealthRegenPerSec));
       dirtyEntities.push_back(entity);
+    } else if (health.CurrentHealth <= 0) {
+      deletedEntities.push_back(entity);
+      registry_->GetRegistry().destroy(entity);
     }
   }
 }

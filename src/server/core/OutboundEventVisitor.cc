@@ -12,7 +12,7 @@ OutboundEventVisitor::OutboundEventVisitor(
 
 void OutboundEventVisitor::operator()(const SendGameStateEvent& event) const {
   auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
-      *builder_, *registry_, event.dirtyEntities);
+      *builder_, *registry_, event.dirtyEntities, event.deletedEntities);
   auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
       *builder_, lol_at_home_shared::S2CDataFB::GameStateSnapshotFB,
       snapshotOffset.Union());

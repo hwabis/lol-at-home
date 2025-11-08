@@ -9,6 +9,7 @@ namespace lol_at_home_server {
 
 struct SendGameStateEvent {
   std::vector<entt::entity> dirtyEntities;  // if empty, send full state
+  std::vector<entt::entity> deletedEntities;
 };
 
 struct SendPlayerAssignmentEvent {

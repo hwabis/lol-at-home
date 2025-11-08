@@ -20,13 +20,16 @@ class GameState : public IPeriodic {
  private:
   void processInbound();
   void updateSimulation(std::chrono::milliseconds timeElapsed,
-                        std::vector<entt::entity>& dirtyEntities);
-  void pushOutbound(const std::vector<entt::entity>& dirtyEntities);
+                        std::vector<entt::entity>& dirtyEntities,
+                        std::vector<entt::entity>& deletedEntities);
+  void pushOutbound(const std::vector<entt::entity>& dirtyEntities,
+                    const std::vector<entt::entity>& deletedEntities);
 
   void updateMovementSystem(std::chrono::milliseconds timeElapsed,
                             std::vector<entt::entity>& dirtyEntities);
   void updateHealthSystem(std::chrono::milliseconds timeElapsed,
-                          std::vector<entt::entity>& dirtyEntities);
+                          std::vector<entt::entity>& dirtyEntities,
+                          std::vector<entt::entity>& deletedEntities);
 
   std::unordered_map<ENetPeer*, entt::entity> peerToEntityMap_;
   std::shared_ptr<ThreadSafeRegistry> registry_;

@@ -33,7 +33,8 @@ void InboundEventVisitor::operator()(
       .target = peer_, .event = SendPlayerAssignmentEvent{assignment}});
 
   outbound_->Push(OutboundEvent{
-      .target = peer_, .event = SendGameStateEvent{.dirtyEntities = {}}});
+      .target = peer_,
+      .event = SendGameStateEvent{.dirtyEntities = {}, .deletedEntities = {}}});
 }
 
 void InboundEventVisitor::operator()(

@@ -17,7 +17,8 @@ class GameStateSerializer {
 
   static auto Serialize(flatbuffers::FlatBufferBuilder& builder,
                         const entt::registry& registry,
-                        const std::vector<entt::entity>& dirtyEntities)
+                        const std::vector<entt::entity>& dirtyEntities,
+                        const std::vector<entt::entity>& deletedEntities)
       -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB>;
 
   // todo obliterate
