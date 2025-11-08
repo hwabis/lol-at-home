@@ -33,33 +33,27 @@ auto EnetInterface::Cycle(std::chrono::milliseconds /*timeElapsed*/) -> void {
 void EnetInterface::sendOutbound() {
   std::queue<OutboundEvent> events = outbound_->PopAll();
 
+  flatbuffers::FlatBufferBuilder builder(1024);
+  OutboundEventVisitor visitor{&registry_->GetRegistry(), &builder};
+
   while (!events.empty()) {
     OutboundEvent event = std::move(events.front());
     events.pop();
 
+    builder.Clear();
     auto lock = registry_->GetReadLock();
+    std::visit(visitor, event.event);
 
-    flatbuffers::FlatBufferBuilder builder(1024);
-    OutboundEventVisitor visitor{&registry_->GetRegistry(), &builder};
+    auto* buf = builder.GetBufferPointer();
+    auto size = builder.GetSize();
 
-    while (!events.empty()) {
-      OutboundEvent event = std::move(events.front());
-      events.pop();
+    ENetPacket* packet =
+        enet_packet_create(buf, size, ENET_PACKET_FLAG_RELIABLE);
 
-      builder.Clear();
-      std::visit(visitor, event.event);
-
-      auto* buf = builder.GetBufferPointer();
-      auto size = builder.GetSize();
-
-      ENetPacket* packet =
-          enet_packet_create(buf, size, ENET_PACKET_FLAG_RELIABLE);
-
-      if (event.target == nullptr) {
-        enet_host_broadcast(host_, 0, packet);
-      } else {
-        enet_peer_send(event.target, 0, packet);
-      }
+    if (event.target == nullptr) {
+      enet_host_broadcast(host_, 0, packet);
+    } else {
+      enet_peer_send(event.target, 0, packet);
     }
   }
 

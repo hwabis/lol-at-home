@@ -5,11 +5,10 @@
 
 namespace lol_at_home_server {
 
+// todo this class really shoudlnt exist at all.
+// registry should belong to game
 class ThreadSafeRegistry {
  public:
-  // todo is there a way to have someone who's writing/reading to acquire the
-  // appropriate lock without manually calling
-
   auto GetWriteLock() -> std::unique_lock<std::shared_mutex> {
     return std::unique_lock<std::shared_mutex>(mutex_);
   }
