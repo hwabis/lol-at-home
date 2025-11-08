@@ -121,9 +121,8 @@ auto GameStateSerializer::Serialize(const entt::registry& registry,
 
   auto* buf = builder.GetBufferPointer();
   auto size = builder.GetSize();
-  return {
-      reinterpret_cast<const std::byte*>(buf),
-      reinterpret_cast<const std::byte*>(buf) + size};
+  return {reinterpret_cast<const std::byte*>(buf),
+          reinterpret_cast<const std::byte*>(buf) + size};
 }
 
 void GameStateSerializer::Deserialize(entt::registry& registry,

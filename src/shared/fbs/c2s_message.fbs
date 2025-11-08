@@ -1,0 +1,18 @@
+include "game_actions.fbs";
+
+namespace lol_at_home_shared;
+
+table ChatMessageFB {
+  text: string;
+}
+
+union C2SDataFB {
+  GameActionFB,
+  ChatMessageFB
+}
+
+table C2SMessageFB {
+  message: C2SDataFB;
+}
+
+root_type C2SMessageFB;

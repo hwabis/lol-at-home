@@ -1,6 +1,8 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
 #include "GameActionSerializer.h"
+#include "InboundEvent.h"
+#include "c2s_message_generated.h"
 
 namespace lol_at_home_server {
 
@@ -49,8 +51,8 @@ void EnetInterface::populateInbound() {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
-        inbound_->Push(InboundEvent{.peer = event.peer,
-                                     .action = ClientConnectedEvent{}});
+        inbound_->Push(
+            InboundEvent{.peer = event.peer, .action = ClientConnectedEvent{}});
         break;
       }
 
@@ -62,12 +64,41 @@ void EnetInterface::populateInbound() {
             reinterpret_cast<const std::byte*>(event.packet->data),
             reinterpret_cast<const std::byte*>(event.packet->data) +
                 event.packet->dataLength);
-        std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
-            lol_at_home_shared::GameActionSerializer::Deserialize(data);
+        const lol_at_home_shared::C2SMessageFB* c2sMessage =
+            lol_at_home_shared::GetC2SMessageFB(data.data());
 
-        if (actionVariant.has_value()) {
-          inbound_->Push(
-              InboundEvent{.peer = event.peer, .action = *actionVariant});
+        switch (c2sMessage->message_type()) {
+          case lol_at_home_shared::C2SDataFB::GameActionFB: {
+            const lol_at_home_shared::GameActionFB* action =
+                c2sMessage->message_as_GameActionFB();
+
+            std::optional<lol_at_home_shared::GameActionVariant>
+                action_variant =
+                    lol_at_home_shared::GameActionSerializer::UnpackGameAction(
+                        action);
+
+            if (action_variant.has_value()) {
+              inbound_->Push(
+                  InboundEvent{.peer = event.peer, .action = *action_variant});
+            }
+
+            break;
+          }
+
+          case lol_at_home_shared::C2SDataFB::ChatMessageFB: {
+            const lol_at_home_shared::ChatMessageFB* chat_fb =
+                c2sMessage->message_as_ChatMessageFB();
+
+            InboundChatEvent chatEvent{.message = chat_fb->text()->str()};
+
+            inbound_->Push(
+                InboundEvent{.peer = event.peer, .action = chatEvent});
+            break;
+          }
+
+          case lol_at_home_shared::C2SDataFB::NONE:
+            spdlog::warn("Received empty or unknown message type");
+            break;
         }
 
         enet_packet_destroy(event.packet);
@@ -77,7 +108,7 @@ void EnetInterface::populateInbound() {
       case ENET_EVENT_TYPE_DISCONNECT: {
         spdlog::info("Client disconnected");
         inbound_->Push(InboundEvent{.peer = event.peer,
-                                     .action = ClientDisconnectedEvent{}});
+                                    .action = ClientDisconnectedEvent{}});
         break;
       }
 

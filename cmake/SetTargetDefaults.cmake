@@ -9,4 +9,7 @@ function(set_target_defaults target)
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
   )
+
+  # Prevent weird windows bug name clash thingie with fbs ???
+  target_compile_definitions(${target} PRIVATE NOMINMAX)
 endfunction()

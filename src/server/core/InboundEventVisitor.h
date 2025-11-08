@@ -19,6 +19,7 @@ class InboundEventVisitor {
 
   void operator()(const ClientConnectedEvent& event) const;
   void operator()(const ClientDisconnectedEvent& event) const;
+  void operator()(const InboundChatEvent& event) const;
   void operator()(const lol_at_home_shared::GameActionVariant& action) const;
 
  private:

@@ -2,11 +2,12 @@
 
 #include <cstdint>
 #include <unordered_map>
-#include "abilities/AbilityTag.h"
 #include "abilities/AbilitySlot.h"
+#include "abilities/AbilityTag.h"
 
 namespace lol_at_home_shared {
 
+// todo go through every struct everywhere and lowercase them
 struct Position {
   double X{};
   double Y{};

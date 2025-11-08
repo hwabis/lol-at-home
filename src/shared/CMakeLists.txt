@@ -1,6 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 set(FBS_FILES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/fbs/c2s_message.fbs
   ${CMAKE_CURRENT_SOURCE_DIR}/fbs/game_actions.fbs
   ${CMAKE_CURRENT_SOURCE_DIR}/fbs/game_state.fbs
 )

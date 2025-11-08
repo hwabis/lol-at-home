@@ -1,4 +1,3 @@
-#define NOMINMAX
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
 #include <algorithm>

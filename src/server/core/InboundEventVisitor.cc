@@ -55,6 +55,11 @@ void InboundEventVisitor::operator()(
   }
 }
 
+void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
+  spdlog::info("Client  sent chat: " + event.message);
+  // todo broadcast
+}
+
 void InboundEventVisitor::operator()(
     const lol_at_home_shared::GameActionVariant& action) const {
   std::visit(GameActionProcessor{*registry_}, action);

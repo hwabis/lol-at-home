@@ -176,4 +176,73 @@ auto GameActionSerializer::Deserialize(const std::vector<std::byte>& data)
   }
 }
 
+auto GameActionSerializer::UnpackGameAction(
+    const lol_at_home_shared::GameActionFB* action)
+    -> std::optional<GameActionVariant> {
+  auto source = static_cast<entt::entity>(action->source());
+
+  switch (action->action_type()) {
+    case GameActionDataFB::MoveActionFB: {
+      const auto* moveData = action->action_as_MoveActionFB();
+      return MoveAction{
+          .Source = source,
+          .TargetPosition = {.X = moveData->target_position()->x(),
+                             .Y = moveData->target_position()->y()}};
+    }
+
+    case GameActionDataFB::AbilityActionFB: {
+      const auto* AbilityDataFB = action->action_as_AbilityActionFB();
+
+      AbilityTargetVariant target;
+      switch (AbilityDataFB->target_type()) {
+        case AbilityTargetDataFB::NoTargetFB:
+          target = NoTarget{};
+          break;
+
+        case AbilityTargetDataFB::EntityTargetFB: {
+          const auto* et = AbilityDataFB->target_as_EntityTargetFB();
+          target = EntityTarget{static_cast<entt::entity>(et->target())};
+          break;
+        }
+
+        case AbilityTargetDataFB::OnePointSkillshotFB: {
+          const auto* ops = AbilityDataFB->target_as_OnePointSkillshotFB();
+          target = OnePointSkillshot{
+              {.X = ops->target()->x(), .Y = ops->target()->y()}};
+          break;
+        }
+
+        case AbilityTargetDataFB::TwoPointSkillshotFB: {
+          const auto* tps = AbilityDataFB->target_as_TwoPointSkillshotFB();
+          target = TwoPointSkillshot{
+              .Target1 = {.X = tps->target1()->x(), .Y = tps->target1()->y()},
+              .Target2 = {.X = tps->target2()->x(), .Y = tps->target2()->y()}};
+          break;
+        }
+
+        default:
+          throw std::runtime_error("Unknown ability target type");
+      }
+
+      return AbilityAction{
+          .Source = source,
+          .Slot = static_cast<AbilitySlot>(AbilityDataFB->slot()),
+          .Target = target};
+    }
+
+    case GameActionDataFB::AutoAttackActionFB: {
+      const auto* attackData = action->action_as_AutoAttackActionFB();
+      return AutoAttackAction{
+          .Source = source,
+          .Target = static_cast<entt::entity>(attackData->target())};
+    }
+
+    case GameActionDataFB::StopActionFB:
+      return StopGameAction{.Source = source};
+
+    case GameActionDataFB::NONE:
+      return std::nullopt;
+  }
+}
+
 }  // namespace lol_at_home_shared
