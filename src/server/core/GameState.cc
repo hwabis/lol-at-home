@@ -49,7 +49,7 @@ void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
-  if (dirtyEntities.empty()) {
+  if (dirtyEntities.empty() && deletedEntities.empty()) {
     return;
   }
 
