@@ -1,6 +1,5 @@
 #include "InboundEventVisitor.h"
 #include <spdlog/spdlog.h>
-#include "GameStateSerializer.h"
 #include "PlayerAssignment.h"
 #include "PlayerAssignmentSerializer.h"
 #include "actions/GameActionProcessor.h"
@@ -47,7 +46,7 @@ void InboundEventVisitor::operator()(
 }
 
 void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
-  spdlog::info("Client  sent chat: " + event.message);
+  spdlog::info("Client sent chat: " + event.message);
 
   auto itr = peerToEntityMap_->find(peer_);
   if (itr != peerToEntityMap_->end()) {

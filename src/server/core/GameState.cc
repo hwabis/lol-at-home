@@ -28,11 +28,11 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
 }
 
 void GameState::processInbound() {
-  std::queue<InboundEvent> InboundEvents = inbound_->PopAll();
+  std::queue<InboundEvent> inboundEvents = inbound_->PopAll();
 
-  while (!InboundEvents.empty()) {
-    InboundEvent packet = InboundEvents.front();
-    InboundEvents.pop();
+  while (!inboundEvents.empty()) {
+    InboundEvent packet = inboundEvents.front();
+    inboundEvents.pop();
 
     std::visit(InboundEventVisitor{packet.peer, &registry_->GetRegistry(),
                                    &peerToEntityMap_, outbound_.get()},

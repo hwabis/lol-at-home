@@ -33,8 +33,6 @@ auto EnetInterface::Cycle(std::chrono::milliseconds /*timeElapsed*/) -> void {
 void EnetInterface::sendOutbound() {
   std::queue<OutboundEvent> events = outbound_->PopAll();
 
-  auto lock = registry_->GetReadLock();
-
   while (!events.empty()) {
     OutboundEvent event = std::move(events.front());
     events.pop();
@@ -95,14 +93,13 @@ void EnetInterface::populateInbound() {
             const lol_at_home_shared::GameActionFB* action =
                 c2sMessage->message_as_GameActionFB();
 
-            std::optional<lol_at_home_shared::GameActionVariant>
-                action_variant =
-                    lol_at_home_shared::GameActionSerializer::UnpackGameAction(
-                        action);
+            std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
+                lol_at_home_shared::GameActionSerializer::UnpackGameAction(
+                    action);
 
-            if (action_variant.has_value()) {
+            if (actionVariant.has_value()) {
               inbound_->Push(
-                  InboundEvent{.peer = event.peer, .action = *action_variant});
+                  InboundEvent{.peer = event.peer, .action = *actionVariant});
             }
 
             break;

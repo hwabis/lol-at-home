@@ -65,6 +65,7 @@ class GameActionProcessor {
 
  private:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
+  // todo pass as ptr like i do for all other visitors and remove ^
   entt::registry& registry_;
 
   // todo maybe make this into ability registry class
