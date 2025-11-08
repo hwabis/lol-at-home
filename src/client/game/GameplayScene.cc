@@ -5,7 +5,6 @@
 #include "GameAction.h"
 #include "GameActionSerializer.h"
 #include "GameStateSerializer.h"
-#include "NetworkChannels.h"
 #include "PlayerAssignment.h"
 #include "PlayerAssignmentSerializer.h"
 #include "Renderer.h"
@@ -127,6 +126,7 @@ void GameplayScene::handleNetwork() {
 
   ENetEvent event;
   while (enet_host_service(client_, &event, 0) > 0) {
+    /*
     switch (event.type) {
       case ENET_EVENT_TYPE_RECEIVE: {
         std::vector<std::byte> data(
@@ -171,6 +171,7 @@ void GameplayScene::handleNetwork() {
       default:
         break;
     }
+        */ // todo all the client code is broken rn but i just care abt server right now so just comment stuff out so server can build lolololol
   }
 }
 

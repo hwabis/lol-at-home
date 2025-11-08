@@ -1,0 +1,31 @@
+include "game_state.fbs";
+
+namespace lol_at_home_shared;
+
+table PlayerAssignmentFB {
+  assigned_entity: uint;  // entt::entity
+}
+
+table ChatBroadcastFB {
+  // todo not sure yet if this should be another type
+  // some sort of player id? enetpeer?
+  sender_entity: uint;  // entt::entity
+  text: string;
+}
+
+table ServerNotificationFB {
+  text: string;
+}
+
+union S2CDataFB {
+  GameStateSnapshot,
+  PlayerAssignmentFB,
+  ChatBroadcastFB,
+  ServerNotificationFB
+}
+
+table S2CMessageFB {
+  message: S2CDataFB;
+}
+
+root_type S2CMessageFB;

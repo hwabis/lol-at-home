@@ -70,7 +70,7 @@ table AbilitiesDataFB {
 
 // An entity with all its components (optional for each)
 table EntityFB {
-  id: uint;  // entt::entity as uint32
+  id: uint;  // entt::entity
   position: PositionDataFB;
   health: HealthDataFB;
   mana: ManaDataFB;
@@ -82,7 +82,6 @@ table EntityFB {
 
 table GameStateSnapshotFB {
   entities: [EntityFB];
-  is_full_snapshot: bool;
 }
 
 root_type GameStateSnapshotFB;

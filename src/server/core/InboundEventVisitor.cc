@@ -1,7 +1,6 @@
 #include "InboundEventVisitor.h"
 #include <spdlog/spdlog.h>
 #include "GameStateSerializer.h"
-#include "NetworkChannels.h"
 #include "PlayerAssignment.h"
 #include "PlayerAssignmentSerializer.h"
 #include "actions/GameActionProcessor.h"
@@ -12,7 +11,7 @@ InboundEventVisitor::InboundEventVisitor(
     ENetPeer* peer,
     entt::registry* registry,
     std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
-    ThreadSafeQueue<OutboundPacket>* outbound)
+    ThreadSafeQueue<OutboundEvent>* outbound)
     : peer_(peer),
       registry_(registry),
       peerToEntityMap_(peerToEntityMap),
@@ -29,21 +28,11 @@ void InboundEventVisitor::operator()(const ClientConnectedEvent& event) const {
   lol_at_home_shared::PlayerAssignment assignment{entity};
   auto assignmentBytes =
       lol_at_home_shared::PlayerAssignmentSerializer::Serialize(assignment);
+  outbound_->Push(OutboundEvent{
+      .target = peer_, .event = SendPlayerAssignmentEvent{assignment}});
 
-  outbound_->Push(
-      OutboundPacket{.data = assignmentBytes,
-                     .peer = peer_,
-                     .channel = lol_at_home_shared::NetworkChannels::Control,
-                     .flags = ENET_PACKET_FLAG_RELIABLE});
-
-  auto stateBytes =
-      lol_at_home_shared::GameStateSerializer::Serialize(*registry_, {});
-
-  outbound_->Push(
-      OutboundPacket{.data = stateBytes,
-                     .peer = peer_,
-                     .channel = lol_at_home_shared::NetworkChannels::GameState,
-                     .flags = ENET_PACKET_FLAG_RELIABLE});
+  outbound_->Push(OutboundEvent{
+      .target = peer_, .event = SendGameStateEvent{.dirtyEntities = {}}});
 }
 
 void InboundEventVisitor::operator()(
@@ -57,7 +46,15 @@ void InboundEventVisitor::operator()(
 
 void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
   spdlog::info("Client  sent chat: " + event.message);
-  // todo broadcast
+
+  auto itr = peerToEntityMap_->find(peer_);
+  if (itr != peerToEntityMap_->end()) {
+    entt::entity senderEntity = itr->second;
+    outbound_->Push(
+        OutboundEvent{.target = nullptr,
+                      .event = BroadcastChatEvent{.sender = senderEntity,
+                                                  .message = event.message}});
+  }
 }
 
 void InboundEventVisitor::operator()(

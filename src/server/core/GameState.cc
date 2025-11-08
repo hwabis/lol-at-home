@@ -2,17 +2,22 @@
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <utility>
-#include "GameStateSerializer.h"
-#include "NetworkChannels.h"
 #include "core/InboundEventVisitor.h"
 
 namespace lol_at_home_server {
 
-GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
-                     std::shared_ptr<ThreadSafeQueue<OutboundPacket>> outbound)
-    : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {}
+GameState::GameState(std::shared_ptr<ThreadSafeRegistry> registry,
+                     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
+                     std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound)
+    : registry_(std::move(registry)),
+      inbound_(std::move(inbound)),
+      outbound_(std::move(outbound)) {}
 
 auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
+  // a bit awkward but after getting this lock the rest of cycle can use
+  // registry_->GetRegistry(). the other todo should eventually fix this
+  auto lock = registry_->GetWriteLock();
+
   processInbound();
 
   std::vector<entt::entity> dirtyEntities;
@@ -28,8 +33,8 @@ void GameState::processInbound() {
     InboundEvent packet = InboundEvents.front();
     InboundEvents.pop();
 
-    std::visit(InboundEventVisitor{packet.peer, &registry_, &peerToEntityMap_,
-                                   outbound_.get()},
+    std::visit(InboundEventVisitor{packet.peer, &registry_->GetRegistry(),
+                                   &peerToEntityMap_, outbound_.get()},
                packet.action);
   }
 }
@@ -45,21 +50,16 @@ void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities) {
     return;
   }
 
-  auto stateBytes = lol_at_home_shared::GameStateSerializer::Serialize(
-      registry_, dirtyEntities);
-
-  outbound_->Push(
-      OutboundPacket{.data = stateBytes,
-                     .peer = nullptr,
-                     .channel = lol_at_home_shared::NetworkChannels::GameState,
-                     .flags = ENET_PACKET_FLAG_RELIABLE});
+  outbound_->Push(OutboundEvent{.target = nullptr,
+                                .event = SendGameStateEvent{dirtyEntities}});
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
                                      std::vector<entt::entity>& dirtyEntities) {
   auto view =
-      registry_.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
-                     lol_at_home_shared::Moving>();
+      registry_->GetRegistry()
+          .view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
+                lol_at_home_shared::Moving>();
 
   for (auto entity : view) {
     auto& pos = view.get<lol_at_home_shared::Position>(entity);
@@ -71,7 +71,7 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
     double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
     if (distance < 1.0) {
-      registry_.remove<lol_at_home_shared::Moving>(entity);
+      registry_->GetRegistry().remove<lol_at_home_shared::Moving>(entity);
       pos = moving.TargetPosition;
     } else {
       // todo not sure yet on how the units work
@@ -89,7 +89,7 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
 
 void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
                                    std::vector<entt::entity>& dirtyEntities) {
-  auto view = registry_.view<lol_at_home_shared::Health>();
+  auto view = registry_->GetRegistry().view<lol_at_home_shared::Health>();
 
   for (auto entity : view) {
     auto& health = view.get<lol_at_home_shared::Health>(entity);

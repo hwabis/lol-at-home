@@ -24,7 +24,7 @@ union AbilityTargetDataFB {
 table NoTargetFB {}
 
 table EntityTargetFB {
-  target: uint;  // entity id
+  target: uint;  // entt::entity
 }
 
 table OnePointSkillshotFB {
@@ -53,14 +53,14 @@ table AbilityActionFB {
 }
 
 table AutoAttackActionFB {
-  target: uint;  // entity id
+  target: uint;  // entt::entity
 }
 
 table StopActionFB {}
 
 // Wrapper for an action with its source entity
 table GameActionFB {
-  source: uint;  // entity id
+  source: uint;  // entt::entity
   action: GameActionDataFB;
 }
 
