@@ -47,23 +47,25 @@ void GameState::processInbound() {
   }
 }
 
-auto GameState::validateInboundEventPeer(InboundEvent& event) -> bool {
+auto GameState::validateInboundEventPeer(const InboundEvent& event) -> bool {
   auto itr = peerToEntityMap_.find(event.peer);
   if (itr != peerToEntityMap_.end()) {
     entt::entity authoritativeSource = itr->second;
-
-    auto patchedAction = std::visit(
-        [authoritativeSource](const auto& specificAction)
-            -> lol_at_home_shared::GameActionVariant {
-          auto patched = specificAction;
-          patched.Source = authoritativeSource;
-          return patched;
+    entt::entity claimedSource = std::visit(
+        [](const auto& specificAction) -> entt::entity {
+          return specificAction.Source;
         },
         std::get<lol_at_home_shared::GameActionVariant>(event.action));
 
-    event.action = patchedAction;
+    if (claimedSource != authoritativeSource) {
+      spdlog::warn("IMPERSONATION ATTEMPT: Peer owns entity " +
+                   std::to_string(static_cast<uint32_t>(authoritativeSource)) +
+                   " but claimed to be entity " +
+                   std::to_string(static_cast<uint32_t>(claimedSource)));
+      return false;
+    }
   } else {
-    spdlog::warn("Received action from unassigned peer. ban him");
+    spdlog::warn("Received action from unassigned peer ???");
     return false;
   }
 
