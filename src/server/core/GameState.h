@@ -19,6 +19,7 @@ class GameState : public IPeriodic {
 
  private:
   void processInbound();
+  auto validateInboundEventPeer(InboundEvent& event) -> bool;
   void updateSimulation(std::chrono::milliseconds timeElapsed,
                         std::vector<entt::entity>& dirtyEntities,
                         std::vector<entt::entity>& deletedEntities);

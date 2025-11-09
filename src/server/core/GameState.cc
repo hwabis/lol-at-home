@@ -31,13 +31,43 @@ void GameState::processInbound() {
   std::queue<InboundEvent> inboundEvents = inbound_->PopAll();
 
   while (!inboundEvents.empty()) {
-    InboundEvent packet = inboundEvents.front();
+    InboundEvent event = inboundEvents.front();
     inboundEvents.pop();
 
-    std::visit(InboundEventVisitor{packet.peer, &registry_->GetRegistry(),
+    if (std::holds_alternative<lol_at_home_shared::GameActionVariant>(
+            event.action)) {
+      if (!validateInboundEventPeer(event)) {
+        continue;
+      }
+    }
+
+    std::visit(InboundEventVisitor{event.peer, &registry_->GetRegistry(),
                                    &peerToEntityMap_, outbound_.get()},
-               packet.action);
+               event.action);
   }
+}
+
+auto GameState::validateInboundEventPeer(InboundEvent& event) -> bool {
+  auto itr = peerToEntityMap_.find(event.peer);
+  if (itr != peerToEntityMap_.end()) {
+    entt::entity authoritativeSource = itr->second;
+
+    auto patchedAction = std::visit(
+        [authoritativeSource](const auto& specificAction)
+            -> lol_at_home_shared::GameActionVariant {
+          auto patched = specificAction;
+          patched.Source = authoritativeSource;
+          return patched;
+        },
+        std::get<lol_at_home_shared::GameActionVariant>(event.action));
+
+    event.action = patchedAction;
+  } else {
+    spdlog::warn("Received action from unassigned peer. ban him");
+    return false;
+  }
+
+  return true;
 }
 
 void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
