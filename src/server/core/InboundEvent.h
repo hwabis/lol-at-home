@@ -1,7 +1,7 @@
 #pragma once
 
 #include <enet/enet.h>
-#include "GameAction.h"
+#include "domain/GameAction.h"
 
 namespace lol_at_home_server {
 

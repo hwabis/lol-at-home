@@ -29,9 +29,9 @@ add_custom_command(
 
 add_library(lol-at-home-shared
   ${GENERATED_HEADERS}
-  GameActionSerializer.cc
-  GameStateSerializer.cc
-  PlayerAssignmentSerializer.cc
+  serialization/GameActionSerializer.cc
+  serialization/GameStateSerializer.cc
+  serialization/PlayerAssignmentSerializer.cc
 )
 
 set_target_defaults(lol-at-home-shared)

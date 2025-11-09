@@ -3,10 +3,10 @@
 #include <entt/entt.hpp>
 #include <iostream>
 #include <thread>
-#include "EcsComponents.h"
-#include "GameAction.h"
-#include "GameActionSerializer.h"
-#include "GameStateSerializer.h"
+#include "domain/EcsComponents.h"
+#include "domain/GameAction.h"
+#include "serialization/GameActionSerializer.h"
+#include "serialization/GameStateSerializer.h"
 
 auto main() -> int {
   if (enet_initialize() != 0) {

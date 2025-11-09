@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "EcsComponents.h"
+#include "domain/EcsComponents.h"
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTarget.h"
 

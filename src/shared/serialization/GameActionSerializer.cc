@@ -1,4 +1,4 @@
-#include "GameActionSerializer.h"
+#include "serialization/GameActionSerializer.h"
 #include <flatbuffers/flatbuffers.h>
 #include "game_actions_generated.h"
 

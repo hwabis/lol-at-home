@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
-#include "GameAction.h"
+#include "domain/GameAction.h"
 #include "abilities/AbilityImpl.h"
 
 namespace lol_at_home_server {

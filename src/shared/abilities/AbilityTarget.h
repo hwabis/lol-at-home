@@ -2,7 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "EcsComponents.h"
+#include "domain/EcsComponents.h"
 
 namespace lol_at_home_shared {
 

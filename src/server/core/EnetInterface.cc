@@ -1,6 +1,6 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
-#include "GameActionSerializer.h"
+#include "serialization/GameActionSerializer.h"
 #include "c2s_message_generated.h"
 
 namespace lol_at_home_server {

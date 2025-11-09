@@ -3,7 +3,7 @@
 #include <entt/entt.hpp>
 #include <tuple>
 #include <vector>
-#include "EcsComponents.h"
+#include "domain/EcsComponents.h"
 #include "game_state_generated.h"
 
 namespace lol_at_home_shared {

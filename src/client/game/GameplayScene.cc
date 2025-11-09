@@ -1,12 +1,12 @@
 #include "GameplayScene.h"
 #include <spdlog/spdlog.h>
 #include "ClientComponents.h"
-#include "EcsComponents.h"
-#include "GameAction.h"
-#include "GameActionSerializer.h"
-#include "GameStateSerializer.h"
-#include "PlayerAssignment.h"
-#include "PlayerAssignmentSerializer.h"
+#include "domain/EcsComponents.h"
+#include "domain/GameAction.h"
+#include "serialization/GameActionSerializer.h"
+#include "serialization/GameStateSerializer.h"
+#include "domain/PlayerAssignment.h"
+#include "serialization/PlayerAssignmentSerializer.h"
 #include "Renderer.h"
 
 namespace lol_at_home_game {

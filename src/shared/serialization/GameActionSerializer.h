@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include "GameAction.h"
+#include "domain/GameAction.h"
 #include "game_actions_generated.h"
 
 namespace lol_at_home_shared {

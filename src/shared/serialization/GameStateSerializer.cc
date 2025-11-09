@@ -1,4 +1,4 @@
-#include "GameStateSerializer.h"
+#include "serialization/GameStateSerializer.h"
 #include <flatbuffers/flatbuffers.h>
 #include "game_state_generated.h"
 

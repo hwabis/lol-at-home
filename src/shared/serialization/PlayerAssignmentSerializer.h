@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <vector>
-#include "PlayerAssignment.h"
+#include "domain/PlayerAssignment.h"
 
 namespace lol_at_home_shared {
 

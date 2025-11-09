@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EcsComponents.h"
+#include "domain/EcsComponents.h"
 
 namespace lol_at_home_game {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "EcsComponents.h"
+#include "domain/EcsComponents.h"
 #include "abilities/AbilityTarget.h"
 
 namespace lol_at_home_server {

@@ -1,6 +1,6 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
-#include "GameStateSerializer.h"
+#include "serialization/GameStateSerializer.h"
 #include "core/InboundEventVisitor.h"
 #include "s2c_message_generated.h"
 

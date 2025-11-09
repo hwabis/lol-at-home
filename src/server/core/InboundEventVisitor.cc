@@ -1,7 +1,7 @@
 #include "InboundEventVisitor.h"
 #include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
-#include "GameStateSerializer.h"
+#include "serialization/GameStateSerializer.h"
 #include "actions/GameActionProcessor.h"
 #include "s2c_message_generated.h"
 
