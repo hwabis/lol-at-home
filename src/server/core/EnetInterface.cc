@@ -2,19 +2,15 @@
 #include <spdlog/spdlog.h>
 #include "GameActionSerializer.h"
 #include "InboundEvent.h"
-#include "OutboundEventVisitor.h"
 #include "c2s_message_generated.h"
 // todo cleanup headers like everywhere
 
 namespace lol_at_home_server {
 
 EnetInterface::EnetInterface(
-    std::shared_ptr<ThreadSafeRegistry> registry,
     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
     std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound)
-    : registry_(std::move(registry)),
-      inbound_(std::move(inbound)),
-      outbound_(std::move(outbound)) {
+    : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {
   enet_initialize();
   ENetAddress address{.host = ENET_HOST_ANY, .port = 12345};
   host_ = enet_host_create(&address, 32, 2, 0, 0);
@@ -33,22 +29,13 @@ auto EnetInterface::Cycle(std::chrono::milliseconds /*timeElapsed*/) -> void {
 void EnetInterface::sendOutbound() {
   std::queue<OutboundEvent> events = outbound_->PopAll();
 
-  flatbuffers::FlatBufferBuilder builder(1024);
-  OutboundEventVisitor visitor{&registry_->GetRegistry(), &builder};
-
   while (!events.empty()) {
     OutboundEvent event = std::move(events.front());
     events.pop();
 
-    builder.Clear();
-    auto lock = registry_->GetReadLock();
-    std::visit(visitor, event.event);
-
-    auto* buf = builder.GetBufferPointer();
-    auto size = builder.GetSize();
-
     ENetPacket* packet =
-        enet_packet_create(buf, size, ENET_PACKET_FLAG_RELIABLE);
+        enet_packet_create(event.s2cMessage.data(), event.s2cMessage.size(),
+                           ENET_PACKET_FLAG_RELIABLE);
 
     if (event.target == nullptr) {
       enet_host_broadcast(host_, 0, packet);

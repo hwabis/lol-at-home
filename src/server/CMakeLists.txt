@@ -4,7 +4,6 @@ add_executable(lol-at-home-server
   core/EnetInterface.cc
   core/GameState.cc
   core/InboundEventVisitor.cc
-  core/OutboundEventVisitor.cc
   core/Server.cc
   Main.cc
 )

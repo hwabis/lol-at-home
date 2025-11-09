@@ -11,11 +11,11 @@ auto Server::Run() -> void {
   constexpr std::chrono::milliseconds interval{17};
 
   PeriodicDriver gameStateDriver{
-      std::make_unique<GameState>(registry_, incoming_, outgoing_), interval};
+      std::make_unique<GameState>(incoming_, outgoing_), interval};
   gameStateDriver.StartAsync();
 
   PeriodicDriver networkDriver{
-      std::make_unique<EnetInterface>(registry_, incoming_, outgoing_), interval};
+      std::make_unique<EnetInterface>(incoming_, outgoing_), interval};
   networkDriver.StartAsync();
 
   // Block

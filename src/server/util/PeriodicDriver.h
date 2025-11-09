@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <thread>
 #include "IPeriodic.h"
 

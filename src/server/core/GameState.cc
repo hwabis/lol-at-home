@@ -1,23 +1,18 @@
 #include "core/GameState.h"
+#include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
-#include <algorithm>
 #include <utility>
+#include "GameStateSerializer.h"
 #include "core/InboundEventVisitor.h"
+#include "s2c_message_generated.h"
 
 namespace lol_at_home_server {
 
-GameState::GameState(std::shared_ptr<ThreadSafeRegistry> registry,
-                     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
+GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
                      std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound)
-    : registry_(std::move(registry)),
-      inbound_(std::move(inbound)),
-      outbound_(std::move(outbound)) {}
+    : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {}
 
 auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
-  // a bit awkward but after getting this lock the rest of cycle can use
-  // registry_->GetRegistry(). the other todo should eventually fix this
-  auto lock = registry_->GetWriteLock();
-
   processInbound();
 
   std::vector<entt::entity> dirtyEntities;
@@ -41,8 +36,8 @@ void GameState::processInbound() {
       }
     }
 
-    std::visit(InboundEventVisitor{event.peer, &registry_->GetRegistry(),
-                                   &peerToEntityMap_, outbound_.get()},
+    std::visit(InboundEventVisitor{event.peer, &registry_, &peerToEntityMap_,
+                                   outbound_.get()},
                event.action);
   }
 }
@@ -81,22 +76,27 @@ void GameState::updateSimulation(std::chrono::milliseconds timeElapsed,
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
-  if (dirtyEntities.empty() && deletedEntities.empty()) {
-    return;
-  }
+  flatbuffers::FlatBufferBuilder builder(1024);
+  auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
+      builder, registry_, dirtyEntities, deletedEntities);
+  auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
+      builder, lol_at_home_shared::S2CDataFB::GameStateSnapshotFB,
+      snapshotOffset.Union());
+  builder.Finish(s2cMessage);
 
-  outbound_->Push(OutboundEvent{
-      .target = nullptr,
-      .event = SendGameStateEvent{.dirtyEntities = dirtyEntities,
-                                  .deletedEntities = deletedEntities}});
+  std::vector<std::byte> payload(
+      reinterpret_cast<std::byte*>(builder.GetBufferPointer()),
+      reinterpret_cast<std::byte*>(builder.GetBufferPointer() +
+                                   builder.GetSize()));
+
+  outbound_->Push(OutboundEvent{.target = nullptr, .s2cMessage = payload});
 }
 
 void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
                                      std::vector<entt::entity>& dirtyEntities) {
   auto view =
-      registry_->GetRegistry()
-          .view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
-                lol_at_home_shared::Moving>();
+      registry_.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
+                     lol_at_home_shared::Moving>();
 
   for (auto entity : view) {
     auto& pos = view.get<lol_at_home_shared::Position>(entity);
@@ -108,7 +108,7 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
     double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
     if (distance < 1.0) {
-      registry_->GetRegistry().remove<lol_at_home_shared::Moving>(entity);
+      registry_.remove<lol_at_home_shared::Moving>(entity);
       pos = moving.TargetPosition;
     } else {
       // todo not sure yet on how the units work
@@ -127,7 +127,7 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
 void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
                                    std::vector<entt::entity>& dirtyEntities,
                                    std::vector<entt::entity>& deletedEntities) {
-  auto view = registry_->GetRegistry().view<lol_at_home_shared::Health>();
+  auto view = registry_.view<lol_at_home_shared::Health>();
 
   for (auto entity : view) {
     auto& health = view.get<lol_at_home_shared::Health>(entity);
@@ -141,7 +141,7 @@ void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
       dirtyEntities.push_back(entity);
     } else if (health.CurrentHealth <= 0) {
       deletedEntities.push_back(entity);
-      registry_->GetRegistry().destroy(entity);
+      registry_.destroy(entity);
     }
   }
 }

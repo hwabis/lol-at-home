@@ -5,15 +5,13 @@
 #include "OutboundEvent.h"
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
-#include "util/ThreadSafeRegistry.h"
 
 namespace lol_at_home_server {
 
 class EnetInterface : public IPeriodic {
  public:
-  EnetInterface(std::shared_ptr<ThreadSafeRegistry> registry,
-                std::shared_ptr<ThreadSafeQueue<InboundEvent>> incomingActions,
-                std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outgoingStates);
+  EnetInterface(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
+                std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound);
 
   ~EnetInterface() override;
 
@@ -29,7 +27,6 @@ class EnetInterface : public IPeriodic {
   auto populateInbound() -> void;
 
   ENetHost* host_;
-  std::shared_ptr<ThreadSafeRegistry> registry_;
   std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound_;
   std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound_;
 };
