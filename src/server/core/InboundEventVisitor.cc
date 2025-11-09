@@ -3,7 +3,6 @@
 #include <spdlog/spdlog.h>
 #include "GameStateSerializer.h"
 #include "actions/GameActionProcessor.h"
-#include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
 
 namespace lol_at_home_server {

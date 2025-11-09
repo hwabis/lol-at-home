@@ -1,7 +1,5 @@
 #include "core/GameState.h"
-#include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
-#include <utility>
 #include "GameStateSerializer.h"
 #include "core/InboundEventVisitor.h"
 #include "s2c_message_generated.h"
@@ -30,7 +28,7 @@ void GameState::processInbound() {
     inboundEvents.pop();
 
     if (std::holds_alternative<lol_at_home_shared::GameActionVariant>(
-            event.action)) {
+            event.event)) {
       if (!validateInboundEventPeer(event)) {
         continue;
       }
@@ -38,7 +36,7 @@ void GameState::processInbound() {
 
     std::visit(InboundEventVisitor{event.peer, &registry_, &peerToEntityMap_,
                                    outbound_.get()},
-               event.action);
+               event.event);
   }
 }
 
@@ -48,9 +46,9 @@ auto GameState::validateInboundEventPeer(const InboundEvent& event) -> bool {
     entt::entity authoritativeSource = itr->second;
     entt::entity claimedSource = std::visit(
         [](const auto& specificAction) -> entt::entity {
-          return specificAction.Source;
+          return specificAction.source;
         },
-        std::get<lol_at_home_shared::GameActionVariant>(event.action));
+        std::get<lol_at_home_shared::GameActionVariant>(event.event));
 
     if (claimedSource != authoritativeSource) {
       spdlog::warn("IMPERSONATION ATTEMPT: Peer owns entity " +
@@ -103,21 +101,21 @@ void GameState::updateMovementSystem(std::chrono::milliseconds timeElapsed,
     auto& movable = view.get<lol_at_home_shared::Movable>(entity);
     auto& moving = view.get<lol_at_home_shared::Moving>(entity);
 
-    double deltaX = moving.TargetPosition.X - pos.X;
-    double deltaY = moving.TargetPosition.Y - pos.Y;
+    double deltaX = moving.targetPosition.x - pos.x;
+    double deltaY = moving.targetPosition.y - pos.y;
     double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
 
     if (distance < 1.0) {
       registry_.remove<lol_at_home_shared::Moving>(entity);
-      pos = moving.TargetPosition;
+      pos = moving.targetPosition;
     } else {
       // todo not sure yet on how the units work
       constexpr double msPerSec = 1000.0;
-      double moveDistance = movable.Speed * (timeElapsed.count() / msPerSec);
+      double moveDistance = movable.speed * (timeElapsed.count() / msPerSec);
       double ratio = std::min(moveDistance / distance, 1.0);
 
-      pos.X += deltaX * ratio;
-      pos.Y += deltaY * ratio;
+      pos.x += deltaX * ratio;
+      pos.y += deltaY * ratio;
     }
 
     dirtyEntities.push_back(entity);
@@ -132,14 +130,14 @@ void GameState::updateHealthSystem(std::chrono::milliseconds timeElapsed,
   for (auto entity : view) {
     auto& health = view.get<lol_at_home_shared::Health>(entity);
 
-    if (health.CurrentHealth < health.MaxHealth) {
+    if (health.currentHealth < health.maxHealth) {
       constexpr double msInSec = 1000.0;
-      health.CurrentHealth = std::min(
-          health.MaxHealth,
-          health.CurrentHealth +
-              ((timeElapsed.count() / msInSec) * health.HealthRegenPerSec));
+      health.currentHealth = std::min(
+          health.maxHealth,
+          health.currentHealth +
+              ((timeElapsed.count() / msInSec) * health.healthRegenPerSec));
       dirtyEntities.push_back(entity);
-    } else if (health.CurrentHealth <= 0) {
+    } else if (health.currentHealth <= 0) {
       deletedEntities.push_back(entity);
       registry_.destroy(entity);
     }

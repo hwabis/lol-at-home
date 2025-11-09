@@ -7,43 +7,42 @@
 
 namespace lol_at_home_shared {
 
-// todo go through every struct everywhere and lowercase them
 struct Position {
-  double X{};
-  double Y{};
+  double x{};
+  double y{};
 };
 
 struct Health {
-  double CurrentHealth{};
-  double MaxHealth{};
-  double HealthRegenPerSec{};
+  double currentHealth{};
+  double maxHealth{};
+  double healthRegenPerSec{};
 };
 
 struct Mana {
-  double Mana{};
-  double MaxMana{};
-  double ManaRegenPerSec{};
+  double mana{};
+  double maxMana{};
+  double manaRegenPerSec{};
 };
 
 struct Movable {
-  double Speed{};
+  double speed{};
 };
 
 struct Moving {
-  Position TargetPosition;
+  Position targetPosition;
 };
 
 struct Team {
   enum class Color : uint8_t { Blue, Red };
-  Color TeamColorFB;
+  Color teamColorFB;
 };
 
 struct DamagingArea {
-  Team OwningTeam;
+  Team owningTeam;
 };
 
 struct Abilities {
-  static constexpr int NumAbilities = 6;
+  static constexpr int numAbilities = 6;
 
   struct Ability {
     AbilityTag Tag{};
@@ -53,7 +52,7 @@ struct Abilities {
     uint8_t MaxCharges = 1;
   };
 
-  std::unordered_map<AbilitySlot, Ability> Abilities;
+  std::unordered_map<AbilitySlot, Ability> abilities;
 };
 
 }  // namespace lol_at_home_shared

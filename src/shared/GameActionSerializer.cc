@@ -2,7 +2,6 @@
 #include <flatbuffers/flatbuffers.h>
 #include "game_actions_generated.h"
 
-// todo what the bofa is happening in here
 namespace lol_at_home_shared {
 
 namespace {
@@ -22,14 +21,14 @@ auto serializeAbilityTarget(flatbuffers::FlatBufferBuilder& builder,
 
   if (std::holds_alternative<OnePointSkillshot>(target)) {
     auto& ops = std::get<OnePointSkillshot>(target);
-    PositionDataFB pos(ops.Target.X, ops.Target.Y);
+    PositionDataFB pos(ops.Target.x, ops.Target.y);
     return CreateOnePointSkillshotFB(builder, &pos).Union();
   }
 
   if (std::holds_alternative<TwoPointSkillshot>(target)) {
     auto& tps = std::get<TwoPointSkillshot>(target);
-    PositionDataFB pos1(tps.Target1.X, tps.Target1.Y);
-    PositionDataFB pos2(tps.Target2.X, tps.Target2.Y);
+    PositionDataFB pos1(tps.Target1.x, tps.Target1.y);
+    PositionDataFB pos2(tps.Target2.x, tps.Target2.y);
     return CreateTwoPointSkillshotFB(builder, &pos1, &pos2).Union();
   }
 
@@ -64,9 +63,9 @@ auto GameActionSerializer::Deserialize(
     case GameActionDataFB::MoveActionFB: {
       const auto* moveData = action->action_as_MoveActionFB();
       return MoveAction{
-          .Source = source,
-          .TargetPosition = {.X = moveData->target_position()->x(),
-                             .Y = moveData->target_position()->y()}};
+          .source = source,
+          .targetPosition = {.x = moveData->target_position()->x(),
+                             .y = moveData->target_position()->y()}};
     }
 
     case GameActionDataFB::AbilityActionFB: {
@@ -87,15 +86,15 @@ auto GameActionSerializer::Deserialize(
         case AbilityTargetDataFB::OnePointSkillshotFB: {
           const auto* ops = AbilityDataFB->target_as_OnePointSkillshotFB();
           target = OnePointSkillshot{
-              {.X = ops->target()->x(), .Y = ops->target()->y()}};
+              {.x = ops->target()->x(), .y = ops->target()->y()}};
           break;
         }
 
         case AbilityTargetDataFB::TwoPointSkillshotFB: {
           const auto* tps = AbilityDataFB->target_as_TwoPointSkillshotFB();
           target = TwoPointSkillshot{
-              .Target1 = {.X = tps->target1()->x(), .Y = tps->target1()->y()},
-              .Target2 = {.X = tps->target2()->x(), .Y = tps->target2()->y()}};
+              .Target1 = {.x = tps->target1()->x(), .y = tps->target1()->y()},
+              .Target2 = {.x = tps->target2()->x(), .y = tps->target2()->y()}};
           break;
         }
 
@@ -104,20 +103,20 @@ auto GameActionSerializer::Deserialize(
       }
 
       return AbilityAction{
-          .Source = source,
-          .Slot = static_cast<AbilitySlot>(AbilityDataFB->slot()),
-          .Target = target};
+          .source = source,
+          .slot = static_cast<AbilitySlot>(AbilityDataFB->slot()),
+          .target = target};
     }
 
     case GameActionDataFB::AutoAttackActionFB: {
       const auto* attackData = action->action_as_AutoAttackActionFB();
       return AutoAttackAction{
-          .Source = source,
-          .Target = static_cast<entt::entity>(attackData->target())};
+          .source = source,
+          .target = static_cast<entt::entity>(attackData->target())};
     }
 
     case GameActionDataFB::StopActionFB:
-      return StopGameAction{.Source = source};
+      return StopGameAction{.source = source};
 
     case GameActionDataFB::NONE:
       return std::nullopt;

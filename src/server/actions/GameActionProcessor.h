@@ -13,35 +13,35 @@ class GameActionProcessor {
       : registry_(registry) {}
 
   void operator()(const lol_at_home_shared::MoveAction& action) {
-    if (!registry_.valid(action.Source)) {
+    if (!registry_.valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
-    if (!registry_.all_of<lol_at_home_shared::Movable>(action.Source)) {
+    if (!registry_.all_of<lol_at_home_shared::Movable>(action.source)) {
       spdlog::warn("Entity has no Movable component");
       return;
     }
 
     registry_.emplace_or_replace<lol_at_home_shared::Moving>(
-        action.Source, action.TargetPosition);
+        action.source, action.targetPosition);
   }
 
   void operator()(const lol_at_home_shared::AbilityAction& action) {
-    if (!registry_.valid(action.Source)) {
+    if (!registry_.valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
     auto* abilities =
-        registry_.try_get<lol_at_home_shared::Abilities>(action.Source);
+        registry_.try_get<lol_at_home_shared::Abilities>(action.source);
     if (abilities == nullptr) {
       spdlog::warn("Entity has no Abilities component");
       return;
     }
 
-    auto itr = abilities->Abilities.find(action.Slot);
-    if (itr == abilities->Abilities.end()) {
+    auto itr = abilities->abilities.find(action.slot);
+    if (itr == abilities->abilities.end()) {
       return;
     }
 
@@ -52,7 +52,7 @@ class GameActionProcessor {
     }
 
     auto abilityImpl = getAbilityImpl(ability.Tag);
-    abilityImpl->Execute(registry_, ability, action.Target);
+    abilityImpl->Execute(registry_, ability, action.target);
   }
 
   void operator()(const lol_at_home_shared::AutoAttackAction& action) {

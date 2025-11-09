@@ -18,7 +18,7 @@ using InboundEventVariant = std::variant<ClientConnectedEvent,
 
 struct InboundEvent {
   ENetPeer* peer{};
-  InboundEventVariant action;  // todo rename to event
+  InboundEventVariant event;
 };
 
 }  // namespace lol_at_home_server

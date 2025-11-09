@@ -12,29 +12,29 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   PositionDataFB posData{};
   const PositionDataFB* posPtr = nullptr;
   if (const auto* pos = registry.try_get<Position>(entity)) {
-    posData = PositionDataFB(pos->X, pos->Y);
+    posData = PositionDataFB(pos->x, pos->y);
     posPtr = &posData;
   }
 
   HealthDataFB HealthData{};
   const HealthDataFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
-    HealthData = HealthDataFB(health->CurrentHealth, health->MaxHealth,
-                              health->HealthRegenPerSec);
+    HealthData = HealthDataFB(health->currentHealth, health->maxHealth,
+                              health->healthRegenPerSec);
     healthPtr = &HealthData;
   }
 
   ManaDataFB ManaData{};
   const ManaDataFB* manaPtr = nullptr;
   if (const auto* mana = registry.try_get<Mana>(entity)) {
-    ManaData = ManaDataFB(mana->Mana, mana->MaxMana, mana->ManaRegenPerSec);
+    ManaData = ManaDataFB(mana->mana, mana->maxMana, mana->manaRegenPerSec);
     manaPtr = &ManaData;
   }
 
   MovableDataFB MovableData{};
   const MovableDataFB* movablePtr = nullptr;
   if (const auto* movable = registry.try_get<Movable>(entity)) {
-    MovableData = MovableDataFB(movable->Speed);
+    MovableData = MovableDataFB(movable->speed);
     movablePtr = &MovableData;
   }
 
@@ -42,7 +42,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   const MovingDataFB* movingPtr = nullptr;
   if (const auto* moving = registry.try_get<Moving>(entity)) {
     MovingData =
-        MovingDataFB(moving->TargetPosition.X, moving->TargetPosition.Y);
+        MovingDataFB(moving->targetPosition.x, moving->targetPosition.y);
     movingPtr = &MovingData;
   }
 
@@ -50,7 +50,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   const TeamDataFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
     TeamData =
-        TeamDataFB(team->TeamColorFB == Team::Color::Blue ? TeamColorFB::Blue
+        TeamDataFB(team->teamColorFB == Team::Color::Blue ? TeamColorFB::Blue
                                                           : TeamColorFB::Red);
     teamPtr = &TeamData;
   }
@@ -59,7 +59,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   if (const auto* abilities = registry.try_get<Abilities>(entity)) {
     std::vector<flatbuffers::Offset<AbilityEntryFB>> abilityEntries;
 
-    for (const auto& [slot, ability] : abilities->Abilities) {
+    for (const auto& [slot, ability] : abilities->abilities) {
       auto tagData = static_cast<AbilityTagDataFB>(ability.Tag);
       auto cooldown = ability.CooldownRemaining;
       auto rank = ability.Rank;

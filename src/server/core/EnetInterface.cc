@@ -1,9 +1,7 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
 #include "GameActionSerializer.h"
-#include "InboundEvent.h"
 #include "c2s_message_generated.h"
-// todo cleanup headers like everywhere
 
 namespace lol_at_home_server {
 
@@ -54,7 +52,7 @@ void EnetInterface::populateInbound() {
       case ENET_EVENT_TYPE_CONNECT: {
         spdlog::info("Client connected");
         inbound_->Push(
-            InboundEvent{.peer = event.peer, .action = ClientConnectedEvent{}});
+            InboundEvent{.peer = event.peer, .event = ClientConnectedEvent{}});
         break;
       }
 
@@ -75,12 +73,11 @@ void EnetInterface::populateInbound() {
                 c2sMessage->message_as_GameActionFB();
 
             std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
-                lol_at_home_shared::GameActionSerializer::Deserialize(
-                    action);
+                lol_at_home_shared::GameActionSerializer::Deserialize(action);
 
             if (actionVariant.has_value()) {
               inbound_->Push(
-                  InboundEvent{.peer = event.peer, .action = *actionVariant});
+                  InboundEvent{.peer = event.peer, .event = *actionVariant});
             }
 
             break;
@@ -93,7 +90,7 @@ void EnetInterface::populateInbound() {
             InboundChatEvent chatEvent{.message = chat_fb->text()->str()};
 
             inbound_->Push(
-                InboundEvent{.peer = event.peer, .action = chatEvent});
+                InboundEvent{.peer = event.peer, .event = chatEvent});
             break;
           }
 
@@ -109,7 +106,7 @@ void EnetInterface::populateInbound() {
       case ENET_EVENT_TYPE_DISCONNECT: {
         spdlog::info("Client disconnected");
         inbound_->Push(InboundEvent{.peer = event.peer,
-                                    .action = ClientDisconnectedEvent{}});
+                                    .event = ClientDisconnectedEvent{}});
         break;
       }
 

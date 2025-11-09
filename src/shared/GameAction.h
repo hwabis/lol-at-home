@@ -9,23 +9,23 @@
 namespace lol_at_home_shared {
 
 struct MoveAction {
-  entt::entity Source{};
-  lol_at_home_shared::Position TargetPosition;
+  entt::entity source{};
+  lol_at_home_shared::Position targetPosition;
 };
 
 struct AbilityAction {
-  entt::entity Source{};
-  lol_at_home_shared::AbilitySlot Slot{};
-  AbilityTargetVariant Target;
+  entt::entity source{};
+  lol_at_home_shared::AbilitySlot slot{};
+  AbilityTargetVariant target;
 };
 
 struct AutoAttackAction {
-  entt::entity Source{};
-  entt::entity Target{};
+  entt::entity source{};
+  entt::entity target{};
 };
 
 struct StopGameAction {
-  entt::entity Source{};
+  entt::entity source{};
 };
 
 using GameActionVariant =

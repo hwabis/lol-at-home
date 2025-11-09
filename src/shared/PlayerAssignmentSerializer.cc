@@ -1,5 +1,4 @@
 #include "PlayerAssignmentSerializer.h"
-#include <cstring>
 
 namespace lol_at_home_shared {
 
