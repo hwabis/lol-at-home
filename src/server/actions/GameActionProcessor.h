@@ -2,8 +2,9 @@
 
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
-#include "domain/GameAction.h"
 #include "abilities/AbilityImpl.h"
+#include "domain/GameAction.h"
+
 
 namespace lol_at_home_server {
 
@@ -47,11 +48,11 @@ class GameActionProcessor {
 
     const auto& ability = itr->second;
 
-    if (ability.CooldownRemaining > 0.0F) {
+    if (ability.cooldownRemaining > 0.0F) {
       return;
     }
 
-    auto abilityImpl = getAbilityImpl(ability.Tag);
+    auto abilityImpl = getAbilityImpl(ability.tag);
     abilityImpl->Execute(registry_, ability, action.target);
   }
 

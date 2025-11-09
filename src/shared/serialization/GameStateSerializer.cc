@@ -50,8 +50,8 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   const TeamDataFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
     TeamData =
-        TeamDataFB(team->teamColorFB == Team::Color::Blue ? TeamColorFB::Blue
-                                                          : TeamColorFB::Red);
+        TeamDataFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
+                                                        : TeamColorFB::Red);
     teamPtr = &TeamData;
   }
 
@@ -60,16 +60,16 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     std::vector<flatbuffers::Offset<AbilityEntryFB>> abilityEntries;
 
     for (const auto& [slot, ability] : abilities->abilities) {
-      auto tagData = static_cast<AbilityTagDataFB>(ability.Tag);
-      auto cooldown = ability.CooldownRemaining;
-      auto rank = ability.Rank;
-      auto charges = ability.CurrentCharges;
-      auto maxCharges = ability.MaxCharges;
+      auto tagData = static_cast<AbilityTagDataFB>(ability.tag);
+      auto cooldown = ability.cooldownRemaining;
+      auto rank = ability.rank;
+      auto charges = ability.currentCharges;
+      auto maxCharges = ability.maxCharges;
 
-      AbilityDataFB AbilityDataFB(tagData, cooldown, rank, charges, maxCharges);
+      AbilityDataFB abilityData(tagData, cooldown, rank, charges, maxCharges);
 
       auto entry = CreateAbilityEntryFB(
-          builder, static_cast<AbilitySlotDataFB>(slot), &AbilityDataFB);
+          builder, static_cast<AbilitySlotDataFB>(slot), &abilityData);
       abilityEntries.push_back(entry);
     }
 

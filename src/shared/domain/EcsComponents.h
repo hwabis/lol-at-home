@@ -34,7 +34,7 @@ struct Moving {
 
 struct Team {
   enum class Color : uint8_t { Blue, Red };
-  Color teamColorFB;
+  Color teamColor;
 };
 
 struct DamagingArea {
@@ -45,11 +45,11 @@ struct Abilities {
   static constexpr int numAbilities = 6;
 
   struct Ability {
-    AbilityTag Tag{};
-    float CooldownRemaining{};
-    int Rank{};
-    int CurrentCharges = 1;
-    uint8_t MaxCharges = 1;
+    AbilityTag tag{};
+    float cooldownRemaining{};
+    int rank{};
+    int currentCharges = 1;
+    uint8_t maxCharges = 1;
   };
 
   std::unordered_map<AbilitySlot, Ability> abilities;
