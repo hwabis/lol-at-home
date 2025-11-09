@@ -4,7 +4,7 @@
 #include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 #include "serialization/GameActionSerializer.h"
-#include "serialization/GameStateSerializer.h"
+#include "domain/GameStateSerializer.h"
 #include "domain/PlayerAssignment.h"
 #include "serialization/PlayerAssignmentSerializer.h"
 #include "Renderer.h"

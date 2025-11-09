@@ -5,37 +5,36 @@
 #include "abilities/AbilityImpl.h"
 #include "domain/GameAction.h"
 
-
 namespace lol_at_home_server {
 
 class GameActionProcessor {
  public:
-  explicit GameActionProcessor(entt::registry& registry)
+  explicit GameActionProcessor(entt::registry* registry)
       : registry_(registry) {}
 
   void operator()(const lol_at_home_shared::MoveAction& action) {
-    if (!registry_.valid(action.source)) {
+    if (!registry_->valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
-    if (!registry_.all_of<lol_at_home_shared::Movable>(action.source)) {
+    if (!registry_->all_of<lol_at_home_shared::Movable>(action.source)) {
       spdlog::warn("Entity has no Movable component");
       return;
     }
 
-    registry_.emplace_or_replace<lol_at_home_shared::Moving>(
+    registry_->emplace_or_replace<lol_at_home_shared::Moving>(
         action.source, action.targetPosition);
   }
 
   void operator()(const lol_at_home_shared::AbilityAction& action) {
-    if (!registry_.valid(action.source)) {
+    if (!registry_->valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
     auto* abilities =
-        registry_.try_get<lol_at_home_shared::Abilities>(action.source);
+        registry_->try_get<lol_at_home_shared::Abilities>(action.source);
     if (abilities == nullptr) {
       spdlog::warn("Entity has no Abilities component");
       return;
@@ -53,7 +52,7 @@ class GameActionProcessor {
     }
 
     auto abilityImpl = getAbilityImpl(ability.tag);
-    abilityImpl->Execute(registry_, ability, action.target);
+    abilityImpl->Execute(*registry_, ability, action.target);
   }
 
   void operator()(const lol_at_home_shared::AutoAttackAction& action) {
@@ -65,9 +64,7 @@ class GameActionProcessor {
   }
 
  private:
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-  // todo pass as ptr like i do for all other visitors and remove ^
-  entt::registry& registry_;
+  entt::registry* registry_;
 
   // todo maybe make this into ability registry class
   static auto getAbilityImpl(lol_at_home_shared::AbilityTag abilityId)
@@ -78,9 +75,6 @@ class GameActionProcessor {
       // todo
       // in fact the compiler is emitting a warning right nao
     }
-
-    throw std::runtime_error("Unhandled AbilityTag: " +
-                             std::to_string(static_cast<int>(abilityId)));
   }
 };
 

@@ -1,9 +1,9 @@
 #include "InboundEventVisitor.h"
 #include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
-#include "serialization/GameStateSerializer.h"
 #include "actions/GameActionProcessor.h"
 #include "s2c_message_generated.h"
+#include "serialization/GameStateSerializer.h"
 
 namespace lol_at_home_server {
 
@@ -100,7 +100,7 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
 
 void InboundEventVisitor::operator()(
     const lol_at_home_shared::GameActionVariant& action) const {
-  std::visit(GameActionProcessor{*registry_}, action);
+  std::visit(GameActionProcessor{registry_}, action);
 }
 
 }  // namespace lol_at_home_server
