@@ -75,7 +75,7 @@ void EnetInterface::populateInbound() {
                 c2sMessage->message_as_GameActionFB();
 
             std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
-                lol_at_home_shared::GameActionSerializer::UnpackGameAction(
+                lol_at_home_shared::GameActionSerializer::Deserialize(
                     action);
 
             if (actionVariant.has_value()) {

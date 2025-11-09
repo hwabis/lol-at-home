@@ -21,13 +21,7 @@ class GameStateSerializer {
                         const std::vector<entt::entity>& deletedEntities)
       -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB>;
 
-  // todo obliterate
-  static auto Serialize(const entt::registry& registry,
-                        const std::vector<entt::entity>& entities)
-      -> std::vector<std::byte>;
-  // todo obliterate
-  static void Deserialize(entt::registry& registry,
-                          const std::vector<std::byte>& data);
+  // todo deserialize
 };
 
 }  // namespace lol_at_home_shared
