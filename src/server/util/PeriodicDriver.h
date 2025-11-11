@@ -16,21 +16,16 @@ class PeriodicDriver {
 
   PeriodicDriver(const PeriodicDriver&) = delete;
   auto operator=(const PeriodicDriver&) -> PeriodicDriver& = delete;
-  PeriodicDriver(const PeriodicDriver&&) = delete;
-  auto operator=(const PeriodicDriver&&) -> PeriodicDriver& = delete;
+  PeriodicDriver(PeriodicDriver&&) = delete;
+  auto operator=(PeriodicDriver&&) -> PeriodicDriver& = delete;
 
   void StartAsync() {
     driverThread_ = std::jthread([this](const std::stop_token& stoken) {
-      auto lastTime = std::chrono::steady_clock::now();
-
       while (!stoken.stop_requested()) {
         auto start = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            start - lastTime);
-        lastTime = start;
 
         if (periodic_) {
-          periodic_->Cycle(elapsed);
+          periodic_->Cycle(period_);
         }
 
         auto workDuration = std::chrono::steady_clock::now() - start;

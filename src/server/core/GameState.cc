@@ -1,8 +1,8 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
-#include "serialization/GameStateSerializer.h"
 #include "core/InboundEventVisitor.h"
 #include "s2c_message_generated.h"
+#include "serialization/GameStateSerializer.h"
 
 namespace lol_at_home_server {
 
