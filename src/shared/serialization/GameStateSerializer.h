@@ -15,6 +15,7 @@ class GameStateSerializer {
  public:
   GameStateSerializer() = delete;
 
+  // Called on server
   static auto Serialize(flatbuffers::FlatBufferBuilder& builder,
                         const entt::registry& registry,
                         const std::vector<entt::entity>& dirtyEntities,

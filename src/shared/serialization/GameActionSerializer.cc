@@ -1,58 +1,93 @@
 #include "serialization/GameActionSerializer.h"
 #include <flatbuffers/flatbuffers.h>
-#include "game_actions_generated.h"
 
 namespace lol_at_home_shared {
 
 namespace {
 
-auto serializeAbilityTarget(flatbuffers::FlatBufferBuilder& builder,
-                            const AbilityTargetVariant& target)
-    -> flatbuffers::Offset<void> {
-  if (std::holds_alternative<NoTarget>(target)) {
-    return CreateNoTargetFB(builder).Union();
+struct AbilityTargetSerializer {
+  // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+  flatbuffers::FlatBufferBuilder* builder;
+
+  auto operator()(const NoTarget& /*target*/) const
+      -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
+    return {AbilityTargetDataFB::NoTargetFB,
+            CreateNoTargetFB(*builder).Union()};
   }
 
-  if (std::holds_alternative<EntityTarget>(target)) {
-    auto& et = std::get<EntityTarget>(target);
-    return CreateEntityTargetFB(builder, static_cast<uint32_t>(et.Target))
-        .Union();
+  auto operator()(const EntityTarget& target) const
+      -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
+    return {AbilityTargetDataFB::EntityTargetFB,
+            CreateEntityTargetFB(*builder, static_cast<uint32_t>(target.Target))
+                .Union()};
   }
 
-  if (std::holds_alternative<OnePointSkillshot>(target)) {
-    auto& ops = std::get<OnePointSkillshot>(target);
-    PositionDataFB pos(ops.Target.x, ops.Target.y);
-    return CreateOnePointSkillshotFB(builder, &pos).Union();
+  auto operator()(const OnePointSkillshot& target) const
+      -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
+    PositionDataFB pos(target.Target.x, target.Target.y);
+    return {AbilityTargetDataFB::OnePointSkillshotFB,
+            CreateOnePointSkillshotFB(*builder, &pos).Union()};
   }
 
-  if (std::holds_alternative<TwoPointSkillshot>(target)) {
-    auto& tps = std::get<TwoPointSkillshot>(target);
-    PositionDataFB pos1(tps.Target1.x, tps.Target1.y);
-    PositionDataFB pos2(tps.Target2.x, tps.Target2.y);
-    return CreateTwoPointSkillshotFB(builder, &pos1, &pos2).Union();
+  auto operator()(const TwoPointSkillshot& target) const
+      -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
+    PositionDataFB pos1(target.Target1.x, target.Target1.y);
+    PositionDataFB pos2(target.Target2.x, target.Target2.y);
+    return {AbilityTargetDataFB::TwoPointSkillshotFB,
+            CreateTwoPointSkillshotFB(*builder, &pos1, &pos2).Union()};
+  }
+};
+
+struct GameActionSerializeVisitor {
+  // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+  flatbuffers::FlatBufferBuilder* builder;
+
+  auto operator()(const MoveAction& action) const
+      -> flatbuffers::Offset<GameActionFB> {
+    PositionDataFB pos(action.targetPosition.x, action.targetPosition.y);
+    auto moveOffset = CreateMoveActionFB(*builder, &pos);
+    return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
+                              GameActionDataFB::MoveActionFB,
+                              moveOffset.Union());
   }
 
-  throw std::runtime_error("Unknown ability target type");
-}
+  auto operator()(const AbilityAction& action)
+      -> flatbuffers::Offset<GameActionFB> {
+    auto [targetType, targetOffset] =
+        std::visit(AbilityTargetSerializer{builder}, action.target);
+    auto abilityOffset = CreateAbilityActionFB(
+        *builder, static_cast<AbilitySlotDataFB>(action.slot), targetType,
+        targetOffset);
+    return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
+                              GameActionDataFB::AbilityActionFB,
+                              abilityOffset.Union());
+  }
 
-auto getAbilityTargetType(const AbilityTargetVariant& target)
-    -> AbilityTargetDataFB {
-  if (std::holds_alternative<NoTarget>(target)) {
-    return AbilityTargetDataFB::NoTargetFB;
+  auto operator()(const AutoAttackAction& action) const
+      -> flatbuffers::Offset<GameActionFB> {
+    auto attackOffset = CreateAutoAttackActionFB(
+        *builder, static_cast<uint32_t>(action.target));
+    return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
+                              GameActionDataFB::AutoAttackActionFB,
+                              attackOffset.Union());
   }
-  if (std::holds_alternative<EntityTarget>(target)) {
-    return AbilityTargetDataFB::EntityTargetFB;
+
+  auto operator()(const StopGameAction& action) const
+      -> flatbuffers::Offset<GameActionFB> {
+    auto stopOffset = CreateStopActionFB(*builder);
+    return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
+                              GameActionDataFB::StopActionFB,
+                              stopOffset.Union());
   }
-  if (std::holds_alternative<OnePointSkillshot>(target)) {
-    return AbilityTargetDataFB::OnePointSkillshotFB;
-  }
-  if (std::holds_alternative<TwoPointSkillshot>(target)) {
-    return AbilityTargetDataFB::TwoPointSkillshotFB;
-  }
-  throw std::runtime_error("Unknown ability target type");
-}
+};
 
 }  // namespace
+
+auto GameActionSerializer::Serialize(flatbuffers::FlatBufferBuilder& builder,
+                                     const GameActionVariant& action)
+    -> flatbuffers::Offset<lol_at_home_shared::GameActionFB> {
+  return std::visit(GameActionSerializeVisitor{&builder}, action);
+}
 
 auto GameActionSerializer::Deserialize(
     const lol_at_home_shared::GameActionFB* action)
@@ -78,8 +113,8 @@ auto GameActionSerializer::Deserialize(
           break;
 
         case AbilityTargetDataFB::EntityTargetFB: {
-          const auto* et = AbilityDataFB->target_as_EntityTargetFB();
-          target = EntityTarget{static_cast<entt::entity>(et->target())};
+          const auto* etarget = AbilityDataFB->target_as_EntityTargetFB();
+          target = EntityTarget{static_cast<entt::entity>(etarget->target())};
           break;
         }
 
@@ -98,8 +133,9 @@ auto GameActionSerializer::Deserialize(
           break;
         }
 
-        default:
-          throw std::runtime_error("Unknown ability target type");
+        case AbilityTargetDataFB::NONE: {
+          return std::nullopt;
+        }
       }
 
       return AbilityAction{
