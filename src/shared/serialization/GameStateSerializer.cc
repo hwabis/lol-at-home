@@ -128,4 +128,81 @@ auto GameStateSerializer::Serialize(
   return snapshot;
 }
 
+auto GameStateSerializer::Deserialize(
+    const lol_at_home_shared::GameStateSnapshotFB& gamestate,
+    entt::registry& registry) -> void {
+  // NOTE: This does not handle component removal. Once an entity has a
+  // component, it keeps it forever. This matches LoL's design (turrets always
+  // have health, etc.)
+
+  for (const auto* entityFB : *gamestate.entities()) {
+    auto entity = static_cast<entt::entity>(entityFB->id());
+
+    if (!registry.valid(entity)) {
+      entity = registry.create(entity);
+    }
+
+    if (entityFB->position() != nullptr) {
+      registry.emplace_or_replace<Position>(entity, entityFB->position()->x(),
+                                            entityFB->position()->y());
+    }
+
+    if (entityFB->health() != nullptr) {
+      registry.emplace_or_replace<Health>(
+          entity, entityFB->health()->current_health(),
+          entityFB->health()->max_health(),
+          entityFB->health()->health_regen_per_sec());
+    }
+
+    if (entityFB->mana() != nullptr) {
+      registry.emplace_or_replace<Mana>(entity, entityFB->mana()->mana(),
+                                        entityFB->mana()->max_mana(),
+                                        entityFB->mana()->mana_regen_per_sec());
+    }
+
+    if (entityFB->movable() != nullptr) {
+      registry.emplace_or_replace<Movable>(entity,
+                                           entityFB->movable()->speed());
+    }
+
+    if (entityFB->moving() != nullptr) {
+      registry.emplace_or_replace<Moving>(
+          entity, Position{.x = entityFB->moving()->target_x(),
+                           .y = entityFB->moving()->target_y()});
+    }
+
+    if (entityFB->team() != nullptr) {
+      registry.emplace_or_replace<Team>(
+          entity, entityFB->team()->color() == TeamColorFB::Blue
+                      ? Team::Color::Blue
+                      : Team::Color::Red);
+    }
+
+    if (entityFB->abilities() != nullptr) {
+      Abilities abilities;
+      for (const auto* abilityEntryFB : *entityFB->abilities()->abilities()) {
+        auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
+        const auto* abilityDataFB = abilityEntryFB->ability();
+
+        Abilities::Ability ability{
+            .tag = static_cast<AbilityTag>(abilityDataFB->id()),
+            .cooldownRemaining = abilityDataFB->cooldown_remaining(),
+            .rank = abilityDataFB->rank(),
+            .currentCharges = abilityDataFB->current_charges(),
+            .maxCharges = abilityDataFB->max_charges()};
+
+        abilities.abilities[slot] = ability;
+      }
+      registry.emplace_or_replace<Abilities>(entity, abilities);
+    }
+  }
+
+  for (uint32_t deletedId : *gamestate.deleted_entity_ids()) {
+    auto entity = static_cast<entt::entity>(deletedId);
+    if (registry.valid(entity)) {
+      registry.destroy(entity);
+    }
+  }
+}
+
 }  // namespace lol_at_home_shared

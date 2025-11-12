@@ -42,8 +42,6 @@ struct DamagingArea {
 };
 
 struct Abilities {
-  static constexpr int numAbilities = 6;
-
   struct Ability {
     AbilityTag tag{};
     float cooldownRemaining{};

@@ -90,13 +90,13 @@ auto GameActionSerializer::Serialize(flatbuffers::FlatBufferBuilder& builder,
 }
 
 auto GameActionSerializer::Deserialize(
-    const lol_at_home_shared::GameActionFB* action)
+    const lol_at_home_shared::GameActionFB& action)
     -> std::optional<GameActionVariant> {
-  auto source = static_cast<entt::entity>(action->source());
+  auto source = static_cast<entt::entity>(action.source());
 
-  switch (action->action_type()) {
+  switch (action.action_type()) {
     case GameActionDataFB::MoveActionFB: {
-      const auto* moveData = action->action_as_MoveActionFB();
+      const auto* moveData = action.action_as_MoveActionFB();
       return MoveAction{
           .source = source,
           .targetPosition = {.x = moveData->target_position()->x(),
@@ -104,7 +104,7 @@ auto GameActionSerializer::Deserialize(
     }
 
     case GameActionDataFB::AbilityActionFB: {
-      const auto* AbilityDataFB = action->action_as_AbilityActionFB();
+      const auto* AbilityDataFB = action.action_as_AbilityActionFB();
 
       AbilityTargetVariant target;
       switch (AbilityDataFB->target_type()) {
@@ -145,7 +145,7 @@ auto GameActionSerializer::Deserialize(
     }
 
     case GameActionDataFB::AutoAttackActionFB: {
-      const auto* attackData = action->action_as_AutoAttackActionFB();
+      const auto* attackData = action.action_as_AutoAttackActionFB();
       return AutoAttackAction{
           .source = source,
           .target = static_cast<entt::entity>(attackData->target())};

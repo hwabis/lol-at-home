@@ -1,7 +1,7 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
-#include "serialization/GameActionSerializer.h"
 #include "c2s_message_generated.h"
+#include "serialization/GameActionSerializer.h"
 
 namespace lol_at_home_server {
 
@@ -73,7 +73,7 @@ void EnetInterface::populateInbound() {
                 c2sMessage->message_as_GameActionFB();
 
             std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
-                lol_at_home_shared::GameActionSerializer::Deserialize(action);
+                lol_at_home_shared::GameActionSerializer::Deserialize(*action);
 
             if (actionVariant.has_value()) {
               inbound_->Push(
