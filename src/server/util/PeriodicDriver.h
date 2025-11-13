@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <memory>
 #include <thread>
 #include "IPeriodic.h"
 
@@ -8,9 +9,9 @@ namespace lol_at_home_server {
 
 class PeriodicDriver {
  public:
-  PeriodicDriver(std::unique_ptr<IPeriodic> periodic,
-                 std::chrono::milliseconds period)
-      : periodic_(std::move(periodic)), period_(period) {}
+  explicit PeriodicDriver(std::unique_ptr<IPeriodic> periodic, int frequencyHz)
+      : periodic_(std::move(periodic)),
+        period_(std::chrono::duration<double>(1.0 / frequencyHz)) {}
 
   virtual ~PeriodicDriver() { stop(); }
 
@@ -25,13 +26,14 @@ class PeriodicDriver {
         auto start = std::chrono::steady_clock::now();
 
         if (periodic_) {
-          periodic_->Cycle(period_);
+          periodic_->Cycle(
+              std::chrono::duration_cast<std::chrono::milliseconds>(period_));
         }
 
         auto workDuration = std::chrono::steady_clock::now() - start;
         auto sleepTime = period_ - workDuration;
 
-        if (sleepTime > std::chrono::milliseconds(0)) {
+        if (sleepTime > std::chrono::duration<double>(0)) {
           std::this_thread::sleep_for(sleepTime);
         }
       }
@@ -47,7 +49,7 @@ class PeriodicDriver {
   }
 
   std::unique_ptr<IPeriodic> periodic_;
-  std::chrono::milliseconds period_;
+  std::chrono::duration<double> period_;
   std::jthread driverThread_;
 };
 

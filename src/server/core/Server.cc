@@ -1,5 +1,4 @@
 #include "Server.h"
-#include <chrono>
 #include <iostream>
 #include "core/EnetInterface.h"
 #include "core/GameState.h"
@@ -8,14 +7,14 @@
 namespace lol_at_home_server {
 
 auto Server::Run() -> void {
-  constexpr std::chrono::milliseconds interval{17};
+  constexpr int freqHz = 60;
 
   PeriodicDriver gameStateDriver{
-      std::make_unique<GameState>(incoming_, outgoing_), interval};
+      std::make_unique<GameState>(incoming_, outgoing_), freqHz};
   gameStateDriver.StartAsync();
 
   PeriodicDriver networkDriver{
-      std::make_unique<EnetInterface>(incoming_, outgoing_), interval};
+      std::make_unique<EnetInterface>(incoming_, outgoing_), freqHz};
   networkDriver.StartAsync();
 
   // Block
