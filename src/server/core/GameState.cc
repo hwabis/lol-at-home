@@ -1,6 +1,8 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
 #include "core/InboundEventVisitor.h"
+#include "ecs_systems/HealthSystem.h"
+#include "ecs_systems/MovementSystem.h"
 #include "s2c_message_generated.h"
 #include "serialization/GameStateSerializer.h"
 

@@ -1,11 +1,9 @@
 #pragma once
 
 #include <enet/enet.h>
-#include <array>
 #include "InboundEvent.h"
 #include "OutboundEvent.h"
-#include "ecs_systems/HealthSystem.h"
-#include "ecs_systems/MovementSystem.h"
+#include "ecs_systems/IEcsSystem.h"
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
 
