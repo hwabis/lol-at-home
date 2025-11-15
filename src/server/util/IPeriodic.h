@@ -11,8 +11,8 @@ class IPeriodic {
 
   IPeriodic(const IPeriodic&) = delete;
   auto operator=(const IPeriodic&) -> IPeriodic& = delete;
-  IPeriodic(const IPeriodic&&) = delete;
-  auto operator=(const IPeriodic&&) -> IPeriodic& = delete;
+  IPeriodic(IPeriodic&&) = delete;
+  auto operator=(IPeriodic&&) -> IPeriodic& = delete;
 
   virtual void Cycle(std::chrono::milliseconds timeElapsed) = 0;
 };

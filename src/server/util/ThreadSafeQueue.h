@@ -13,8 +13,8 @@ class ThreadSafeQueue {
 
   ThreadSafeQueue(const ThreadSafeQueue&) = delete;
   auto operator=(const ThreadSafeQueue&) -> ThreadSafeQueue& = delete;
-  ThreadSafeQueue(const ThreadSafeQueue&&) = delete;
-  auto operator=(const ThreadSafeQueue&&) -> ThreadSafeQueue& = delete;
+  ThreadSafeQueue(ThreadSafeQueue&&) = delete;
+  auto operator=(ThreadSafeQueue&&) -> ThreadSafeQueue& = delete;
 
   void Push(const T& value) {
     std::lock_guard<std::mutex> lock(mutex_);

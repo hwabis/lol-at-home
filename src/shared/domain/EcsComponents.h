@@ -25,6 +25,7 @@ struct Mana {
 };
 
 struct Movable {
+  // units per sec
   double speed{};
 };
 

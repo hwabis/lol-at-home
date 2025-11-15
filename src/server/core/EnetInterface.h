@@ -17,8 +17,8 @@ class EnetInterface : public IPeriodic {
 
   EnetInterface(const EnetInterface&) = delete;
   auto operator=(const EnetInterface&) -> EnetInterface& = delete;
-  EnetInterface(const EnetInterface&&) = delete;
-  auto operator=(const EnetInterface&&) -> EnetInterface& = delete;
+  EnetInterface(EnetInterface&&) = delete;
+  auto operator=(EnetInterface&&) -> EnetInterface& = delete;
 
   auto Cycle(std::chrono::milliseconds timeElapsed) -> void override;
 
