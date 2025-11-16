@@ -13,19 +13,24 @@ class MovementSystem : public IEcsSystem {
              std::vector<entt::entity>& dirtyEntities,
              std::vector<entt::entity>& /*deletedEntities*/) override {
     auto view =
-        registry.view<lol_at_home_shared::Position, lol_at_home_shared::Movable,
-                      lol_at_home_shared::Moving>();
+        registry
+            .view<lol_at_home_shared::Position, lol_at_home_shared::Movable>();
 
     for (auto entity : view) {
       auto& pos = view.get<lol_at_home_shared::Position>(entity);
       auto& movable = view.get<lol_at_home_shared::Movable>(entity);
-      auto& moving = view.get<lol_at_home_shared::Moving>(entity);
 
-      bool reached =
-          moveTowards(pos, moving.targetPosition, movable.speed, timeElapsed);
+      if (movable.state != lol_at_home_shared::MovementState::Moving) {
+        continue;
+      }
+
+      auto [newPos, reached] =
+          moveTowards(pos, movable.targetPosition, movable.speed, timeElapsed);
+
+      pos = newPos;
 
       if (reached) {
-        registry.erase<lol_at_home_shared::Moving>(entity);
+        movable.state = lol_at_home_shared::MovementState::Idle;
       }
 
       dirtyEntities.push_back(entity);
@@ -33,31 +38,32 @@ class MovementSystem : public IEcsSystem {
   };
 
  private:
-  static auto moveTowards(lol_at_home_shared::Position& pos,
+  static auto moveTowards(const lol_at_home_shared::Position& pos,
                           const lol_at_home_shared::Position& target,
                           double speed,
-                          std::chrono::milliseconds timeElapsed) -> bool {
+                          std::chrono::milliseconds timeElapsed)
+      -> std::pair<lol_at_home_shared::Position, bool> {
     const double deltaX = target.x - pos.x;
     const double deltaY = target.y - pos.y;
 
     const double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
     if (distance == 0.0) {
-      return true;
+      return {target, true};
     }
 
     const double seconds = std::chrono::duration<double>(timeElapsed).count();
     const double maxStep = speed * seconds;
 
     if (distance <= maxStep) {
-      pos = target;
-      return true;
+      return {target, true};
     }
 
+    lol_at_home_shared::Position newPos = pos;
     const double ratio = maxStep / distance;
-    pos.x += deltaX * ratio;
-    pos.y += deltaY * ratio;
+    newPos.x += deltaX * ratio;
+    newPos.y += deltaY * ratio;
 
-    return false;
+    return {newPos, false};
   }
 };
 

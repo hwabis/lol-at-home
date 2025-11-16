@@ -13,13 +13,15 @@ struct ManaFB {
   mana_regen_per_sec: double;
 }
 
-struct MovableFB {
-  speed: double;
+enum MovementStateFB: ubyte {
+  Idle = 0,
+  Moving = 1
 }
 
-struct MovingDataFB {
-  target_x: double;
-  target_y: double;
+struct MovableFB {
+  speed: double;
+  state: MovementStateFB;
+  target_pos: PositionFB;
 }
 
 enum TeamColorFB: ubyte {
@@ -61,7 +63,6 @@ table EntityFB {
   health: HealthFB;
   mana: ManaFB;
   movable: MovableFB;
-  moving: MovingDataFB;
   team: TeamFB;
   abilities: AbilitiesFB;
 }

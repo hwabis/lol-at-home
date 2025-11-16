@@ -15,3 +15,7 @@ TEST_F(GameStateTest, s) {
 }
 
 }  // namespace lol_at_home_server
+
+// todo need end to end unit tests for each ecs component
+// fbs serialization -> deserialization -> registry updated? -> cycle game state
+// -> corresponding ecs system did its job?

@@ -1,5 +1,6 @@
 #include "serialization/GameStateSerializer.h"
 #include <flatbuffers/flatbuffers.h>
+#include "domain/EcsComponents.h"
 #include "game_state_generated.h"
 
 namespace lol_at_home_shared {
@@ -20,7 +21,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   const HealthFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
     HealthData = HealthFB(health->currentHealth, health->maxHealth,
-                              health->healthRegenPerSec);
+                          health->healthRegenPerSec);
     healthPtr = &HealthData;
   }
 
@@ -34,24 +35,27 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   MovableFB MovableData{};
   const MovableFB* movablePtr = nullptr;
   if (const auto* movable = registry.try_get<Movable>(entity)) {
-    MovableData = MovableFB(movable->speed);
-    movablePtr = &MovableData;
-  }
+    MovementStateFB moveState{};
+    switch (movable->state) {
+      case MovementState::Idle:
+        moveState = MovementStateFB::Idle;
+        break;
+      case MovementState::Moving:
+        moveState = MovementStateFB::Moving;
+        break;
+    }
 
-  MovingDataFB MovingData{};
-  const MovingDataFB* movingPtr = nullptr;
-  if (const auto* moving = registry.try_get<Moving>(entity)) {
-    MovingData =
-        MovingDataFB(moving->targetPosition.x, moving->targetPosition.y);
-    movingPtr = &MovingData;
+    MovableData =
+        MovableFB(movable->speed, moveState,
+                  {movable->targetPosition.x, movable->targetPosition.y});
+    movablePtr = &MovableData;
   }
 
   TeamFB TeamData{};
   const TeamFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
-    TeamData =
-        TeamFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
-                                                        : TeamColorFB::Red);
+    TeamData = TeamFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
+                                                           : TeamColorFB::Red);
     teamPtr = &TeamData;
   }
 
@@ -79,7 +83,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
 
   auto entityOffset =
       CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
-                     manaPtr, movablePtr, movingPtr, teamPtr, abilitiesOffset);
+                     manaPtr, movablePtr, teamPtr, abilitiesOffset);
 
   return entityOffset;
 }
@@ -129,12 +133,8 @@ auto GameStateSerializer::Serialize(
 }
 
 auto GameStateSerializer::Deserialize(
-    const lol_at_home_shared::GameStateDeltaFB& gamestate,
-    entt::registry& registry) -> void {
-  // NOTE: This does not handle component removal. Once an entity has a
-  // component, it keeps it forever. This matches LoL's design (turrets always
-  // have health, etc.)
-
+    entt::registry& registry,
+    const lol_at_home_shared::GameStateDeltaFB& gamestate) -> void {
   for (const auto* entityFB : *gamestate.entities()) {
     auto entity = static_cast<entt::entity>(entityFB->id());
 
@@ -161,14 +161,22 @@ auto GameStateSerializer::Deserialize(
     }
 
     if (entityFB->movable() != nullptr) {
-      registry.emplace_or_replace<Movable>(entity,
-                                           entityFB->movable()->speed());
-    }
+      MovementState moveState{};
+      switch (entityFB->movable()->state()) {
+        case MovementStateFB::Idle:
+          moveState = MovementState::Idle;
+          break;
+        case MovementStateFB::Moving:
+          moveState = MovementState::Moving;
+          break;
+      }
 
-    if (entityFB->moving() != nullptr) {
-      registry.emplace_or_replace<Moving>(
-          entity, Position{.x = entityFB->moving()->target_x(),
-                           .y = entityFB->moving()->target_y()});
+      registry.emplace_or_replace<Movable>(
+          entity, Movable{.speed = entityFB->movable()->speed(),
+                          .state = moveState,
+                          .targetPosition = {
+                              .x = entityFB->movable()->target_pos().x(),
+                              .y = entityFB->movable()->target_pos().y()}});
     }
 
     if (entityFB->team() != nullptr) {

@@ -1,15 +1,10 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include <tuple>
 #include <vector>
-#include "domain/EcsComponents.h"
 #include "game_state_generated.h"
 
 namespace lol_at_home_shared {
-
-using SerializableComponents =
-    std::tuple<Position, Health, Mana, Movable, Moving, Team, Abilities>;
 
 class GameStateSerializer {
  public:
@@ -23,9 +18,9 @@ class GameStateSerializer {
       -> flatbuffers::Offset<lol_at_home_shared::GameStateDeltaFB>;
 
   // Called on client
-  static auto Deserialize(
-      const lol_at_home_shared::GameStateDeltaFB& gamestate,
-      entt::registry& registry) -> void;
+  static auto Deserialize(entt::registry& registry,
+                          const lol_at_home_shared::GameStateDeltaFB& gamestate)
+      -> void;
 };
 
 }  // namespace lol_at_home_shared

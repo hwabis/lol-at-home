@@ -24,13 +24,15 @@ struct Mana {
   double manaRegenPerSec{};
 };
 
-struct Movable {
-  double speed{};           // units per sec
-  Position targetPosition;  // ignored if state = idle
+enum class MovementState : uint8_t {
+  Idle = 0,
+  Moving = 1,
 };
 
-struct Moving {  // todo remove
-  Position targetPosition;
+struct Movable {
+  double speed{};  // units per sec
+  MovementState state = MovementState::Idle;
+  Position targetPosition;  // ignored if state == idle
 };
 
 struct Team {

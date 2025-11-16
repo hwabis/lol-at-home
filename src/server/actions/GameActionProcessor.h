@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
 #include "abilities/AbilityImpl.h"
+#include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 
 namespace lol_at_home_server {
@@ -18,13 +19,14 @@ class GameActionProcessor {
       return;
     }
 
-    if (!registry_->all_of<lol_at_home_shared::Movable>(action.source)) {
+    if (auto* movable =
+            registry_->try_get<lol_at_home_shared::Movable>(action.source)) {
+      *movable = {.speed = movable->speed,
+                  .state = lol_at_home_shared::MovementState::Moving,
+                  .targetPosition = action.targetPosition};
+    } else {
       spdlog::warn("Entity has no Movable component");
-      return;
     }
-
-    registry_->emplace_or_replace<lol_at_home_shared::Moving>(
-        action.source, action.targetPosition);
   }
 
   void operator()(const lol_at_home_shared::AbilityAction& action) {
