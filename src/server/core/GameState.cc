@@ -79,7 +79,7 @@ void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
   auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
       builder, registry_, dirtyEntities, deletedEntities);
   auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::GameStateSnapshotFB,
+      builder, lol_at_home_shared::S2CDataFB::GameStateDeltaFB,
       snapshotOffset.Union());
   builder.Finish(s2cMessage);
 

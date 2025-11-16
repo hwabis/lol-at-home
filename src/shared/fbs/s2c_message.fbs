@@ -2,6 +2,7 @@ include "game_state.fbs";
 
 namespace lol_at_home_shared;
 
+// todo still not certain about this player assignment stuff
 table PlayerAssignmentFB {
   assigned_entity: uint;  // entt::entity
 }
@@ -13,15 +14,10 @@ table ChatBroadcastFB {
   text: string;
 }
 
-table ServerNotificationFB {
-  text: string;
-}
-
 union S2CDataFB {
-  GameStateSnapshotFB,
+  GameStateDeltaFB,
   PlayerAssignmentFB,
   ChatBroadcastFB,
-  ServerNotificationFB
 }
 
 table S2CMessageFB {

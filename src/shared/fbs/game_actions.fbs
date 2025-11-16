@@ -1,13 +1,6 @@
 include "common_types.fbs";
 namespace lol_at_home_shared;
 
-union AbilityTargetDataFB {
-  NoTargetFB,
-  EntityTargetFB,
-  OnePointSkillshotFB,
-  TwoPointSkillshotFB
-}
-
 table NoTargetFB {}
 
 table EntityTargetFB {
@@ -15,27 +8,27 @@ table EntityTargetFB {
 }
 
 table OnePointSkillshotFB {
-  target: PositionDataFB;
+  target: PositionFB;
 }
 
 table TwoPointSkillshotFB {
-  target1: PositionDataFB;
-  target2: PositionDataFB;
+  target1: PositionFB;
+  target2: PositionFB;
 }
 
-union GameActionDataFB {
-  MoveActionFB,
-  AbilityActionFB,
-  AutoAttackActionFB,
-  StopActionFB
+union AbilityTargetDataFB {
+  NoTargetFB,
+  EntityTargetFB,
+  OnePointSkillshotFB,
+  TwoPointSkillshotFB
 }
 
 table MoveActionFB {
-  target_position: PositionDataFB;
+  target_position: PositionFB;
 }
 
 table AbilityActionFB {
-  slot: AbilitySlotDataFB;
+  slot: AbilitySlotFB;
   target: AbilityTargetDataFB;
 }
 
@@ -44,6 +37,13 @@ table AutoAttackActionFB {
 }
 
 table StopActionFB {}
+
+union GameActionDataFB {
+  MoveActionFB,
+  AbilityActionFB,
+  AutoAttackActionFB,
+  StopActionFB
+}
 
 table GameActionFB {
   source: uint;  // entt::entity

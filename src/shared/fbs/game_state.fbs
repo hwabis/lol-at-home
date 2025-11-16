@@ -1,19 +1,19 @@
 include "common_types.fbs";
 namespace lol_at_home_shared;
 
-struct HealthDataFB {
+struct HealthFB {
   current_health: double;
   max_health: double;
   health_regen_per_sec: double;
 }
 
-struct ManaDataFB {
+struct ManaFB {
   mana: double;
   max_mana: double;
   mana_regen_per_sec: double;
 }
 
-struct MovableDataFB {
+struct MovableFB {
   speed: double;
 }
 
@@ -27,19 +27,19 @@ enum TeamColorFB: ubyte {
   Red = 1
 }
 
-struct TeamDataFB {
+struct TeamFB {
   color: TeamColorFB;
 }
 
-enum AbilityTagDataFB: ubyte {
+enum AbilityTagFB: ubyte {
   GAREN_Q = 0,
   GAREN_W = 1,
   GAREN_E = 2,
   GAREN_R = 3
 }
 
-struct AbilityDataFB {
-  id: AbilityTagDataFB;
+struct AbilityFB {
+  id: AbilityTagFB;
   cooldown_remaining: float;
   rank: int;
   current_charges: int;
@@ -47,28 +47,28 @@ struct AbilityDataFB {
 }
 
 table AbilityEntryFB {
-  slot: AbilitySlotDataFB;
-  ability: AbilityDataFB;
+  slot: AbilitySlotFB;
+  ability: AbilityFB;
 }
 
-table AbilitiesDataFB {
+table AbilitiesFB {
   abilities: [AbilityEntryFB];
 }
 
 table EntityFB {
   id: uint;  // entt::entity
-  position: PositionDataFB;
-  health: HealthDataFB;
-  mana: ManaDataFB;
-  movable: MovableDataFB;
+  position: PositionFB;
+  health: HealthFB;
+  mana: ManaFB;
+  movable: MovableFB;
   moving: MovingDataFB;
-  team: TeamDataFB;
-  abilities: AbilitiesDataFB;
+  team: TeamFB;
+  abilities: AbilitiesFB;
 }
 
-table GameStateSnapshotFB {
+table GameStateDeltaFB {
   entities: [EntityFB];
   deleted_entity_ids: [uint];
 }
 
-root_type GameStateSnapshotFB;
+root_type GameStateDeltaFB;

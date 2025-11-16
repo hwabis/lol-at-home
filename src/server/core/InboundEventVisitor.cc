@@ -52,7 +52,7 @@ void InboundEventVisitor::operator()(
   auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
       builder, *registry_, allEntities, {});  // No deletions
   s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::GameStateSnapshotFB,
+      builder, lol_at_home_shared::S2CDataFB::GameStateDeltaFB,
       snapshotOffset.Union());
   builder.Finish(s2cMessage);
 

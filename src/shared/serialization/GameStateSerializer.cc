@@ -9,32 +9,32 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
                      const entt::registry& registry,
                      entt::entity entity)
     -> std::optional<flatbuffers::Offset<EntityFB>> {
-  PositionDataFB posData{};
-  const PositionDataFB* posPtr = nullptr;
+  PositionFB posData{};
+  const PositionFB* posPtr = nullptr;
   if (const auto* pos = registry.try_get<Position>(entity)) {
-    posData = PositionDataFB(pos->x, pos->y);
+    posData = PositionFB(pos->x, pos->y);
     posPtr = &posData;
   }
 
-  HealthDataFB HealthData{};
-  const HealthDataFB* healthPtr = nullptr;
+  HealthFB HealthData{};
+  const HealthFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
-    HealthData = HealthDataFB(health->currentHealth, health->maxHealth,
+    HealthData = HealthFB(health->currentHealth, health->maxHealth,
                               health->healthRegenPerSec);
     healthPtr = &HealthData;
   }
 
-  ManaDataFB ManaData{};
-  const ManaDataFB* manaPtr = nullptr;
+  ManaFB ManaData{};
+  const ManaFB* manaPtr = nullptr;
   if (const auto* mana = registry.try_get<Mana>(entity)) {
-    ManaData = ManaDataFB(mana->mana, mana->maxMana, mana->manaRegenPerSec);
+    ManaData = ManaFB(mana->mana, mana->maxMana, mana->manaRegenPerSec);
     manaPtr = &ManaData;
   }
 
-  MovableDataFB MovableData{};
-  const MovableDataFB* movablePtr = nullptr;
+  MovableFB MovableData{};
+  const MovableFB* movablePtr = nullptr;
   if (const auto* movable = registry.try_get<Movable>(entity)) {
-    MovableData = MovableDataFB(movable->speed);
+    MovableData = MovableFB(movable->speed);
     movablePtr = &MovableData;
   }
 
@@ -46,35 +46,35 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     movingPtr = &MovingData;
   }
 
-  TeamDataFB TeamData{};
-  const TeamDataFB* teamPtr = nullptr;
+  TeamFB TeamData{};
+  const TeamFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
     TeamData =
-        TeamDataFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
+        TeamFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
                                                         : TeamColorFB::Red);
     teamPtr = &TeamData;
   }
 
-  flatbuffers::Offset<AbilitiesDataFB> abilitiesOffset = 0;
+  flatbuffers::Offset<AbilitiesFB> abilitiesOffset = 0;
   if (const auto* abilities = registry.try_get<Abilities>(entity)) {
     std::vector<flatbuffers::Offset<AbilityEntryFB>> abilityEntries;
 
     for (const auto& [slot, ability] : abilities->abilities) {
-      auto tagData = static_cast<AbilityTagDataFB>(ability.tag);
+      auto tagData = static_cast<AbilityTagFB>(ability.tag);
       auto cooldown = ability.cooldownRemaining;
       auto rank = ability.rank;
       auto charges = ability.currentCharges;
       auto maxCharges = ability.maxCharges;
 
-      AbilityDataFB abilityData(tagData, cooldown, rank, charges, maxCharges);
+      AbilityFB abilityData(tagData, cooldown, rank, charges, maxCharges);
 
       auto entry = CreateAbilityEntryFB(
-          builder, static_cast<AbilitySlotDataFB>(slot), &abilityData);
+          builder, static_cast<AbilitySlotFB>(slot), &abilityData);
       abilityEntries.push_back(entry);
     }
 
     auto entriesVector = builder.CreateVector(abilityEntries);
-    abilitiesOffset = CreateAbilitiesDataFB(builder, entriesVector);
+    abilitiesOffset = CreateAbilitiesFB(builder, entriesVector);
   }
 
   auto entityOffset =
@@ -90,7 +90,7 @@ auto GameStateSerializer::Serialize(
     const entt::registry& registry,
     const std::vector<entt::entity>& dirtyEntities,
     const std::vector<entt::entity>& deletedEntities)
-    -> flatbuffers::Offset<lol_at_home_shared::GameStateSnapshotFB> {
+    -> flatbuffers::Offset<lol_at_home_shared::GameStateDeltaFB> {
   std::vector<flatbuffers::Offset<lol_at_home_shared::EntityFB>> entityOffsets;
 
   if (dirtyEntities.empty()) {
@@ -124,12 +124,12 @@ auto GameStateSerializer::Serialize(
   auto deletedVector = builder.CreateVector(deletedIds);
 
   auto snapshot =
-      CreateGameStateSnapshotFB(builder, entitiesVector, deletedVector);
+      CreateGameStateDeltaFB(builder, entitiesVector, deletedVector);
   return snapshot;
 }
 
 auto GameStateSerializer::Deserialize(
-    const lol_at_home_shared::GameStateSnapshotFB& gamestate,
+    const lol_at_home_shared::GameStateDeltaFB& gamestate,
     entt::registry& registry) -> void {
   // NOTE: This does not handle component removal. Once an entity has a
   // component, it keeps it forever. This matches LoL's design (turrets always
@@ -182,14 +182,14 @@ auto GameStateSerializer::Deserialize(
       Abilities abilities;
       for (const auto* abilityEntryFB : *entityFB->abilities()->abilities()) {
         auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
-        const auto* abilityDataFB = abilityEntryFB->ability();
+        const auto* AbilityFB = abilityEntryFB->ability();
 
         Abilities::Ability ability{
-            .tag = static_cast<AbilityTag>(abilityDataFB->id()),
-            .cooldownRemaining = abilityDataFB->cooldown_remaining(),
-            .rank = abilityDataFB->rank(),
-            .currentCharges = abilityDataFB->current_charges(),
-            .maxCharges = abilityDataFB->max_charges()};
+            .tag = static_cast<AbilityTag>(AbilityFB->id()),
+            .cooldownRemaining = AbilityFB->cooldown_remaining(),
+            .rank = AbilityFB->rank(),
+            .currentCharges = AbilityFB->current_charges(),
+            .maxCharges = AbilityFB->max_charges()};
 
         abilities.abilities[slot] = ability;
       }

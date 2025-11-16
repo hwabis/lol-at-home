@@ -25,21 +25,17 @@ struct Mana {
 };
 
 struct Movable {
-  // units per sec
-  double speed{};
+  double speed{};           // units per sec
+  Position targetPosition;  // ignored if state = idle
 };
 
-struct Moving {
+struct Moving {  // todo remove
   Position targetPosition;
 };
 
 struct Team {
   enum class Color : uint8_t { Blue, Red };
   Color teamColor;
-};
-
-struct DamagingArea {
-  Team owningTeam;
 };
 
 struct Abilities {
