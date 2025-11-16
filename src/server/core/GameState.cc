@@ -36,31 +36,8 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
   ++tickCounter_;
 
   processInbound();
-
-  // todo apparently u can mark dirty with entt::registry::patch or something ??
-  std::vector<entt::entity> periodicDirty;
-  std::vector<entt::entity> instantDirty;
-  std::vector<entt::entity> deletedEntities;
-  for (auto& system : systems_) {
-    std::vector<entt::entity> systemPeriodic;
-    std::vector<entt::entity> systemInstant;
-
-    system->Cycle(registry_, timeElapsed, systemPeriodic, systemInstant,
-                  deletedEntities);
-
-    instantDirty.insert(instantDirty.end(), systemInstant.begin(),
-                        systemInstant.end());
-
-    if (tickCounter_ % syncIntervals_[system.get()] == 0) {
-      periodicDirty.insert(periodicDirty.end(), systemPeriodic.begin(),
-                           systemPeriodic.end());
-    }
-  }
-
-  std::vector<entt::entity> allDirty = instantDirty;
-  allDirty.insert(allDirty.end(), periodicDirty.begin(), periodicDirty.end());
-
-  pushOutbound(allDirty, deletedEntities);
+  auto [dirtyEntities, deletedEntities] = cycleSystems(timeElapsed);
+  pushOutbound(dirtyEntities, deletedEntities);
 }
 
 void GameState::processInbound() {
@@ -106,6 +83,34 @@ auto GameState::validateInboundEventPeer(const InboundEvent& event) -> bool {
   }
 
   return true;
+}
+
+auto GameState::cycleSystems(std::chrono::milliseconds timeElapsed)
+    -> std::pair<std::vector<entt::entity>, std::vector<entt::entity>> {
+  // todo apparently u can mark dirty with entt::registry::patch or something ??
+  std::vector<entt::entity> periodicDirty;
+  std::vector<entt::entity> instantDirty;
+  std::vector<entt::entity> deletedEntities;
+  for (auto& system : systems_) {
+    std::vector<entt::entity> systemPeriodic;
+    std::vector<entt::entity> systemInstant;
+
+    system->Cycle(registry_, timeElapsed, systemPeriodic, systemInstant,
+                  deletedEntities);
+
+    instantDirty.insert(instantDirty.end(), systemInstant.begin(),
+                        systemInstant.end());
+
+    if (tickCounter_ % syncIntervals_[system.get()] == 0) {
+      periodicDirty.insert(periodicDirty.end(), systemPeriodic.begin(),
+                           systemPeriodic.end());
+    }
+  }
+
+  std::vector<entt::entity> allDirty = instantDirty;
+  allDirty.insert(allDirty.end(), periodicDirty.begin(), periodicDirty.end());
+
+  return {allDirty, deletedEntities};
 }
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
