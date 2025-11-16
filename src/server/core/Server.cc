@@ -7,14 +7,15 @@
 namespace lol_at_home_server {
 
 auto Server::Run() -> void {
-  constexpr int freqHz = 60;
+  constexpr int simulationHz = 60;
 
   PeriodicDriver gameStateDriver{
-      std::make_unique<GameState>(incoming_, outgoing_), freqHz};
+      std::make_unique<GameState>(incoming_, outgoing_, simulationHz),
+      simulationHz};
   gameStateDriver.StartAsync();
 
   PeriodicDriver networkDriver{
-      std::make_unique<EnetInterface>(incoming_, outgoing_), freqHz};
+      std::make_unique<EnetInterface>(incoming_, outgoing_), simulationHz};
   networkDriver.StartAsync();
 
   // Block

@@ -15,10 +15,14 @@ class IEcsSystem {
   IEcsSystem(IEcsSystem&&) = delete;
   auto operator=(IEcsSystem&&) -> IEcsSystem& = delete;
 
+  // Push to dirtyInstant if need to push network update on this tick
   virtual void Cycle(entt::registry& registry,
                      std::chrono::milliseconds timeElapsed,
-                     std::vector<entt::entity>& dirtyEntities,
+                     std::vector<entt::entity>& dirtyPeriodic,
+                     std::vector<entt::entity>& dirtyInstant,
                      std::vector<entt::entity>& deletedEntities) = 0;
+
+  [[nodiscard]] virtual auto GetPeriodicSyncRateHz() const -> int = 0;
 };
 
 }  // namespace lol_at_home_server

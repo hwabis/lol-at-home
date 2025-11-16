@@ -7,7 +7,7 @@ namespace lol_at_home_server {
 
 class GameStateTest : public ::testing::Test {
  protected:
-  GameState gameState_{nullptr, nullptr};
+  GameState gameState_{nullptr, nullptr, 1};
 };  // namespace lol_at_home_server
 
 TEST_F(GameStateTest, s) {

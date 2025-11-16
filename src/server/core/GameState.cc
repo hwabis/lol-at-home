@@ -1,31 +1,66 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
 #include "core/InboundEventVisitor.h"
-#include "ecs_systems/HealthSystem.h"
-#include "ecs_systems/MovementSystem.h"
+#include "ecs/HealthSystem.h"
+#include "ecs/MovementSystem.h"
 #include "s2c_message_generated.h"
 #include "serialization/GameStateSerializer.h"
 
 namespace lol_at_home_server {
 
 GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
-                     std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound)
-    : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {
+                     std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound,
+                     int simulationHz)
+    : inbound_(std::move(inbound)),
+      outbound_(std::move(outbound)),
+      simulationHz_(simulationHz) {
+  // Unfortunately order of systems kinda matters here. e.g. HealthSystem needs
+  // to see some components that are attached by previous systems
+  // todo combat/damage system needs to go before health system
   systems_.push_back(std::make_unique<MovementSystem>());
   systems_.push_back(std::make_unique<HealthSystem>());
+
+  for (auto& system : systems_) {
+    int syncHz = system->GetPeriodicSyncRateHz();
+    if (syncHz > simulationHz_) {
+      spdlog::warn("System wants " + std::to_string(syncHz) +
+                   "Hz but simulation is " + std::to_string(simulationHz_) +
+                   "Hz. Clamping");
+      syncHz = simulationHz_;
+    }
+    syncIntervals_[system.get()] = simulationHz_ / syncHz;
+  }
 }
 
 auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
+  ++tickCounter_;
+
   processInbound();
 
   // todo apparently u can mark dirty with entt::registry::patch or something ??
-  std::vector<entt::entity> dirtyEntities;
+  std::vector<entt::entity> periodicDirty;
+  std::vector<entt::entity> instantDirty;
   std::vector<entt::entity> deletedEntities;
   for (auto& system : systems_) {
-    system->Cycle(registry_, timeElapsed, dirtyEntities, deletedEntities);
+    std::vector<entt::entity> systemPeriodic;
+    std::vector<entt::entity> systemInstant;
+
+    system->Cycle(registry_, timeElapsed, systemPeriodic, systemInstant,
+                  deletedEntities);
+
+    instantDirty.insert(instantDirty.end(), systemInstant.begin(),
+                        systemInstant.end());
+
+    if (tickCounter_ % syncIntervals_[system.get()] == 0) {
+      periodicDirty.insert(periodicDirty.end(), systemPeriodic.begin(),
+                           systemPeriodic.end());
+    }
   }
 
-  pushOutbound(dirtyEntities, deletedEntities);
+  std::vector<entt::entity> allDirty = instantDirty;
+  allDirty.insert(allDirty.end(), periodicDirty.begin(), periodicDirty.end());
+
+  pushOutbound(allDirty, deletedEntities);
 }
 
 void GameState::processInbound() {
