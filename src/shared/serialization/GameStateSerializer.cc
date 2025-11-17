@@ -6,6 +6,7 @@
 namespace lol_at_home_shared {
 
 namespace {
+
 auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
                      const entt::registry& registry,
                      entt::entity entity)
@@ -87,6 +88,7 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
 
   return entityOffset;
 }
+
 }  // namespace
 
 auto GameStateSerializer::Serialize(
