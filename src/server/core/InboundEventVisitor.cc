@@ -11,10 +11,12 @@ InboundEventVisitor::InboundEventVisitor(
     ENetPeer* peer,
     entt::registry* registry,
     std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
+    std::vector<entt::entity>* instantDirty,
     ThreadSafeQueue<OutboundEvent>* outbound)
     : peer_(peer),
       registry_(registry),
       peerToEntityMap_(peerToEntityMap),
+      instantDirty_(instantDirty),
       outbound_(outbound) {}
 
 void InboundEventVisitor::operator()(
@@ -100,7 +102,7 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
 
 void InboundEventVisitor::operator()(
     const lol_at_home_shared::GameActionVariant& action) const {
-  std::visit(GameActionProcessor{registry_}, action);
+  std::visit(GameActionProcessor{registry_, instantDirty_}, action);
 }
 
 }  // namespace lol_at_home_server

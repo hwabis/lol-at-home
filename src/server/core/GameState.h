@@ -18,9 +18,9 @@ class GameState : public IPeriodic {
   auto Cycle(std::chrono::milliseconds timeElapsed) -> void override;
 
  private:
-  void processInbound();
-  // First element is everyone dirty, second is everyone deleted
+  void processInbound(std::vector<entt::entity>& instantDirty);
   auto validateInboundEventPeer(const InboundEvent& event) -> bool;
+  // First element is everyone dirty, second is everyone deleted
   auto cycleSystems(std::chrono::milliseconds timeElapsed)
       -> std::pair<std::vector<entt::entity>, std::vector<entt::entity>>;
   void pushOutbound(const std::vector<entt::entity>& dirtyEntities,

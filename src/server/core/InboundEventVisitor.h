@@ -15,6 +15,7 @@ class InboundEventVisitor {
       ENetPeer* peer,
       entt::registry* registry,
       std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
+      std::vector<entt::entity>* instantDirty,
       ThreadSafeQueue<OutboundEvent>* outbound);
 
   void operator()(const ClientConnectedEvent& event) const;
@@ -26,6 +27,7 @@ class InboundEventVisitor {
   ENetPeer* peer_;
   entt::registry* registry_;
   std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap_;
+  std::vector<entt::entity>* instantDirty_;
   ThreadSafeQueue<OutboundEvent>* outbound_;
 };
 

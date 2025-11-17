@@ -35,12 +35,17 @@ GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
 auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
   ++tickCounter_;
 
-  processInbound();
+  std::vector<entt::entity> instantDirty;
+  processInbound(instantDirty);
   auto [dirtyEntities, deletedEntities] = cycleSystems(timeElapsed);
+
+  dirtyEntities.insert(dirtyEntities.end(), instantDirty.begin(),
+                       instantDirty.end());
+
   pushOutbound(dirtyEntities, deletedEntities);
 }
 
-void GameState::processInbound() {
+void GameState::processInbound(std::vector<entt::entity>& instantDirty) {
   std::queue<InboundEvent> inboundEvents = inbound_->PopAll();
 
   while (!inboundEvents.empty()) {
@@ -55,7 +60,7 @@ void GameState::processInbound() {
     }
 
     std::visit(InboundEventVisitor{event.peer, &registry_, &peerToEntityMap_,
-                                   outbound_.get()},
+                                   &instantDirty, outbound_.get()},
                event.event);
   }
 }

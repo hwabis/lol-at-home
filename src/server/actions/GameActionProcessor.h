@@ -10,8 +10,9 @@ namespace lol_at_home_server {
 
 class GameActionProcessor {
  public:
-  explicit GameActionProcessor(entt::registry* registry)
-      : registry_(registry) {}
+  GameActionProcessor(entt::registry* registry,
+                      std::vector<entt::entity>* instantDirty)
+      : registry_(registry), instantDirty_(instantDirty) {}
 
   void operator()(const lol_at_home_shared::MoveAction& action) {
     if (!registry_->valid(action.source)) {
@@ -24,6 +25,7 @@ class GameActionProcessor {
       *movable = {.speed = movable->speed,
                   .state = lol_at_home_shared::MovementState::Moving,
                   .targetPosition = action.targetPosition};
+      instantDirty_->push_back(action.source);
     } else {
       spdlog::warn("Entity has no Movable component");
     }
@@ -67,6 +69,7 @@ class GameActionProcessor {
 
  private:
   entt::registry* registry_;
+  std::vector<entt::entity>* instantDirty_;
 
   // todo maybe make this into ability registry class
   static auto getAbilityImpl(lol_at_home_shared::AbilityTag abilityId)
