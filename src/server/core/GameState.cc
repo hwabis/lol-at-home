@@ -120,7 +120,7 @@ auto GameState::cycleSystems(std::chrono::milliseconds timeElapsed)
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
-  flatbuffers::FlatBufferBuilder builder(1024);
+  flatbuffers::FlatBufferBuilder builder{};
   auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
       builder, registry_, dirtyEntities, deletedEntities);
   auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(

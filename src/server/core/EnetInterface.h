@@ -11,7 +11,8 @@ namespace lol_at_home_server {
 class EnetInterface : public IPeriodic {
  public:
   EnetInterface(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
-                std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound);
+                std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound,
+                uint16_t port);
 
   ~EnetInterface() override;
 

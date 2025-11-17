@@ -142,67 +142,12 @@ auto GameStateSerializer::Deserialize(
       entity = registry.create(entity);
     }
 
-    if (entityFB->position() != nullptr) {
-      registry.emplace_or_replace<Position>(entity, entityFB->position()->x(),
-                                            entityFB->position()->y());
-    }
-
-    if (entityFB->health() != nullptr) {
-      registry.emplace_or_replace<Health>(
-          entity, entityFB->health()->current_health(),
-          entityFB->health()->max_health(),
-          entityFB->health()->health_regen_per_sec());
-    }
-
-    if (entityFB->mana() != nullptr) {
-      registry.emplace_or_replace<Mana>(entity, entityFB->mana()->mana(),
-                                        entityFB->mana()->max_mana(),
-                                        entityFB->mana()->mana_regen_per_sec());
-    }
-
-    if (entityFB->movable() != nullptr) {
-      MovementState moveState{};
-      switch (entityFB->movable()->state()) {
-        case MovementStateFB::Idle:
-          moveState = MovementState::Idle;
-          break;
-        case MovementStateFB::Moving:
-          moveState = MovementState::Moving;
-          break;
-      }
-
-      registry.emplace_or_replace<Movable>(
-          entity, Movable{.speed = entityFB->movable()->speed(),
-                          .state = moveState,
-                          .targetPosition = {
-                              .x = entityFB->movable()->target_pos().x(),
-                              .y = entityFB->movable()->target_pos().y()}});
-    }
-
-    if (entityFB->team() != nullptr) {
-      registry.emplace_or_replace<Team>(
-          entity, entityFB->team()->color() == TeamColorFB::Blue
-                      ? Team::Color::Blue
-                      : Team::Color::Red);
-    }
-
-    if (entityFB->abilities() != nullptr) {
-      Abilities abilities;
-      for (const auto* abilityEntryFB : *entityFB->abilities()->abilities()) {
-        auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
-        const auto* AbilityFB = abilityEntryFB->ability();
-
-        Abilities::Ability ability{
-            .tag = static_cast<AbilityTag>(AbilityFB->id()),
-            .cooldownRemaining = AbilityFB->cooldown_remaining(),
-            .rank = AbilityFB->rank(),
-            .currentCharges = AbilityFB->current_charges(),
-            .maxCharges = AbilityFB->max_charges()};
-
-        abilities.abilities[slot] = ability;
-      }
-      registry.emplace_or_replace<Abilities>(entity, abilities);
-    }
+    deserializePosition(registry, entity, entityFB->position());
+    deserializeHealth(registry, entity, entityFB->health());
+    deserializeMana(registry, entity, entityFB->mana());
+    deserializeMovable(registry, entity, entityFB->movable());
+    deserializeTeam(registry, entity, entityFB->team());
+    deserializeAbilities(registry, entity, entityFB->abilities());
   }
 
   for (uint32_t deletedId : *gamestate.deleted_entity_ids()) {
@@ -210,6 +155,87 @@ auto GameStateSerializer::Deserialize(
     if (registry.valid(entity)) {
       registry.destroy(entity);
     }
+  }
+}
+
+void GameStateSerializer::deserializePosition(entt::registry& registry,
+                                              entt::entity entity,
+                                              const PositionFB* pos) {
+  if (pos != nullptr) {
+    registry.emplace_or_replace<Position>(entity, pos->x(), pos->y());
+  }
+}
+
+void GameStateSerializer::deserializeHealth(entt::registry& registry,
+                                            entt::entity entity,
+                                            const HealthFB* health) {
+  if (health != nullptr) {
+    registry.emplace_or_replace<Health>(entity, health->current_health(),
+                                        health->max_health(),
+                                        health->health_regen_per_sec());
+  }
+}
+
+void GameStateSerializer::deserializeMana(entt::registry& registry,
+                                          entt::entity entity,
+                                          const ManaFB* mana) {
+  if (mana != nullptr) {
+    registry.emplace_or_replace<Mana>(entity, mana->mana(), mana->max_mana(),
+                                      mana->mana_regen_per_sec());
+  }
+}
+
+void GameStateSerializer::deserializeMovable(entt::registry& registry,
+                                             entt::entity entity,
+                                             const MovableFB* movable) {
+  if (movable != nullptr) {
+    MovementState moveState{};
+    switch (movable->state()) {
+      case MovementStateFB::Idle:
+        moveState = MovementState::Idle;
+        break;
+      case MovementStateFB::Moving:
+        moveState = MovementState::Moving;
+        break;
+    }
+
+    registry.emplace_or_replace<Movable>(
+        entity, Movable{.speed = movable->speed(),
+                        .state = moveState,
+                        .targetPosition = {.x = movable->target_pos().x(),
+                                           .y = movable->target_pos().y()}});
+  }
+}
+
+void GameStateSerializer::deserializeTeam(entt::registry& registry,
+                                          entt::entity entity,
+                                          const TeamFB* team) {
+  if (team != nullptr) {
+    registry.emplace_or_replace<Team>(entity, team->color() == TeamColorFB::Blue
+                                                  ? Team::Color::Blue
+                                                  : Team::Color::Red);
+  }
+}
+
+void GameStateSerializer::deserializeAbilities(entt::registry& registry,
+                                               entt::entity entity,
+                                               const AbilitiesFB* abilitiesFB) {
+  if (abilitiesFB != nullptr) {
+    Abilities abilities;
+    for (const auto* abilityEntryFB : *abilitiesFB->abilities()) {
+      auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
+      const auto* AbilityFB = abilityEntryFB->ability();
+
+      Abilities::Ability ability{
+          .tag = static_cast<AbilityTag>(AbilityFB->id()),
+          .cooldownRemaining = AbilityFB->cooldown_remaining(),
+          .rank = AbilityFB->rank(),
+          .currentCharges = AbilityFB->current_charges(),
+          .maxCharges = AbilityFB->max_charges()};
+
+      abilities.abilities[slot] = ability;
+    }
+    registry.emplace_or_replace<Abilities>(entity, abilities);
   }
 }
 

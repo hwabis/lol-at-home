@@ -23,13 +23,15 @@ void InboundEventVisitor::operator()(
     const ClientConnectedEvent& /*event*/) const {
   entt::entity entity = registry_->create();
 
+  // todo client needs to be able to choose a champ, through
+  // ClientConnectedEvent i guess
   registry_->emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
   registry_->emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
   registry_->emplace<lol_at_home_shared::Movable>(entity, 300.0);
 
   peerToEntityMap_->emplace(peer_, entity);
 
-  flatbuffers::FlatBufferBuilder builder(1024);
+  flatbuffers::FlatBufferBuilder builder{};
   auto paOffset = lol_at_home_shared::CreatePlayerAssignmentFB(
       builder, static_cast<uint32_t>(entity));
   auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
@@ -83,7 +85,7 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
   }
 
   entt::entity senderEntity = itr->second;
-  flatbuffers::FlatBufferBuilder builder(256);
+  flatbuffers::FlatBufferBuilder builder{};
 
   auto textOffset = builder.CreateString(event.message);
   auto chatBroadcast = lol_at_home_shared::CreateChatBroadcastFB(

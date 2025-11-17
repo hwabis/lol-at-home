@@ -12,3 +12,5 @@ Checks: >
   readability-*,
   clang-analyzer-*,
   -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,

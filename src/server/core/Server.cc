@@ -14,8 +14,10 @@ auto Server::Run() -> void {
       simulationHz};
   gameStateDriver.StartAsync();
 
+  constexpr uint16_t port = 1111;
   PeriodicDriver networkDriver{
-      std::make_unique<EnetInterface>(incoming_, outgoing_), simulationHz};
+      std::make_unique<EnetInterface>(incoming_, outgoing_, port),
+      simulationHz};
   networkDriver.StartAsync();
 
   // Block

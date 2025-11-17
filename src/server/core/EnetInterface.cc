@@ -7,11 +7,13 @@ namespace lol_at_home_server {
 
 EnetInterface::EnetInterface(
     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
-    std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound)
+    std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound,
+    uint16_t port)
     : inbound_(std::move(inbound)), outbound_(std::move(outbound)) {
   enet_initialize();
-  ENetAddress address{.host = ENET_HOST_ANY, .port = 12345};
-  host_ = enet_host_create(&address, 32, 2, 0, 0);
+  ENetAddress address{.host = ENET_HOST_ANY, .port = port};
+  constexpr int numOfPlayers = 10;  // technically doesn't handle spectators lol
+  host_ = enet_host_create(&address, numOfPlayers, 1, 0, 0);
 }
 
 EnetInterface::~EnetInterface() {
