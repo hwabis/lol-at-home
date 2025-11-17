@@ -2,6 +2,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
 #include "actions/GameActionProcessor.h"
+#include "champions/ChampionFactory.h"
 #include "s2c_message_generated.h"
 #include "serialization/GameStateSerializer.h"
 
@@ -19,15 +20,10 @@ InboundEventVisitor::InboundEventVisitor(
       instantDirty_(instantDirty),
       outbound_(outbound) {}
 
-void InboundEventVisitor::operator()(
-    const ClientConnectedEvent& /*event*/) const {
+void InboundEventVisitor::operator()(const ClientConnectedEvent& event) const {
   entt::entity entity = registry_->create();
 
-  // todo client needs to be able to choose a champ, through
-  // ClientConnectedEvent i guess
-  registry_->emplace<lol_at_home_shared::Position>(entity, 100.0, 200.0);
-  registry_->emplace<lol_at_home_shared::Health>(entity, 100.0, 100.0, 5.0);
-  registry_->emplace<lol_at_home_shared::Movable>(entity, 300.0);
+  ChampionFactory::CreateChampion(*registry_, entity, event.championId);
 
   peerToEntityMap_->emplace(peer_, entity);
 

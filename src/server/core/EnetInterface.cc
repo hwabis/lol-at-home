@@ -52,9 +52,7 @@ void EnetInterface::populateInbound() {
   while (enet_host_service(host_, &event, 1) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_CONNECT: {
-        spdlog::info("Client connected");
-        inbound_->Push(
-            InboundEvent{.peer = event.peer, .event = ClientConnectedEvent{}});
+        spdlog::info("Client connected - awaiting champion select");
         break;
       }
 
@@ -96,9 +94,22 @@ void EnetInterface::populateInbound() {
             break;
           }
 
-          case lol_at_home_shared::C2SDataFB::NONE:
+          case lol_at_home_shared::C2SDataFB::ChampionSelectFB: {
+            const auto* champSelect = c2sMessage->message_as_ChampionSelectFB();
+            auto champId = static_cast<lol_at_home_shared::ChampionId>(
+                champSelect->champion_id());
+
+            inbound_->Push(InboundEvent{
+                .peer = event.peer,
+                .event = ClientConnectedEvent{.championId = champId}});
+
+            break;
+          }
+
+          case lol_at_home_shared::C2SDataFB::NONE: {
             spdlog::warn("Received empty or unknown message type");
             break;
+          }
         }
 
         enet_packet_destroy(event.packet);

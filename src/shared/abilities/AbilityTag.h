@@ -5,10 +5,10 @@
 namespace lol_at_home_shared {
 
 enum class AbilityTag : uint8_t {
-  GAREN_Q,
-  GAREN_W,
-  GAREN_E,
-  GAREN_R,
+  Garen_Q,
+  Garen_W,
+  Garen_E,
+  Garen_R,
 };
 
 }

@@ -34,10 +34,10 @@ struct TeamFB {
 }
 
 enum AbilityTagFB: ubyte {
-  GAREN_Q = 0,
-  GAREN_W = 1,
-  GAREN_E = 2,
-  GAREN_R = 3
+  Garen_Q = 0,
+  Garen_W = 1,
+  Garen_E = 2,
+  Garen_R = 3
 }
 
 struct AbilityFB {

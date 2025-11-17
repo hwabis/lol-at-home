@@ -6,9 +6,14 @@ table ChatMessageFB {
   text: string;
 }
 
+table ChampionSelectFB {
+  champion_id: ubyte;  // ChampionIdFB enum
+}
+
 union C2SDataFB {
   GameActionFB,
-  ChatMessageFB
+  ChatMessageFB,
+  ChampionSelectFB
 }
 
 table C2SMessageFB {
