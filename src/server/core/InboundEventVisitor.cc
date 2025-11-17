@@ -21,9 +21,7 @@ InboundEventVisitor::InboundEventVisitor(
       outbound_(outbound) {}
 
 void InboundEventVisitor::operator()(const ClientConnectedEvent& event) const {
-  entt::entity entity = registry_->create();
-
-  ChampionFactory::CreateChampion(*registry_, entity, event.championId);
+  auto entity = ChampionFactory::CreateChampion(*registry_, event.championId);
 
   peerToEntityMap_->emplace(peer_, entity);
 

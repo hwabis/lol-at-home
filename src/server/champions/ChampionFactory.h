@@ -10,21 +10,24 @@ class ChampionFactory {
  public:
   ChampionFactory() = delete;
 
-  static void CreateChampion(entt::registry& registry,
-                             entt::entity entity,
-                             lol_at_home_shared::ChampionId championId) {
+  static auto CreateChampion(entt::registry& registry,
+                             lol_at_home_shared::ChampionId championId)
+      -> entt::entity {
     // todo probably wanna split each champ into own class
     switch (championId) {
       case lol_at_home_shared::ChampionId::Garen:
-        createGaren(registry, entity);
-        break;
-        // todo tenmo
+        return createGaren(registry);
+      case lol_at_home_shared::ChampionId::Teemo:
+        // todo
+        return entt::entity(0);
     }
   }
 
  private:
-  static void createGaren(entt::registry& registry, entt::entity entity) {
+  static auto createGaren(entt::registry& registry) -> entt::entity {
     using namespace lol_at_home_shared;
+
+    entt::entity entity = registry.create();
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,
     // readability-magic-numbers)
@@ -44,6 +47,8 @@ class ChampionFactory {
     registry.emplace<Abilities>(entity, abilities);
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,
     // readability-magic-numbers)
+
+    return entity;
   }
 };
 
