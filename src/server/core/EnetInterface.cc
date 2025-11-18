@@ -1,6 +1,7 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
 #include "c2s_message_generated.h"
+#include "domain/EcsComponents.h"
 #include "serialization/GameActionSerializer.h"
 
 namespace lol_at_home_server {
@@ -98,10 +99,15 @@ void EnetInterface::populateInbound() {
             const auto* champSelect = c2sMessage->message_as_ChampionSelectFB();
             auto champId = static_cast<lol_at_home_shared::ChampionId>(
                 champSelect->champion_id());
+            auto team = champSelect->team_color() ==
+                                lol_at_home_shared::TeamColorFB::Red
+                            ? lol_at_home_shared::Team::Color::Red
+                            : lol_at_home_shared::Team::Color::Blue;
 
-            inbound_->Push(InboundEvent{
-                .peer = event.peer,
-                .event = ClientConnectedEvent{.championId = champId}});
+            inbound_->Push(
+                InboundEvent{.peer = event.peer,
+                             .event = ClientConnectedEvent{
+                                 .championId = champId, .teamColor = team}});
 
             break;
           }

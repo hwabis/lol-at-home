@@ -15,7 +15,7 @@ struct ManaFB {
 
 enum MovementStateFB: ubyte {
   Idle = 0,
-  Moving = 1
+  Moving = 1,
 }
 
 struct MovableFB {
@@ -26,7 +26,7 @@ struct MovableFB {
 
 enum TeamColorFB: ubyte {
   Blue = 0,
-  Red = 1
+  Red = 1,
 }
 
 struct TeamFB {
@@ -37,7 +37,7 @@ enum AbilityTagFB: ubyte {
   Garen_Q = 0,
   Garen_W = 1,
   Garen_E = 2,
-  Garen_R = 3
+  Garen_R = 3,
 }
 
 struct AbilityFB {

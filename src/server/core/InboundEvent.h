@@ -8,6 +8,7 @@ namespace lol_at_home_server {
 
 struct ClientConnectedEvent {
   lol_at_home_shared::ChampionId championId;
+  lol_at_home_shared::Team::Color teamColor;
 };
 struct ClientDisconnectedEvent {};
 struct InboundChatEvent {

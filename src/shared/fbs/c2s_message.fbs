@@ -6,14 +6,25 @@ table ChatMessageFB {
   text: string;
 }
 
+enum ChampionIdFB: ubyte {
+  Garen = 0,
+  Teemo = 1,
+}
+
+enum TeamColorFB: ubyte {
+  Blue = 0,
+  Red = 1,
+}
+
 table ChampionSelectFB {
-  champion_id: ubyte;  // ChampionIdFB enum
+  champion_id: ChampionIdFB;
+  team_color: TeamColorFB;
 }
 
 union C2SDataFB {
   GameActionFB,
   ChatMessageFB,
-  ChampionSelectFB
+  ChampionSelectFB,
 }
 
 table C2SMessageFB {

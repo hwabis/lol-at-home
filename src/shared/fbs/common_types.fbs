@@ -11,5 +11,5 @@ enum AbilitySlotFB: ubyte {
   E = 2,
   R = 3,
   Summ1 = 4,
-  Summ2 = 5
+  Summ2 = 5,
 }

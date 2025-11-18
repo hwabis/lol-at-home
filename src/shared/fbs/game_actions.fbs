@@ -20,7 +20,7 @@ union AbilityTargetDataFB {
   NoTargetFB,
   EntityTargetFB,
   OnePointSkillshotFB,
-  TwoPointSkillshotFB
+  TwoPointSkillshotFB,
 }
 
 table MoveActionFB {
@@ -42,7 +42,7 @@ union GameActionDataFB {
   MoveActionFB,
   AbilityActionFB,
   AutoAttackActionFB,
-  StopActionFB
+  StopActionFB,
 }
 
 table GameActionFB {
