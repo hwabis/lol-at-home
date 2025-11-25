@@ -1,29 +1,29 @@
 #include "Camera.h"
-#include <algorithm>
 
 namespace lol_at_home_engine {
 
+// todo make struct (typedefs) between worldpos and screenpos
 auto Camera::WorldToScreen(Vector2 worldPos, Vector2 screenSize) const
     -> Vector2 {
+  constexpr float half = 2.0F;
+
   Vector2 relativePos = worldPos - position_;
   Vector2 screenPos = relativePos / zoom_;
-  screenPos.X += screenSize.X / 2.0;
-  screenPos.Y += screenSize.Y / 2.0;
+  screenPos.x += screenSize.x * half;
+  screenPos.y += screenSize.y * half;
   return screenPos;
 }
 
 auto Camera::ScreenToWorld(Vector2 screenPos, Vector2 screenSize) const
     -> Vector2 {
+  constexpr float half = 2.0F;
+
   Vector2 centeredScreen = screenPos;
-  centeredScreen.X -= screenSize.X / 2.0;
-  centeredScreen.Y -= screenSize.Y / 2.0;
+  centeredScreen.x -= screenSize.x * half;
+  centeredScreen.y -= screenSize.y * half;
   Vector2 worldPos = centeredScreen * zoom_;
   worldPos = worldPos + position_;
   return worldPos;
-}
-
-void Camera::SetZoom(float zoom) {
-  zoom_ = std::clamp(zoom, minZoom_, maxZoom_);
 }
 
 }  // namespace lol_at_home_engine

@@ -14,6 +14,7 @@ class Scene {
 
   virtual void OnStart() {}
   virtual void Update(double deltaTime) = 0;
+  // todo prob shoudnt be passing in renderer (remove with ecs?)
   virtual void Render(Renderer& renderer) = 0;
   virtual void OnEnd() {}
   [[nodiscard]] virtual auto ShouldContinue() -> bool { return true; }

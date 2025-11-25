@@ -1,10 +1,11 @@
 #include "Game.h"
 #include <spdlog/spdlog.h>
 #include <chrono>
+#include <utility>
 
 namespace lol_at_home_engine {
 
-Game::Game(const GameConfig& config) : config_(config) {
+Game::Game(GameConfig config) : config_(std::move(config)) {
   camera_ = std::make_shared<Camera>();
 }
 
@@ -31,8 +32,8 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  window_ = SDL_CreateWindow(config_.WindowTitle, config_.WindowWidth,
-                             config_.WindowHeight, 0);
+  window_ = SDL_CreateWindow(config_.WindowTitle.c_str(), config_.windowWidth,
+                             config_.windowHeight, 0);
   if (window_ == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     SDL_Quit();
@@ -48,7 +49,7 @@ void Game::initSDL() {
   }
 
   renderer_ = std::make_unique<Renderer>(sdlRenderer_, camera_);
-  renderer_->UpdateScreenSize(config_.WindowWidth, config_.WindowHeight);
+  renderer_->UpdateScreenSize(config_.windowWidth, config_.windowHeight);
 
   spdlog::info("SDL initialized successfully");
 }
@@ -72,7 +73,7 @@ void Game::cleanupSDL() {
 
 void Game::gameLoop() {
   auto lastFrameTime = std::chrono::steady_clock::now();
-  const double targetFrameTime = 1000.0 / config_.TargetFPS;
+  const double targetFrameTime = 1000.0 / config_.targetFPS;
 
   while (running_) {
     auto frameStart = std::chrono::steady_clock::now();

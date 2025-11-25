@@ -4,11 +4,7 @@ namespace lol_at_home_engine {
 
 void Input::Update() {
   previousMouseState_ = currentMouseState_;
-
-  float mx = 0.0F;
-  float my = 0.0F;
-  currentMouseState_ = SDL_GetMouseState(&mx, &my);
-  mousePosition_ = {.X = static_cast<double>(mx), .Y = static_cast<double>(my)};
+  currentMouseState_ = SDL_GetMouseState(&mousePosition_.x, &mousePosition_.y);
 
   int numKeys = 0;
   const bool* state = SDL_GetKeyboardState(&numKeys);
@@ -39,7 +35,7 @@ auto Input::IsKeyPressed(SDL_Keycode key) const -> bool {
 }
 
 auto Input::IsKeyReleased(SDL_Keycode key) const -> bool {
-  // Would need previous keyboard state tracking
+  // todo idk
   return false;
 }
 

@@ -7,6 +7,8 @@
 
 namespace lol_at_home_shared {
 
+// todo replace all doubles with floats... like EVERYWHERE
+
 struct Position {
   double x{};
   double y{};

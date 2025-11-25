@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <memory>
+#include <string>
 #include "Camera.h"
 #include "Input.h"
 #include "Renderer.h"
@@ -10,15 +11,16 @@
 namespace lol_at_home_engine {
 
 struct GameConfig {
-  const char* WindowTitle = "Game";
-  int WindowWidth = 1280;
-  int WindowHeight = 720;
-  int TargetFPS = 60;
+  std::string WindowTitle = "Game";
+  // todo why are there two places reoslution is defined LOL
+  int windowWidth = 1280;
+  int windowHeight = 720;
+  int targetFPS = 60;
 };
 
 class Game {
  public:
-  explicit Game(const GameConfig& config);
+  explicit Game(GameConfig config);
   virtual ~Game();
 
   Game(const Game&) = delete;

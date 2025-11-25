@@ -6,9 +6,9 @@ class LoLAtHomeGame : public lol_at_home_engine::Game {
  public:
   LoLAtHomeGame()
       : Game({.WindowTitle = "League of Legends at Home",
-              .WindowWidth = 1280,
-              .WindowHeight = 720,
-              .TargetFPS = 60}) {}
+              .windowWidth = 1280,
+              .windowHeight = 720,
+              .targetFPS = 60}) {}
 
  protected:
   auto CreateRootScene()

@@ -20,7 +20,7 @@ class Input {
  private:
   SDL_MouseButtonFlags currentMouseState_{0};
   SDL_MouseButtonFlags previousMouseState_{0};
-  Vector2 mousePosition_{.X = 0.0, .Y = 0.0};
+  Vector2 mousePosition_;
 
   std::span<const bool> currentKeyState_;
   std::span<const bool> previousKeyState_;

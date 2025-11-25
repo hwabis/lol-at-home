@@ -1,13 +1,10 @@
 #include "GameplayScene.h"
 #include <spdlog/spdlog.h>
 #include "ClientComponents.h"
+#include "Renderer.h"
 #include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 #include "serialization/GameActionSerializer.h"
-#include "domain/GameStateSerializer.h"
-#include "domain/PlayerAssignment.h"
-#include "serialization/PlayerAssignmentSerializer.h"
-#include "Renderer.h"
 
 namespace lol_at_home_game {
 
@@ -33,7 +30,7 @@ void GameplayScene::OnStart() {
 
   connectToServer();
 
-  camera_->SetPosition({.X = 100.0, .Y = 200.0});
+  camera_->SetPosition({.x = 100.0, .y = 200.0});
   camera_->SetZoom(1.0F);
 }
 
@@ -106,16 +103,10 @@ void GameplayScene::handleInput() {
         camera_->ScreenToWorld(screenPos, renderer_.GetScreenSize());
 
     lol_at_home_shared::MoveAction action{
-        .Source = myEntityId_,
-        .TargetPosition = {.X = worldPos.X, .Y = worldPos.Y}};
+        .source = myEntityId_,
+        .targetPosition = {.x = worldPos.x, .y = worldPos.y}};
 
-    auto bytes = lol_at_home_shared::GameActionSerializer::Serialize(action);
-    ENetPacket* packet = enet_packet_create(bytes.data(), bytes.size(),
-                                            ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(peer_, 0, packet);
-
-    spdlog::info("Sent move to (" + std::to_string(worldPos.X) + ", " +
-                 std::to_string(worldPos.Y) + ")");
+    // todo serialize, create packet, send
   }
 }
 
@@ -126,7 +117,6 @@ void GameplayScene::handleNetwork() {
 
   ENetEvent event;
   while (enet_host_service(client_, &event, 0) > 0) {
-    /*
     switch (event.type) {
       case ENET_EVENT_TYPE_RECEIVE: {
         std::vector<std::byte> data(
@@ -134,30 +124,7 @@ void GameplayScene::handleNetwork() {
             reinterpret_cast<const std::byte*>(event.packet->data) +
                 event.packet->dataLength);
 
-        try {
-          switch (event.channelID) {
-            case lol_at_home_shared::NetworkChannels::Control: {
-              auto assignment =
-                  lol_at_home_shared::PlayerAssignmentSerializer::Deserialize(
-                      data);
-              myEntityId_ = assignment.AssignedEntity;
-              spdlog::info("Assigned to entity: " +
-                           std::to_string(static_cast<uint32_t>(myEntityId_)));
-              break;
-            }
-            case lol_at_home_shared::NetworkChannels::GameState: {
-              lol_at_home_shared::GameStateSerializer::Deserialize(registry_,
-                                                                   data);
-              break;
-            }
-            default: {
-              spdlog::error(std::string("Received unknown channelID: ") +
-                            std::to_string(event.channelID));
-            }
-          }
-        } catch (const std::exception& e) {
-          spdlog::error(std::string("Failed to deserialize: ") + e.what());
-        }
+        // todo extract the union or smth
 
         enet_packet_destroy(event.packet);
         break;
@@ -168,10 +135,10 @@ void GameplayScene::handleNetwork() {
         connected_ = false;
         break;
 
-      default:
+      case ENET_EVENT_TYPE_NONE:
+      case ENET_EVENT_TYPE_CONNECT:
         break;
     }
-        */ // todo all the client code is broken rn but i just care abt server right now so just comment stuff out so server can build lolololol
   }
 }
 
@@ -187,22 +154,22 @@ void GameplayScene::updateInterpolation(double deltaTime) {
       continue;
     }
 
-    double dxToServer = serverPos.X - visualPos->Position.X;
-    double dyToServer = serverPos.Y - visualPos->Position.Y;
+    double dxToServer = serverPos.x - visualPos->position.x;
+    double dyToServer = serverPos.y - visualPos->position.y;
     double distance =
-        std::sqrt(dxToServer * dxToServer + dyToServer * dyToServer);
+        std::sqrt((dxToServer * dxToServer) + (dyToServer * dyToServer));
 
     if (distance < 0.5) {
-      visualPos->Position = serverPos;
+      visualPos->position = serverPos;
       continue;
     }
 
     double speed = 0;
     if (auto* movable =
             registry_.try_get<lol_at_home_shared::Movable>(entity)) {
-      speed = movable->Speed;
+      speed = movable->speed;
     } else {
-      visualPos->Position = serverPos;
+      visualPos->position = serverPos;
       continue;
     }
 
@@ -210,57 +177,17 @@ void GameplayScene::updateInterpolation(double deltaTime) {
     double moveDistance = speed * deltaSec;
 
     if (moveDistance >= distance) {
-      visualPos->Position = serverPos;
+      visualPos->position = serverPos;
     } else {
       double ratio = moveDistance / distance;
-      visualPos->Position.X += dxToServer * ratio;
-      visualPos->Position.Y += dyToServer * ratio;
+      visualPos->position.x += dxToServer * ratio;
+      visualPos->position.y += dyToServer * ratio;
     }
   }
 }
 
 void GameplayScene::renderEntities(lol_at_home_engine::Renderer& renderer) {
-  auto view = registry_.view<lol_at_home_shared::Position>();
-  for (auto entity : view) {
-    lol_at_home_shared::Position renderPos;
-    if (auto* visualPos = registry_.try_get<VisualPosition>(entity)) {
-      renderPos = visualPos->Position;
-    } else {
-      renderPos = view.get<lol_at_home_shared::Position>(entity);
-    }
-
-    lol_at_home_engine::Color color{.r = 100, .g = 200, .b = 255, .a = 255};
-    if (auto* team = registry_.try_get<lol_at_home_shared::Team>(entity)) {
-      color = team->TeamColorFB == lol_at_home_shared::Team::Color::Blue
-                  ? lol_at_home_engine::Color{.r = 100,
-                                              .g = 150,
-                                              .b = 255,
-                                              .a = 255}
-                  : lol_at_home_engine::Color{
-                        .r = 255, .g = 100, .b = 100, .a = 255};
-    }
-
-    renderer.DrawCircle({.X = renderPos.X, .Y = renderPos.Y}, 50.0, color);
-
-    if (auto* health = registry_.try_get<lol_at_home_shared::Health>(entity)) {
-      double healthPercent = health->CurrentHealth / health->MaxHealth;
-      lol_at_home_engine::Vector2 barPos{.X = renderPos.X - 30.0,
-                                         .Y = renderPos.Y - 70.0};
-      lol_at_home_engine::Vector2 barSize{.X = 60.0 * healthPercent, .Y = 5.0};
-
-      renderer.DrawRect(barPos, barSize, {.r = 0, .g = 255, .b = 0, .a = 255});
-    }
-
-    if (auto* moving = registry_.try_get<lol_at_home_shared::Moving>(entity)) {
-      renderer.DrawCircle(
-          {.X = moving->TargetPosition.X, .Y = moving->TargetPosition.Y}, 10.0,
-          {.r = 255, .g = 255, .b = 0, .a = 255});
-      renderer.DrawLine(
-          {.X = renderPos.X, .Y = renderPos.Y},
-          {.X = moving->TargetPosition.X, .Y = moving->TargetPosition.Y},
-          {.r = 255, .g = 255, .b = 0, .a = 128});
-    }
-  }
+  // todo ??
 }
 
 }  // namespace lol_at_home_game

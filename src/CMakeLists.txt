@@ -1,4 +1,3 @@
-# add_subdirectory(client)
-# todo add back lol
+add_subdirectory(client)
 add_subdirectory(server)
 add_subdirectory(shared)

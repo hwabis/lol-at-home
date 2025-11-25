@@ -21,13 +21,16 @@ void Renderer::DrawCircle(Vector2 worldPos, double radius, Color color) {
 
   setSDLColor(color);
 
-  int cx = static_cast<int>(screenPos.X);
-  int cy = static_cast<int>(screenPos.Y);
-  int r = static_cast<int>(screenRadius);
+  int centerX = static_cast<int>(screenPos.x);
+  int centerY = static_cast<int>(screenPos.y);
+  int radiusPx = static_cast<int>(screenRadius);
 
-  for (int y = -r; y <= r; y++) {
-    int x = static_cast<int>(std::sqrt(r * r - y * y));
-    SDL_RenderLine(sdlRenderer_, cx - x, cy + y, cx + x, cy + y);
+  for (int offsetY = -radiusPx; offsetY <= radiusPx; offsetY++) {
+    int halfWidth = static_cast<int>(
+        std::sqrt((radiusPx * radiusPx) - (offsetY * offsetY)));
+
+    SDL_RenderLine(sdlRenderer_, centerX - halfWidth, centerY + offsetY,
+                   centerX + halfWidth, centerY + offsetY);
   }
 }
 
@@ -38,8 +41,8 @@ void Renderer::DrawRect(Vector2 worldPos, Vector2 size, Color color) {
   setSDLColor(color);
 
   SDL_FRect rect{
-      static_cast<float>(screenPos.X), static_cast<float>(screenPos.Y),
-      static_cast<float>(screenSize.X), static_cast<float>(screenSize.Y)};
+      static_cast<float>(screenPos.x), static_cast<float>(screenPos.y),
+      static_cast<float>(screenSize.x), static_cast<float>(screenSize.y)};
   SDL_RenderFillRect(sdlRenderer_, &rect);
 }
 
@@ -50,24 +53,24 @@ void Renderer::DrawLine(Vector2 worldPosStart,
   Vector2 screenEnd = camera_->WorldToScreen(worldPosEnd, screenSize_);
 
   setSDLColor(color);
-  SDL_RenderLine(sdlRenderer_, static_cast<float>(screenStart.X),
-                 static_cast<float>(screenStart.Y),
-                 static_cast<float>(screenEnd.X),
-                 static_cast<float>(screenEnd.Y));
+  SDL_RenderLine(sdlRenderer_, static_cast<float>(screenStart.x),
+                 static_cast<float>(screenStart.y),
+                 static_cast<float>(screenEnd.x),
+                 static_cast<float>(screenEnd.y));
 }
 
 void Renderer::DrawRectUI(Vector2 screenPos, Vector2 size, Color color) {
   setSDLColor(color);
 
-  SDL_FRect rect{static_cast<float>(screenPos.X),
-                 static_cast<float>(screenPos.Y), static_cast<float>(size.X),
-                 static_cast<float>(size.Y)};
+  SDL_FRect rect{static_cast<float>(screenPos.x),
+                 static_cast<float>(screenPos.y), static_cast<float>(size.x),
+                 static_cast<float>(size.y)};
   SDL_RenderFillRect(sdlRenderer_, &rect);
 }
 
 void Renderer::UpdateScreenSize(int width, int height) {
-  screenSize_ = {.X = static_cast<double>(width),
-                 .Y = static_cast<double>(height)};
+  screenSize_.x = static_cast<double>(width);
+  screenSize_.y = static_cast<double>(height);
 }
 
 void Renderer::setSDLColor(Color color) {
