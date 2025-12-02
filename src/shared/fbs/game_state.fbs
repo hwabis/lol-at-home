@@ -24,11 +24,6 @@ struct MovableFB {
   target_pos: PositionFB;
 }
 
-enum TeamColorFB: ubyte {
-  Blue = 0,
-  Red = 1,
-}
-
 struct TeamFB {
   color: TeamColorFB;
 }

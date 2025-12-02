@@ -13,3 +13,8 @@ enum AbilitySlotFB: ubyte {
   Summ1 = 4,
   Summ2 = 5,
 }
+
+enum TeamColorFB: ubyte {
+  Blue = 0,
+  Red = 1,
+}

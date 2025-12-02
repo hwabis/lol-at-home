@@ -31,6 +31,7 @@ class GameplayScene : public lol_at_home_engine::Scene {
   void connectToServer();
   void handleInput();
   void handleNetwork();
+  void handleReceive(const ENetEvent& event);
   void renderEntities(lol_at_home_engine::Renderer& renderer);
   void updateInterpolation(double deltaTime);
 

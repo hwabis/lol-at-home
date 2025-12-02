@@ -1,5 +1,4 @@
 include "game_actions.fbs";
-
 namespace lol_at_home_shared;
 
 table ChatMessageFB {
@@ -9,11 +8,6 @@ table ChatMessageFB {
 enum ChampionIdFB: ubyte {
   Garen = 0,
   Teemo = 1,
-}
-
-enum TeamColorFB: ubyte {
-  Blue = 0,
-  Red = 1,
 }
 
 table ChampionSelectFB {
