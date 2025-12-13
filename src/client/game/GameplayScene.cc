@@ -9,10 +9,7 @@
 
 namespace lol_at_home_game {
 
-GameplayScene::GameplayScene(std::shared_ptr<lol_at_home_engine::Camera> camera,
-                             lol_at_home_engine::Input& input,
-                             lol_at_home_engine::Renderer& renderer)
-    : camera_(std::move(camera)), input_(input), renderer_(renderer) {}
+GameplayScene::GameplayScene() {}
 
 GameplayScene::~GameplayScene() {
   if (client_ != nullptr) {
@@ -33,12 +30,6 @@ void GameplayScene::OnStart() {
 
   camera_->SetPosition({.x = 100.0, .y = 200.0});
   camera_->SetZoom(1.0F);
-}
-
-void GameplayScene::Update(double deltaTime) {
-  handleInput();
-  handleNetwork();
-  updateInterpolation(deltaTime);
 }
 
 void GameplayScene::Render(lol_at_home_engine::Renderer& renderer) {

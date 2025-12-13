@@ -27,7 +27,7 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  window_ = SDL_CreateWindow(config_.WindowTitle.c_str(), config_.windowWidth,
+  window_ = SDL_CreateWindow(config_.windowTitle.c_str(), config_.windowWidth,
                              config_.windowHeight, 0);
   if (window_ == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());

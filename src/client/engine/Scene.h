@@ -28,7 +28,7 @@ class Scene {
 
   void Render();
   void Update(std::chrono::duration<double, std::milli> deltaTime);
-  [[nodiscard]] virtual auto ShouldContinue() -> bool {
+  [[nodiscard]] auto ShouldContinue() -> bool {
     return continue_ && ShouldContinueImpl();
   }
 

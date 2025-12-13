@@ -9,8 +9,7 @@
 namespace lol_at_home_engine {
 
 struct GameConfig {
-  std::string WindowTitle = "Game";
-  // todo these numbers r also in renderer class... hm...
+  std::string windowTitle = "Game";
   int windowWidth = 1280;
   int windowHeight = 720;
   int targetFPS = 60;
