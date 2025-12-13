@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "IWorldRenderable.h"
+#include "InputAccessor.h"
 #include "primitives/Transform.h"
 
 namespace lol_at_home_engine {
@@ -16,10 +17,11 @@ class GameObject {
   GameObject(GameObject&& other) = delete;
   auto operator=(GameObject&&) -> GameObject& = delete;
 
-  [[nodiscard]] virtual auto Render() const
-      -> std::vector<std::unique_ptr<IWorldRenderable>> = 0;
-  virtual auto Update(std::chrono::duration<double, std::milli> deltaTime)
+  virtual auto PushRender(
+      std::vector<std::unique_ptr<IWorldRenderable>>& outRenderables) const
       -> void = 0;
+  virtual auto Update(std::chrono::duration<double, std::milli> deltaTime,
+                      const InputAccessor& input) -> void = 0;
 
   [[nodiscard]] auto GetTransform() const -> Transform { return transform_; }
 

@@ -3,25 +3,21 @@
 
 namespace lol_at_home_engine {
 
+Scene::Scene(SDL_Renderer* renderer) : renderer_(renderer) {}
+
 void Scene::Render() {
   std::vector<std::unique_ptr<IWorldRenderable>> renderables;
   for (const auto& obj : objects_) {
-    auto objRenderables = obj->Render();
-    for (auto& objRenderable : objRenderables) {
-      renderables.push_back(std::move(objRenderable));
-    }
+    obj->PushRender(renderables);
   }
 
-  // todo render them LOL... pass SDL_Renderer* to here ??
-  /*
-    SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 0);
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 0);
 
-    // todo visit renderables... for now draw smth default
-    SDL_RenderLine(sdlRenderer, 0, 0, 100, 100);
+  // todo visit renderables... for now draw smth default
+  SDL_RenderLine(renderer_, 0, 0, 100, 100);
 
-    SDL_RenderClear(sdlRenderer);
-    SDL_RenderPresent(sdlRenderer);
-  */
+  SDL_RenderClear(renderer_);
+  SDL_RenderPresent(renderer_);
 }
 
 void Scene::Update(std::chrono::duration<double, std::milli> deltaTime) {
@@ -32,8 +28,10 @@ void Scene::Update(std::chrono::duration<double, std::milli> deltaTime) {
     }
   }
 
+  input_.Update();
+
   for (auto& obj : objects_) {
-    obj->Update(deltaTime);
+    obj->Update(deltaTime, input_);
   }
 }
 

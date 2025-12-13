@@ -14,11 +14,25 @@ class Property {
 
     Subscription(const Subscription&) = delete;
     auto operator=(const Subscription&) -> Subscription& = delete;
+
     Subscription(Subscription&& other) noexcept
         : prop_(other.prop_), subId_(other.subId_) {
       other.prop_ = nullptr;
     }
-    auto operator=(Subscription&&) -> Subscription& = delete;
+
+    auto operator=(Subscription&& other) noexcept -> Subscription& {
+      if (this != &other) {
+        if (prop_) {
+          prop_->unsubscribe(subId_);
+        }
+
+        prop_ = other.prop_;
+        subId_ = other.subId_;
+        other.prop_ = nullptr;
+      }
+
+      return *this;
+    }
 
     ~Subscription() {
       if (prop_) {
@@ -33,41 +47,41 @@ class Property {
 
   using Callback = std::function<void(const T&)>;
 
-  auto Subscribe(std::function<void(const T&)> callback) -> Subscription {
-    int newId = ++lastId;
-    observers.emplace_back(newId, std::move(callback));
+  auto Subscribe(Callback callback) -> Subscription {
+    int newId = ++lastId_;
+    observers_.emplace_back(newId, std::move(callback));
+    observers_.back().second(value_);
     return Subscription(this, newId);
   }
 
-  auto Get() const -> const T& { return value; }
+  auto Get() const -> const T& { return value_; }
 
-  // todo this shouldnt be seen by non-owners
   void Set(const T& newValue) {
-    if (value == newValue) {
+    if (value_ == newValue) {
       return;
     }
 
-    value = newValue;
+    value_ = newValue;
     notify();
   }
 
  private:
   void notify() {
-    for (auto& [_, callback] : observers) {
-      callback(value);
+    for (auto& [_, callback] : observers_) {
+      callback(value_);
     }
   }
 
   void unsubscribe(int subId) {
-    observers.erase(
-        std::remove_if(observers.begin(), observers.end(),
+    observers_.erase(
+        std::remove_if(observers_.begin(), observers_.end(),
                        [&](auto& obs) { return obs.first == subId; }),
-        observers.end());
+        observers_.end());
   }
 
-  T value{};
-  int lastId = 0;
-  std::vector<std::pair<int, Callback>> observers;
+  T value_{};
+  int lastId_ = 0;
+  std::vector<std::pair<int, Callback>> observers_;
 };
 
 }  // namespace lol_at_home_engine

@@ -25,8 +25,8 @@ class IWorldRenderable {
   virtual ~IWorldRenderable();
   IWorldRenderable(const IWorldRenderable&) = delete;
   auto operator=(const IWorldRenderable&) -> IWorldRenderable& = delete;
-  IWorldRenderable(IWorldRenderable&& other) = delete;
-  auto operator=(IWorldRenderable&&) -> IWorldRenderable& = delete;
+  IWorldRenderable(IWorldRenderable&& other) = default;
+  auto operator=(IWorldRenderable&&) -> IWorldRenderable& = default;
 
   virtual auto GetRenderableData() -> RenderableData = 0;
 };

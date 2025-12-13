@@ -13,6 +13,7 @@ class Renderer;
 
 class Scene {
  public:
+  explicit Scene(SDL_Renderer* renderer);
   virtual ~Scene() = default;
   Scene(const Scene&) = default;
   auto operator=(const Scene&) -> Scene& = default;
@@ -40,10 +41,6 @@ class Scene {
     objects_.push_back(std::move(obj));
   }
 
-  [[nodiscard]] auto GetObjects() const
-      -> const std::vector<std::unique_ptr<GameObject>>& {
-    return objects_;
-  }
   [[nodiscard]] auto GetCamera() const -> Camera { return camera_; }
   [[nodiscard]] auto GetInput() const -> InputAccessor { return input_; }
 
@@ -52,6 +49,8 @@ class Scene {
   Camera camera_;
   InputAccessor input_;
   bool continue_ = true;
+
+  SDL_Renderer* renderer_;
 };
 
 }  // namespace lol_at_home_engine
