@@ -11,10 +11,11 @@ Game::~Game() {
   cleanupSDL();
 }
 
-void Game::Run(std::unique_ptr<Scene> initialScene) {
+void Game::Run(
+    const std::function<std::unique_ptr<Scene>(SDL_Renderer*)>& sceneFactory) {
   initSDL();
 
-  scene_ = std::move(initialScene);
+  scene_ = sceneFactory(sdlRenderer_);
 
   running_ = true;
   gameLoop();

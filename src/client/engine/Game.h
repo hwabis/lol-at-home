@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <functional>
 #include <memory>
 #include <string>
 #include "Scene.h"
@@ -24,7 +25,8 @@ class Game {
   Game(Game&&) = delete;
   auto operator=(Game&&) -> Game& = delete;
 
-  void Run(std::unique_ptr<Scene> initialScene);
+  void Run(
+      const std::function<std::unique_ptr<Scene>(SDL_Renderer*)>& sceneFactory);
 
  private:
   void initSDL();

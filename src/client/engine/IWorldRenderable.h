@@ -22,7 +22,7 @@ using RenderableData = std::variant<CircleData, RectData>;
 
 class IWorldRenderable {
  public:
-  virtual ~IWorldRenderable();
+  virtual ~IWorldRenderable() = default;
   IWorldRenderable(const IWorldRenderable&) = delete;
   auto operator=(const IWorldRenderable&) -> IWorldRenderable& = delete;
   IWorldRenderable(IWorldRenderable&& other) = default;
