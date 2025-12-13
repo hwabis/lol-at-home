@@ -1,7 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include "Vector2.h"
+#include "primitives/Vector2.h"
 
 namespace lol_at_home_engine {
 

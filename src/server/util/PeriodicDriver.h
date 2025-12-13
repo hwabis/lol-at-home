@@ -26,6 +26,7 @@ class PeriodicDriver {
         auto start = std::chrono::steady_clock::now();
 
         if (periodic_) {
+          // todo this is actually being rounded
           periodic_->Cycle(
               std::chrono::duration_cast<std::chrono::milliseconds>(period_));
         }

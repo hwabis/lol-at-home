@@ -2,11 +2,11 @@
 
 #include <SDL3/SDL.h>
 #include <span>
-#include "Vector2.h"
+#include "primitives/Vector2.h"
 
 namespace lol_at_home_engine {
 
-class Input {
+class InputAccessor {
  public:
   void Update();
 

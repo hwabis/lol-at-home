@@ -5,25 +5,19 @@
 
 namespace lol_at_home_engine {
 
-Game::Game(GameConfig config) : config_(std::move(config)) {
-  camera_ = std::make_shared<Camera>();
-}
+Game::Game(GameConfig config) : config_(std::move(config)) {}
 
 Game::~Game() {
   cleanupSDL();
 }
 
-void Game::Run() {
+void Game::Run(std::unique_ptr<Scene> initialScene) {
   initSDL();
 
-  currentScene_ = CreateRootScene();
-
-  currentScene_->OnStart();
+  scene_ = std::move(initialScene);
 
   running_ = true;
   gameLoop();
-
-  currentScene_->OnEnd();
 }
 
 void Game::initSDL() {
@@ -47,16 +41,9 @@ void Game::initSDL() {
     SDL_Quit();
     throw std::runtime_error("Renderer creation failed");
   }
-
-  renderer_ = std::make_unique<Renderer>(sdlRenderer_, camera_);
-  renderer_->UpdateScreenSize(config_.windowWidth, config_.windowHeight);
-
-  spdlog::info("SDL initialized successfully");
 }
 
 void Game::cleanupSDL() {
-  renderer_.reset();
-
   if (sdlRenderer_ != nullptr) {
     SDL_DestroyRenderer(sdlRenderer_);
     sdlRenderer_ = nullptr;
@@ -68,7 +55,6 @@ void Game::cleanupSDL() {
   }
 
   SDL_Quit();
-  spdlog::info("SDL cleaned up");
 }
 
 void Game::gameLoop() {
@@ -77,35 +63,16 @@ void Game::gameLoop() {
 
   while (running_) {
     auto frameStart = std::chrono::steady_clock::now();
-    auto deltaTime =
-        std::chrono::duration<double, std::milli>(frameStart - lastFrameTime)
-            .count();
+    std::chrono::duration<double, std::milli> deltaTime =
+        frameStart - lastFrameTime;
     lastFrameTime = frameStart;
 
-    input_.Update();
+    scene_->Render();
+    scene_->Update(deltaTime);
 
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_EVENT_QUIT) {
-        running_ = false;
-      }
-
-      if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-        renderer_->UpdateScreenSize(event.window.data1, event.window.data2);
-      }
-    }
-
-    currentScene_->Update(deltaTime);
-
-    if (!currentScene_->ShouldContinue()) {
+    if (!scene_->ShouldContinue()) {
       running_ = false;
     }
-
-    renderer_->Clear({.r = 30, .g = 30, .b = 40, .a = 255});
-    if (currentScene_ != nullptr) {
-      currentScene_->Render(*renderer_);
-    }
-    renderer_->Present();
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto frameTime =

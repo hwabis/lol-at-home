@@ -1,8 +1,8 @@
-#include "Input.h"
+#include "InputAccessor.h"
 
 namespace lol_at_home_engine {
 
-void Input::Update() {
+void InputAccessor::Update() {
   previousMouseState_ = currentMouseState_;
   currentMouseState_ = SDL_GetMouseState(&mousePosition_.x, &mousePosition_.y);
 
@@ -11,21 +11,21 @@ void Input::Update() {
   currentKeyState_ = std::span<const bool>(state, numKeys);
 }
 
-auto Input::IsMouseButtonPressed(int button) const -> bool {
+auto InputAccessor::IsMouseButtonPressed(int button) const -> bool {
   SDL_MouseButtonFlags mask = SDL_BUTTON_MASK(button);
   return (currentMouseState_ & mask) != 0 && (previousMouseState_ & mask) == 0;
 }
 
-auto Input::IsMouseButtonReleased(int button) const -> bool {
+auto InputAccessor::IsMouseButtonReleased(int button) const -> bool {
   SDL_MouseButtonFlags mask = SDL_BUTTON_MASK(button);
   return (currentMouseState_ & mask) == 0 && (previousMouseState_ & mask) != 0;
 }
 
-auto Input::GetMousePosition() const -> Vector2 {
+auto InputAccessor::GetMousePosition() const -> Vector2 {
   return mousePosition_;
 }
 
-auto Input::IsKeyPressed(SDL_Keycode key) const -> bool {
+auto InputAccessor::IsKeyPressed(SDL_Keycode key) const -> bool {
   if (currentKeyState_.empty()) {
     return false;
   }
@@ -34,7 +34,7 @@ auto Input::IsKeyPressed(SDL_Keycode key) const -> bool {
   return currentKeyState_[scancode];
 }
 
-auto Input::IsKeyReleased(SDL_Keycode key) const -> bool {
+auto InputAccessor::IsKeyReleased(SDL_Keycode key) const -> bool {
   // todo idk
   return false;
 }

@@ -2,9 +2,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 add_library(lol-at-home-engine
   Camera.cc
-  Renderer.cc
-  Input.cc
   Game.cc
+  InputAccessor.cc
+  Scene.cc
 )
 
 set_target_defaults(lol-at-home-engine)
