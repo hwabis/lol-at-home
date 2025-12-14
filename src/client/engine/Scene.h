@@ -35,11 +35,11 @@ class Scene {
  protected:
   Scene() = default;
 
-  [[nodiscard]] virtual auto ShouldContinueImpl() const -> bool { return true; }
-
   void AddObject(std::unique_ptr<GameObject> obj) {
     objects_.push_back(std::move(obj));
   }
+
+  [[nodiscard]] virtual auto ShouldContinueImpl() const -> bool { return true; }
 
   [[nodiscard]] auto GetCamera() const -> Camera { return camera_; }
   [[nodiscard]] auto GetInput() const -> InputAccessor { return input_; }
@@ -50,7 +50,7 @@ class Scene {
   InputAccessor input_;
   bool continue_ = true;
 
-  SDL_Renderer* renderer_;
+  SDL_Renderer* renderer_{};
 };
 
 }  // namespace lol_at_home_engine

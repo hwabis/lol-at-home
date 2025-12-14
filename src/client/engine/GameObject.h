@@ -11,6 +11,7 @@ namespace lol_at_home_engine {
 
 class GameObject {
  public:
+  GameObject() = default;
   virtual ~GameObject() = default;
   GameObject(const GameObject&) = delete;
   auto operator=(const GameObject&) -> GameObject& = delete;

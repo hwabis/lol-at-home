@@ -11,12 +11,13 @@ void Scene::Render() {
     obj->PushRender(renderables);
   }
 
-  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 0);
+  SDL_SetRenderDrawColor(renderer_, 100, 255, 255, 255);
+  SDL_RenderClear(renderer_);
 
   // todo visit renderables... for now draw smth default
+  // todo probably pass in the camera here somehow
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
   SDL_RenderLine(renderer_, 0, 0, 100, 100);
-
-  SDL_RenderClear(renderer_);
   SDL_RenderPresent(renderer_);
 }
 
