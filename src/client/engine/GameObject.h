@@ -3,7 +3,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
-#include "IWorldRenderable.h"
+#include "renderables/IWorldRenderable.h"
 #include "InputAccessor.h"
 #include "primitives/Transform.h"
 

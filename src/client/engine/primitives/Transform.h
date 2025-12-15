@@ -8,7 +8,7 @@ struct Transform {
   // todo world position
   Vector2 position{};
   float rotation{};
-  float scale{};
+  float scale{1.0F};
 };
 
 }  // namespace lol_at_home_engine

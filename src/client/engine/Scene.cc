@@ -1,5 +1,5 @@
 #include "Scene.h"
-#include "IWorldRenderable.h"
+#include "renderables/IWorldRenderable.h"
 
 namespace lol_at_home_engine {
 
@@ -11,13 +11,13 @@ void Scene::Render() {
     obj->PushRender(renderables);
   }
 
-  SDL_SetRenderDrawColor(renderer_, 100, 255, 255, 255);
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
   SDL_RenderClear(renderer_);
 
-  // todo visit renderables... for now draw smth default
-  // todo probably pass in the camera here somehow
-  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
-  SDL_RenderLine(renderer_, 0, 0, 100, 100);
+  for (const auto& renderable : renderables) {
+    renderable->Render(renderer_, camera_);
+  }
+
   SDL_RenderPresent(renderer_);
 }
 
