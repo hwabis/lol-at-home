@@ -13,8 +13,12 @@ class LoLAtHomeGame : public lol_at_home_engine::Game {
 auto main() -> int {
   LoLAtHomeGame game;
   game.Run(
-      [](SDL_Renderer* renderer) -> std::unique_ptr<lol_at_home_engine::Scene> {
-        return std::make_unique<lol_at_home_game::GameplayScene>(renderer);
+      // todo this lambda is kinda ugly...
+      // i think gameconfig should be passed to scene not game?
+      [](SDL_Renderer* renderer, int width,
+         int height) -> std::unique_ptr<lol_at_home_engine::Scene> {
+        return std::make_unique<lol_at_home_game::GameplayScene>(renderer,
+                                                                 width, height);
       });
   return 0;
 }

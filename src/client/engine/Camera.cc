@@ -3,27 +3,33 @@
 namespace lol_at_home_engine {
 
 // todo make struct (typedefs) between worldpos and screenpos
-auto Camera::WorldToScreen(Vector2 worldPos, Vector2 screenSize) const
-    -> Vector2 {
-  constexpr float half = 2.0F;
+auto Camera::WorldToScreen(Vector2 worldPos) const -> Vector2 {
+  constexpr float half = 0.5F;
 
-  Vector2 relativePos = worldPos - position_;
+  Vector2 relativePos = worldPos - worldPosition_;
   Vector2 screenPos = relativePos / zoom_;
-  screenPos.x += screenSize.x * half;
-  screenPos.y += screenSize.y * half;
+
+  screenPos.x += viewportSize_.x * half;
+  screenPos.y += viewportSize_.y * half;
   return screenPos;
 }
 
-auto Camera::ScreenToWorld(Vector2 screenPos, Vector2 screenSize) const
-    -> Vector2 {
-  constexpr float half = 2.0F;
+auto Camera::ScreenToWorld(Vector2 screenPos) const -> Vector2 {
+  constexpr float half = 0.5F;
 
   Vector2 centeredScreen = screenPos;
-  centeredScreen.x -= screenSize.x * half;
-  centeredScreen.y -= screenSize.y * half;
+  centeredScreen.x -= viewportSize_.x * half;
+  centeredScreen.y -= viewportSize_.y * half;
   Vector2 worldPos = centeredScreen * zoom_;
-  worldPos = worldPos + position_;
+  worldPos = worldPos + worldPosition_;
   return worldPos;
+}
+
+void Camera::RecalculateView(int width, int height) {
+  viewportSize_ = {.x = static_cast<float>(width),
+                   .y = static_cast<float>(height)};
+
+  zoom_ = static_cast<float>(height) / referenceHeight;
 }
 
 }  // namespace lol_at_home_engine

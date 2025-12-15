@@ -24,15 +24,15 @@ class Game {
   Game(Game&&) = delete;
   auto operator=(Game&&) -> Game& = delete;
 
-  void Run(
-      const std::function<std::unique_ptr<Scene>(SDL_Renderer*)>& sceneFactory);
+  void Run(const std::function<std::unique_ptr<
+               Scene>(SDL_Renderer*, int width, int height)>& sceneFactory);
 
  private:
   void initSDL();
   void cleanupSDL();
   void gameLoop();
 
-  GameConfig config_;
+  GameConfig initialConfig_;
   SDL_Window* window_ = nullptr;
   SDL_Renderer* sdlRenderer_ = nullptr;
 

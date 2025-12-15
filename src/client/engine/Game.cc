@@ -5,17 +5,19 @@
 
 namespace lol_at_home_engine {
 
-Game::Game(GameConfig config) : config_(std::move(config)) {}
+Game::Game(GameConfig config) : initialConfig_(std::move(config)) {}
 
 Game::~Game() {
   cleanupSDL();
 }
 
-void Game::Run(
-    const std::function<std::unique_ptr<Scene>(SDL_Renderer*)>& sceneFactory) {
+void Game::Run(const std::function<
+               std::unique_ptr<Scene>(SDL_Renderer*, int width, int height)>&
+                   sceneFactory) {
   initSDL();
 
-  scene_ = sceneFactory(sdlRenderer_);
+  scene_ = sceneFactory(sdlRenderer_, initialConfig_.windowWidth,
+                        initialConfig_.windowHeight);
 
   running_ = true;
   gameLoop();
@@ -27,8 +29,9 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  window_ = SDL_CreateWindow(config_.windowTitle.c_str(), config_.windowWidth,
-                             config_.windowHeight, 0);
+  window_ = SDL_CreateWindow(initialConfig_.windowTitle.c_str(),
+                             initialConfig_.windowWidth,
+                             initialConfig_.windowHeight, 0);
   if (window_ == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     SDL_Quit();
@@ -60,7 +63,7 @@ void Game::cleanupSDL() {
 
 void Game::gameLoop() {
   auto lastFrameTime = std::chrono::steady_clock::now();
-  const double targetFrameTime = 1000.0 / config_.targetFPS;
+  const double targetFrameTime = 1000.0 / initialConfig_.targetFPS;
 
   while (running_) {
     auto frameStart = std::chrono::steady_clock::now();
