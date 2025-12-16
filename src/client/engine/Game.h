@@ -32,7 +32,7 @@ class Game {
   void cleanupSDL();
   void gameLoop();
 
-  GameConfig initialConfig_;
+  GameConfig activeConfig_;
   SDL_Window* window_ = nullptr;
   SDL_Renderer* sdlRenderer_ = nullptr;
 

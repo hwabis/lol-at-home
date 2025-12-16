@@ -23,20 +23,6 @@ void Scene::Render() {
 }
 
 void Scene::Update(std::chrono::duration<double, std::milli> deltaTime) {
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-      case SDL_EVENT_QUIT:
-        continue_ = false;
-        break;
-      case SDL_EVENT_WINDOW_RESIZED:
-        GetCamera().RecalculateView(event.window.data1, event.window.data2);
-        break;
-      default:
-        break;
-    }
-  }
-
   input_.Update();
 
   for (auto& obj : objects_) {

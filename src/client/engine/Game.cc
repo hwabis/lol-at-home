@@ -5,7 +5,7 @@
 
 namespace lol_at_home_engine {
 
-Game::Game(GameConfig config) : initialConfig_(std::move(config)) {}
+Game::Game(GameConfig config) : activeConfig_(std::move(config)) {}
 
 Game::~Game() {
   cleanupSDL();
@@ -16,8 +16,8 @@ void Game::Run(const std::function<
                    sceneFactory) {
   initSDL();
 
-  scene_ = sceneFactory(sdlRenderer_, initialConfig_.windowWidth,
-                        initialConfig_.windowHeight);
+  scene_ = sceneFactory(sdlRenderer_, activeConfig_.windowWidth,
+                        activeConfig_.windowHeight);
 
   running_ = true;
   gameLoop();
@@ -29,9 +29,9 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  window_ = SDL_CreateWindow(initialConfig_.windowTitle.c_str(),
-                             initialConfig_.windowWidth,
-                             initialConfig_.windowHeight, 0);
+  window_ = SDL_CreateWindow(activeConfig_.windowTitle.c_str(),
+                             activeConfig_.windowWidth,
+                             activeConfig_.windowHeight, SDL_WINDOW_RESIZABLE);
   if (window_ == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     SDL_Quit();
@@ -63,13 +63,30 @@ void Game::cleanupSDL() {
 
 void Game::gameLoop() {
   auto lastFrameTime = std::chrono::steady_clock::now();
-  const double targetFrameTime = 1000.0 / initialConfig_.targetFPS;
+  const double targetFrameTime = 1000.0 / activeConfig_.targetFPS;
 
   while (running_) {
     auto frameStart = std::chrono::steady_clock::now();
     std::chrono::duration<double, std::milli> deltaTime =
         frameStart - lastFrameTime;
     lastFrameTime = frameStart;
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      switch (event.type) {
+        case SDL_EVENT_QUIT:
+          scene_->Stop();
+          break;
+        case SDL_EVENT_WINDOW_RESIZED:
+          activeConfig_.windowWidth = event.window.data1;
+          activeConfig_.windowHeight = event.window.data2;
+          scene_->GetCamera().RecalculateView(event.window.data1,
+                                              event.window.data2);
+          break;
+        default:
+          break;
+      }
+    }
 
     scene_->Render();
     scene_->Update(deltaTime);

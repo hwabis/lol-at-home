@@ -31,6 +31,10 @@ class Scene {
   [[nodiscard]] auto ShouldContinue() -> bool {
     return continue_ && ShouldContinueImpl();
   }
+  void Stop() { continue_ = false; }
+
+  [[nodiscard]] auto GetCamera() const -> Camera { return camera_; }
+  [[nodiscard]] auto GetInput() const -> InputAccessor { return input_; }
 
  protected:
   void AddObject(std::unique_ptr<GameObject> obj) {
@@ -38,9 +42,6 @@ class Scene {
   }
 
   [[nodiscard]] virtual auto ShouldContinueImpl() const -> bool { return true; }
-
-  [[nodiscard]] auto GetCamera() const -> Camera { return camera_; }
-  [[nodiscard]] auto GetInput() const -> InputAccessor { return input_; }
 
  private:
   SDL_Renderer* renderer_{};
