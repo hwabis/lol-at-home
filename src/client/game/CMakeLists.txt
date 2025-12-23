@@ -1,7 +1,6 @@
 include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 add_executable(lol-at-home-client
-  GameplayScene.cc
   Main.cc
 )
 

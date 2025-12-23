@@ -15,7 +15,7 @@ class InputAccessor {
   [[nodiscard]] auto GetMousePosition() const -> Vector2;
 
   [[nodiscard]] auto IsKeyPressed(SDL_Keycode key) const -> bool;
-  [[nodiscard]] auto IsKeyReleased(SDL_Keycode key) const -> bool;
+  // todo iskeyreleased
 
  private:
   SDL_MouseButtonFlags currentMouseState_{0};

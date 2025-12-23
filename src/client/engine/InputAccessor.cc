@@ -34,9 +34,4 @@ auto InputAccessor::IsKeyPressed(SDL_Keycode key) const -> bool {
   return currentKeyState_[scancode];
 }
 
-auto InputAccessor::IsKeyReleased(SDL_Keycode key) const -> bool {
-  // todo idk
-  return false;
-}
-
 }  // namespace lol_at_home_engine

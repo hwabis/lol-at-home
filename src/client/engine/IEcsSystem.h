@@ -2,11 +2,13 @@
 
 #include <chrono>
 #include <entt/entt.hpp>
+#include "SceneInfo.h"
 
 namespace lol_at_home_engine {
 
 class IEcsSystem {
  public:
+  IEcsSystem() = default;
   virtual ~IEcsSystem() = default;
 
   IEcsSystem(const IEcsSystem&) = delete;
@@ -15,6 +17,7 @@ class IEcsSystem {
   auto operator=(IEcsSystem&&) -> IEcsSystem& = default;
 
   virtual void Cycle(entt::registry& registry,
+                     SceneInfo& info,
                      std::chrono::duration<double, std::milli> deltaTime) = 0;
 };
 

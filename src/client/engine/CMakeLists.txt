@@ -4,7 +4,6 @@ add_library(lol-at-home-engine
   Camera.cc
   Game.cc
   InputAccessor.cc
-  Scene.cc
 )
 
 set_target_defaults(lol-at-home-engine)

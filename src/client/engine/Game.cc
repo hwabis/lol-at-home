@@ -7,7 +7,7 @@ namespace lol_at_home_engine {
 
 Game::Game(const GameConfig& config) : info_(config) {};
 
-void Game::Run(std::unique_ptr<Scene> scene) {
+void Game::Run(Scene&& scene) {
   initSDL();
   scene_ = std::move(scene);
   sceneLoop();
@@ -84,7 +84,7 @@ void Game::sceneLoop() {
     }
 
     info_.input.Update();
-    scene_->Cycle(deltaTime);
+    scene_.Cycle(info_, deltaTime);
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto frameTime =

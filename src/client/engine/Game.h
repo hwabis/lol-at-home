@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <memory>
 #include "Scene.h"
 #include "SceneInfo.h"
 
@@ -11,8 +10,7 @@ class Game {
  public:
   explicit Game(const GameConfig& config);
 
-  auto Run(std::unique_ptr<Scene> scene) -> void;
-  auto GetSceneInfo() -> SceneInfo& { return info_; }
+  auto Run(Scene&& scene) -> void;
 
  private:
   void initSDL();
@@ -20,7 +18,7 @@ class Game {
   void sceneLoop();
 
   // todo scene manager? how to stop scene or switch scene (from a scene)?
-  std::unique_ptr<Scene> scene_;
+  Scene scene_;
   SceneInfo info_;
 };
 
