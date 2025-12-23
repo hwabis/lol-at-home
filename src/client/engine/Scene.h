@@ -19,7 +19,7 @@ class Scene {
   Scene(Scene&&) = default;
   auto operator=(Scene&&) -> Scene& = default;
 
-  auto Cycle(SceneInfo info,
+  auto Cycle(SceneInfo& info,
              std::chrono::duration<double, std::milli> deltaTime) -> void {
     for (auto& system : systems_) {
       system->Cycle(registry_, info, deltaTime);

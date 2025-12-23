@@ -13,33 +13,34 @@ class MyAwesomeSystem : public lol_at_home_engine::IEcsSystem {
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     // todo needs to use camera
 
-    auto view = registry.view<Transform, RenderableCircle>();
+    auto* renderer = info.sdlRenderer;
 
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    auto view = registry.view<Transform, RenderableCircle>();
     for (auto entity : view) {
       auto& transform = view.get<Transform>(entity);
       auto& circle = view.get<RenderableCircle>(entity);
 
-      auto* renderer = info.sdlRenderer;
-
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-      const float scaledRadius = circle.radius * transform.scale;
+      float radius = circle.radius * transform.scale;
+      float centerX = transform.position.x;
+      float centerY = transform.position.y;
 
-      const int intRadius = static_cast<int>(std::ceil(scaledRadius));
-
-      const float baseY = transform.position.y;
-      const float baseX = transform.position.x;
-
-      for (int yDraw = -intRadius; yDraw <= intRadius; ++yDraw) {
-        const auto yFloat = static_cast<float>(yDraw);
-        const float deltaX =
-            std::sqrt((scaledRadius * scaledRadius) - (yFloat * yFloat));
-
-        SDL_RenderLine(renderer, baseX - deltaX, baseY + yFloat, baseX + deltaX,
-                       baseY + yFloat);
+      int intRadius = static_cast<int>(std::ceil(radius));
+      for (int yDraw = -intRadius; yDraw <= intRadius; yDraw++) {
+        float width = std::sqrt((radius * radius) - (yDraw * yDraw));
+        SDL_RenderLine(renderer, centerX - width,
+                       centerY + static_cast<float>(yDraw), centerX + width,
+                       centerY + static_cast<float>(yDraw));
       }
     }
-  };
+
+    // Present to screen
+    SDL_RenderPresent(renderer);
+  }
 };
 
 }  // namespace lol_at_home_game
