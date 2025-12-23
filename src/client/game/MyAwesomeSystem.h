@@ -11,8 +11,6 @@ class MyAwesomeSystem : public lol_at_home_engine::IEcsSystem {
   void Cycle(entt::registry& registry,
              lol_at_home_engine::SceneInfo& info,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
-    // todo needs to use camera
-
     auto* renderer = info.sdlRenderer;
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -23,11 +21,13 @@ class MyAwesomeSystem : public lol_at_home_engine::IEcsSystem {
       auto& transform = view.get<Transform>(entity);
       auto& circle = view.get<RenderableCircle>(entity);
 
+      auto screenPos = info.camera.WorldToScreen(transform.position);
+
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
       float radius = circle.radius * transform.scale;
-      float centerX = transform.position.x;
-      float centerY = transform.position.y;
+      float centerX = screenPos.x;
+      float centerY = screenPos.y;
 
       int intRadius = static_cast<int>(std::ceil(radius));
       for (int yDraw = -intRadius; yDraw <= intRadius; yDraw++) {
@@ -38,7 +38,6 @@ class MyAwesomeSystem : public lol_at_home_engine::IEcsSystem {
       }
     }
 
-    // Present to screen
     SDL_RenderPresent(renderer);
   }
 };
