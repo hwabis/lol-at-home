@@ -15,5 +15,6 @@ target_include_directories(lol-at-home-engine PUBLIC
 
 target_link_libraries(lol-at-home-engine PRIVATE
   SDL3::SDL3
+  EnTT::EnTT
   spdlog::spdlog
 )

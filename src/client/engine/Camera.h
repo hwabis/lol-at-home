@@ -1,14 +1,13 @@
 #pragma once
 
-#include "primitives/Vector2.h"
+#include "Vector2.h"
 
 namespace lol_at_home_engine {
 
 class Camera {
  public:
-  Camera(int width, int height) {
-    viewportSize_ = {.x = static_cast<float>(width),
-                     .y = static_cast<float>(height)};
+  explicit Camera(Vector2 viewportSize) : viewportSize_(viewportSize) {
+    RecalculateView(viewportSize);
   }
 
   [[nodiscard]] auto WorldToScreen(Vector2 worldPos) const -> Vector2;
@@ -17,7 +16,7 @@ class Camera {
   void SetPosition(Vector2 pos) { worldPosition_ = pos; }
   [[nodiscard]] auto GetPosition() const -> Vector2 { return worldPosition_; }
 
-  void RecalculateView(int width, int height);
+  void RecalculateView(Vector2 viewportSize);
 
  private:
   Vector2 worldPosition_{};

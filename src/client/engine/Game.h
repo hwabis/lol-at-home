@@ -1,44 +1,27 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <functional>
 #include <memory>
-#include <string>
 #include "Scene.h"
+#include "SceneInfo.h"
 
 namespace lol_at_home_engine {
 
-struct GameConfig {
-  std::string windowTitle = "Game";
-  int windowWidth = 1280;
-  int windowHeight = 720;
-  int targetFPS = 60;
-};
-
 class Game {
  public:
-  explicit Game(GameConfig config);
-  virtual ~Game();
-  Game(const Game&) = delete;
-  auto operator=(const Game&) -> Game& = delete;
-  Game(Game&&) = delete;
-  auto operator=(Game&&) -> Game& = delete;
+  explicit Game(const GameConfig& config);
 
-  void Run(const std::function<std::unique_ptr<
-               Scene>(SDL_Renderer*, int width, int height)>& sceneFactory);
+  auto Run(std::unique_ptr<Scene> scene) -> void;
+  auto GetSceneInfo() -> SceneInfo& { return info_; }
 
  private:
   void initSDL();
   void cleanupSDL();
-  void gameLoop();
+  void sceneLoop();
 
-  GameConfig activeConfig_;
-  SDL_Window* window_ = nullptr;
-  SDL_Renderer* sdlRenderer_ = nullptr;
-
+  // todo scene manager? how to stop scene or switch scene (from a scene)?
   std::unique_ptr<Scene> scene_;
-
-  bool running_{false};
+  SceneInfo info_;
 };
 
 }  // namespace lol_at_home_engine

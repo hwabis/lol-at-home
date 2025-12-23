@@ -2,7 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <span>
-#include "primitives/Vector2.h"
+#include "Vector2.h"
 
 namespace lol_at_home_engine {
 

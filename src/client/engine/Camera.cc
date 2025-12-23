@@ -25,11 +25,9 @@ auto Camera::ScreenToWorld(Vector2 screenPos) const -> Vector2 {
   return worldPos;
 }
 
-void Camera::RecalculateView(int width, int height) {
-  viewportSize_ = {.x = static_cast<float>(width),
-                   .y = static_cast<float>(height)};
-
-  zoom_ = static_cast<float>(height) / referenceHeight;
+void Camera::RecalculateView(Vector2 viewportSize) {
+  viewportSize_ = viewportSize;
+  zoom_ = viewportSize.y / referenceHeight;
 }
 
 }  // namespace lol_at_home_engine

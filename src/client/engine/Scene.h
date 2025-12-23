@@ -1,11 +1,8 @@
 #pragma once
 
 #include <chrono>
-#include <memory>
-#include <vector>
-#include "Camera.h"
-#include "GameObject.h"
-#include "InputAccessor.h"
+#include <entt/entt.hpp>
+#include "systems/IEcsSystem.h"
 
 namespace lol_at_home_engine {
 
@@ -13,43 +10,27 @@ class Renderer;
 
 class Scene {
  public:
-  Scene(SDL_Renderer* renderer, int width, int height);
+  Scene();
   virtual ~Scene() = default;
-  Scene(const Scene&) = default;
-  auto operator=(const Scene&) -> Scene& = default;
-  Scene(Scene&&) = default;
-  auto operator=(Scene&&) -> Scene& = default;
 
-  // todo
-  /*
-    virtual void OnStart() {}
-    virtual void OnEnd() {}
-  */
+  Scene(const Scene&) = delete;
+  auto operator=(const Scene&) -> Scene& = delete;
+  Scene(Scene&&) = delete;
+  auto operator=(Scene&&) -> Scene& = delete;
 
-  void Render();
-  void Update(std::chrono::duration<double, std::milli> deltaTime);
-  [[nodiscard]] auto ShouldContinue() -> bool {
-    return continue_ && ShouldContinueImpl();
-  }
-  void Stop() { continue_ = false; }
-
-  [[nodiscard]] auto GetCamera() const -> Camera { return camera_; }
-  [[nodiscard]] auto GetInput() const -> InputAccessor { return input_; }
-
- protected:
-  void AddObject(std::unique_ptr<GameObject> obj) {
-    objects_.push_back(std::move(obj));
+  auto Cycle(std::chrono::duration<double, std::milli> deltaTime) -> void {
+    for (auto& system : systems_) {
+      system->Cycle(registry_, deltaTime);
+    }
   }
 
-  [[nodiscard]] virtual auto ShouldContinueImpl() const -> bool { return true; }
+  auto AddSystem(std::unique_ptr<IEcsSystem> system) -> void {
+    systems_.push_back(std::move(system));
+  }
 
  private:
-  SDL_Renderer* renderer_{};
-
-  std::vector<std::unique_ptr<GameObject>> objects_;
-  Camera camera_;
-  InputAccessor input_;
-  bool continue_ = true;
+  entt::registry registry_;
+  std::vector<std::unique_ptr<IEcsSystem>> systems_;
 };
 
 }  // namespace lol_at_home_engine

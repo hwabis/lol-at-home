@@ -5,22 +5,13 @@
 
 namespace lol_at_home_engine {
 
-Game::Game(GameConfig config) : activeConfig_(std::move(config)) {}
+Game::Game(const GameConfig& config) : info_(config) {};
 
-Game::~Game() {
-  cleanupSDL();
-}
-
-void Game::Run(const std::function<
-               std::unique_ptr<Scene>(SDL_Renderer*, int width, int height)>&
-                   sceneFactory) {
+void Game::Run(std::unique_ptr<Scene> scene) {
   initSDL();
-
-  scene_ = sceneFactory(sdlRenderer_, activeConfig_.windowWidth,
-                        activeConfig_.windowHeight);
-
-  running_ = true;
-  gameLoop();
+  scene_ = std::move(scene);
+  sceneLoop();
+  cleanupSDL();
 }
 
 void Game::initSDL() {
@@ -29,41 +20,43 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  window_ = SDL_CreateWindow(activeConfig_.windowTitle.c_str(),
-                             activeConfig_.windowWidth,
-                             activeConfig_.windowHeight, SDL_WINDOW_RESIZABLE);
-  if (window_ == nullptr) {
+  info_.window = SDL_CreateWindow(info_.config.windowTitle.c_str(),
+                                  static_cast<int>(info_.config.windowSize.x),
+                                  static_cast<int>(info_.config.windowSize.y),
+                                  SDL_WINDOW_RESIZABLE);
+  if (info_.window == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     SDL_Quit();
     throw std::runtime_error("Window creation failed");
   }
 
-  sdlRenderer_ = SDL_CreateRenderer(window_, nullptr);
-  if (sdlRenderer_ == nullptr) {
+  info_.sdlRenderer = SDL_CreateRenderer(info_.window, nullptr);
+  if (info_.sdlRenderer == nullptr) {
     spdlog::error(std::string("SDL_CreateRenderer failed: ") + SDL_GetError());
-    SDL_DestroyWindow(window_);
+    SDL_DestroyWindow(info_.window);
     SDL_Quit();
     throw std::runtime_error("Renderer creation failed");
   }
 }
 
 void Game::cleanupSDL() {
-  if (sdlRenderer_ != nullptr) {
-    SDL_DestroyRenderer(sdlRenderer_);
-    sdlRenderer_ = nullptr;
+  if (info_.sdlRenderer != nullptr) {
+    SDL_DestroyRenderer(info_.sdlRenderer);
+    info_.sdlRenderer = nullptr;
   }
 
-  if (window_ != nullptr) {
-    SDL_DestroyWindow(window_);
-    window_ = nullptr;
+  if (info_.window != nullptr) {
+    SDL_DestroyWindow(info_.window);
+    info_.window = nullptr;
   }
 
   SDL_Quit();
 }
 
-void Game::gameLoop() {
+void Game::sceneLoop() {
   auto lastFrameTime = std::chrono::steady_clock::now();
-  const double targetFrameTime = 1000.0 / activeConfig_.targetFPS;
+  const double targetFrameTime = 1000.0 / info_.config.targetFPS;
+  bool running_ = true;
 
   while (running_) {
     auto frameStart = std::chrono::steady_clock::now();
@@ -75,25 +68,23 @@ void Game::gameLoop() {
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
         case SDL_EVENT_QUIT:
-          scene_->Stop();
+          running_ = false;
           break;
         case SDL_EVENT_WINDOW_RESIZED:
-          activeConfig_.windowWidth = event.window.data1;
-          activeConfig_.windowHeight = event.window.data2;
-          scene_->GetCamera().RecalculateView(event.window.data1,
-                                              event.window.data2);
+          info_.config.windowSize.x = static_cast<float>(event.window.data1);
+          info_.config.windowSize.y = static_cast<float>(event.window.data2);
+          info_.camera.RecalculateView({
+              .x = info_.config.windowSize.x,
+              .y = info_.config.windowSize.y,
+          });
           break;
         default:
           break;
       }
     }
 
-    scene_->Render();
-    scene_->Update(deltaTime);
-
-    if (!scene_->ShouldContinue()) {
-      running_ = false;
-    }
+    info_.input.Update();
+    scene_->Cycle(deltaTime);
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto frameTime =
