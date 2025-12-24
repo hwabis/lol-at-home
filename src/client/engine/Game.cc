@@ -1,11 +1,11 @@
 #include "Game.h"
+#include <SDL3/SDL_video.h>
 #include <spdlog/spdlog.h>
 #include <chrono>
-#include <utility>
 
 namespace lol_at_home_engine {
 
-Game::Game(const GameConfig& config) : info_(config) {};
+Game::Game(const GameConfig& config) : info_(config) {}
 
 void Game::Run(Scene&& scene) {
   initSDL();
@@ -20,10 +20,23 @@ void Game::initSDL() {
     throw std::runtime_error("SDL initialization failed");
   }
 
-  info_.window = SDL_CreateWindow(info_.config.windowTitle.c_str(),
-                                  static_cast<int>(info_.config.windowSize.x),
-                                  static_cast<int>(info_.config.windowSize.y),
-                                  SDL_WINDOW_RESIZABLE);
+  unsigned long long flags = 0;
+  switch (info_.config.windowType) {
+    case GameConfig::WindowType::Windowed:
+      flags = SDL_WINDOW_RESIZABLE;
+      break;
+    case GameConfig::WindowType::Fullscreen:
+      flags = SDL_WINDOW_FULLSCREEN;
+      break;
+    case GameConfig::WindowType::BorderlessFullscreen:
+      flags = SDL_WINDOW_BORDERLESS;
+      break;
+  }
+
+  info_.window =
+      SDL_CreateWindow(info_.config.windowTitle.c_str(),
+                       static_cast<int>(info_.config.windowSize.x),
+                       static_cast<int>(info_.config.windowSize.y), flags);
   if (info_.window == nullptr) {
     spdlog::error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     SDL_Quit();

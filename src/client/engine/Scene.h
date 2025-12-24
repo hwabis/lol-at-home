@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <entt/entt.hpp>
-#include "Entity.h"
 #include "IEcsSystem.h"
 
 namespace lol_at_home_engine {
@@ -30,7 +29,7 @@ class Scene {
     systems_.push_back(std::move(system));
   }
 
-  auto CreateEntity() -> Entity { return {registry_.create(), &registry_}; }
+  auto GetRegistry() -> entt::registry& { return registry_; }
 
  private:
   entt::registry registry_;

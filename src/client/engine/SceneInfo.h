@@ -9,8 +9,15 @@
 namespace lol_at_home_engine {
 
 struct GameConfig {
+  enum class WindowType : uint8_t {
+    Windowed,
+    Fullscreen,
+    BorderlessFullscreen,
+  };
+
   std::string windowTitle;
-  Vector2 windowSize{};
+  WindowType windowType;
+  Vector2 windowSize{};  // only used in windowed mode
   int targetFPS{};
 };
 

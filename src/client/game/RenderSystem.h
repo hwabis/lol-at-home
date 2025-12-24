@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cmath>
 #include "Components.h"
 #include "IEcsSystem.h"
 
 namespace lol_at_home_game {
 
-class MyAwesomeSystem : public lol_at_home_engine::IEcsSystem {
+class RenderSystem : public lol_at_home_engine::IEcsSystem {
  public:
   void Cycle(entt::registry& registry,
              lol_at_home_engine::SceneInfo& info,
