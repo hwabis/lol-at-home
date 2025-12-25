@@ -18,6 +18,7 @@ class Game {
   void sceneLoop();
 
   // todo scene manager? how to stop scene or switch scene (from a scene)?
+  // each scene is going to need to "see" this scene mgr
   Scene scene_;
   SceneInfo info_;
 };

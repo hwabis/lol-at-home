@@ -18,7 +18,7 @@ class InboundEventVisitor {
       std::vector<entt::entity>* instantDirty,
       ThreadSafeQueue<OutboundEvent>* outbound);
 
-  void operator()(const ClientConnectedEvent& event) const;
+  void operator()(const ChampionSelectedEvent& event) const;
   void operator()(const ClientDisconnectedEvent& event) const;
   void operator()(const InboundChatEvent& event) const;
   void operator()(const lol_at_home_shared::GameActionVariant& action) const;

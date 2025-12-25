@@ -20,7 +20,7 @@ InboundEventVisitor::InboundEventVisitor(
       instantDirty_(instantDirty),
       outbound_(outbound) {}
 
-void InboundEventVisitor::operator()(const ClientConnectedEvent& event) const {
+void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
   auto entity = ChampionFactory::CreateChampion(*registry_, event.championId,
                                                 event.teamColor);
 

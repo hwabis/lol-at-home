@@ -1,5 +1,6 @@
 #include "NetworkClient.h"
 #include <spdlog/spdlog.h>
+#include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
 
 namespace lol_at_home_game {
@@ -54,6 +55,10 @@ auto NetworkClient::Connect(const char* host, uint16_t port) -> bool {
       event.type == ENET_EVENT_TYPE_CONNECT) {
     spdlog::info("Connected to server");
     connected_ = true;
+
+    // lmaooo todo be able to choose champ/team
+    sendChampionSelect();
+
     return true;
   }
 
@@ -119,6 +124,8 @@ void NetworkClient::Poll() {
 
         switch (s2cMessage->message_type()) {
           case lol_at_home_shared::S2CDataFB::GameStateDeltaFB: {
+            spdlog::debug("Received GameStateDeltaFB");
+
             const auto* gameStateDelta =
                 s2cMessage->message_as_GameStateDeltaFB();
 
@@ -151,7 +158,10 @@ void NetworkClient::Poll() {
 
             break;
           }
-          case lol_at_home_shared::S2CDataFB::PlayerAssignmentFB:
+          case lol_at_home_shared::S2CDataFB::PlayerAssignmentFB: {
+            spdlog::debug("Received PlayerAssignmentFB");
+            break;
+          }
           case lol_at_home_shared::S2CDataFB::ChatBroadcastFB:
             break;
           case lol_at_home_shared::S2CDataFB::NONE: {
@@ -192,6 +202,28 @@ void NetworkClient::pushOutbound() {
   }
 
   enet_host_flush(client_);
+}
+
+void NetworkClient::sendChampionSelect() {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto championSelect = lol_at_home_shared::CreateChampionSelectFB(
+      builder, lol_at_home_shared::ChampionIdFB::Garen,
+      lol_at_home_shared::TeamColorFB::Blue);
+
+  auto c2sMessage = lol_at_home_shared::CreateC2SMessageFB(
+      builder, lol_at_home_shared::C2SDataFB::GameActionFB,
+      championSelect.Union());
+
+  builder.Finish(c2sMessage);
+
+  ENetPacket* packet = enet_packet_create(
+      builder.GetBufferPointer(), builder.GetSize(), ENET_PACKET_FLAG_RELIABLE);
+
+  enet_peer_send(serverPeer_, 0, packet);
+  enet_host_flush(client_);
+
+  spdlog::info("Sent champion select");
 }
 
 }  // namespace lol_at_home_game

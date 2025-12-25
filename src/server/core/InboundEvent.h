@@ -6,7 +6,7 @@
 
 namespace lol_at_home_server {
 
-struct ClientConnectedEvent {
+struct ChampionSelectedEvent {
   lol_at_home_shared::ChampionId championId;
   lol_at_home_shared::Team::Color teamColor;
 };
@@ -15,7 +15,7 @@ struct InboundChatEvent {
   std::string message;
 };
 
-using InboundEventVariant = std::variant<ClientConnectedEvent,
+using InboundEventVariant = std::variant<ChampionSelectedEvent,
                                          ClientDisconnectedEvent,
                                          InboundChatEvent,
                                          lol_at_home_shared::GameActionVariant>;

@@ -26,6 +26,7 @@ class NetworkClient {
 
  private:
   auto pushOutbound() -> void;
+  auto sendChampionSelect() -> void;
 
   ENetHost* client_ = nullptr;
   ENetPeer* serverPeer_ = nullptr;

@@ -8,7 +8,9 @@ namespace lol_at_home_game {
 
 class InboundEventVisitor {
  public:
-  explicit InboundEventVisitor(entt::registry* registry);
+  explicit InboundEventVisitor(
+      entt::registry* registry,
+      std::unordered_map<uint32_t, entt::entity>* serverToClient);
 
   void operator()(const PlayerAssignedEvent& event);
   void operator()(const ChatMessageEvent& event);
@@ -17,9 +19,7 @@ class InboundEventVisitor {
 
  private:
   entt::registry* registry_;
-
-  // entt::create on different machines does not give deterministic IDs
-  std::unordered_map<uint32_t, entt::entity> serverToClient_;
+  std::unordered_map<uint32_t, entt::entity>* serverToClient_;
 };
 
 }  // namespace lol_at_home_game

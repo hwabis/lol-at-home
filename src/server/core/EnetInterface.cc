@@ -112,7 +112,7 @@ void EnetInterface::populateInbound() {
 
             inbound_->Push(
                 InboundEvent{.peer = event.peer,
-                             .event = ClientConnectedEvent{
+                             .event = ChampionSelectedEvent{
                                  .championId = champId, .teamColor = team}});
 
             break;

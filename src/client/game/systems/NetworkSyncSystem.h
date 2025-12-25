@@ -20,13 +20,14 @@ class NetworkSyncSystem : public lol_at_home_engine::IEcsSystem {
 
     while (!events.empty()) {
       auto& event = events.front();
-      std::visit(InboundEventVisitor{&registry}, event.event);
+      std::visit(InboundEventVisitor{&registry, &serverToClient_}, event.event);
       events.pop();
     }
   }
 
  private:
   std::shared_ptr<ThreadSafeQueue<InboundEvent>> inboundEvents_;
+  std::unordered_map<uint32_t, entt::entity> serverToClient_;
 };
 
 }  // namespace lol_at_home_game
