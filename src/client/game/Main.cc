@@ -24,11 +24,6 @@ auto getScene(const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
   scene.AddSystem(
       std::make_unique<lol_at_home_game::InputSystem>(outboundEvents));
 
-  auto joeBillyBob = scene.GetRegistry().create();
-  scene.GetRegistry().emplace<lol_at_home_game::Transform>(joeBillyBob);
-  scene.GetRegistry().emplace<lol_at_home_game::RenderableCircle>(joeBillyBob,
-                                                                  50.0F);
-
   return scene;
 }
 
