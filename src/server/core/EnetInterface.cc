@@ -29,8 +29,8 @@ EnetInterface::~EnetInterface() {
 }
 
 auto EnetInterface::Cycle(std::chrono::milliseconds /*timeElapsed*/) -> void {
-  sendOutbound();
   populateInbound();
+  sendOutbound();
 }
 
 void EnetInterface::sendOutbound() {

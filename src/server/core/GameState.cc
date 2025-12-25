@@ -129,9 +129,9 @@ void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
   builder.Finish(s2cMessage);
 
   std::vector<std::byte> payload(
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer()),
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer() +
-                                   builder.GetSize()));
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer() +
+                                         builder.GetSize()));
 
   outbound_->Push(OutboundEvent{.target = nullptr, .s2cMessage = payload});
 }

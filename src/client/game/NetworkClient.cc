@@ -160,6 +160,17 @@ void NetworkClient::Poll() {
           }
           case lol_at_home_shared::S2CDataFB::PlayerAssignmentFB: {
             spdlog::debug("Received PlayerAssignmentFB");
+
+            const auto* assignment =
+                s2cMessage->message_as_PlayerAssignmentFB();
+
+            PlayerAssignedEvent assignEvent{};
+            assignEvent.myEntityId = assignment->assigned_entity();
+
+            InboundEvent event;
+            event.event = assignEvent;
+            inboundEvents_->Push(event);
+
             break;
           }
           case lol_at_home_shared::S2CDataFB::ChatBroadcastFB:
@@ -212,7 +223,7 @@ void NetworkClient::sendChampionSelect() {
       lol_at_home_shared::TeamColorFB::Blue);
 
   auto c2sMessage = lol_at_home_shared::CreateC2SMessageFB(
-      builder, lol_at_home_shared::C2SDataFB::GameActionFB,
+      builder, lol_at_home_shared::C2SDataFB::ChampionSelectFB,
       championSelect.Union());
 
   builder.Finish(c2sMessage);
