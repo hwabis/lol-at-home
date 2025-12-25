@@ -1,6 +1,7 @@
 include(${CMAKE_SOURCE_DIR}/cmake/SetTargetDefaults.cmake)
 
 add_executable(lol-at-home-game
+  systems/InboundEventVisitor.cc
   Main.cc
   NetworkClient.cc
 )
