@@ -36,11 +36,11 @@ auto runNetworkClient(const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
                           lol_at_home_game::InboundEvent>>& inboundEvents,
                       const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
                           lol_at_home_game::OutboundEvent>>& outboundEvents)
-    -> void {
-  std::jthread thread([inboundEvents, outboundEvents]() {
+    -> std::jthread {
+  return std::jthread([inboundEvents, outboundEvents](std::stop_token stoken) {
     lol_at_home_game::NetworkClient client(inboundEvents, outboundEvents);
     client.Connect("127.0.0.1", 1111);
-    while (true) {
+    while (!stoken.stop_requested()) {
       client.Poll();
       std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
@@ -66,7 +66,7 @@ auto main() -> int {
       outboundEvents = std::make_shared<
           lol_at_home_game::ThreadSafeQueue<lol_at_home_game::OutboundEvent>>();
 
-  runNetworkClient(inboundEvents, outboundEvents);
+  auto networkThread = runNetworkClient(inboundEvents, outboundEvents);
   game.Run(getScene(inboundEvents, outboundEvents));
   return 0;
 }
