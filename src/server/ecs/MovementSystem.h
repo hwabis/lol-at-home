@@ -43,26 +43,26 @@ class MovementSystem : public IEcsSystem {
  private:
   static auto moveTowards(const lol_at_home_shared::Position& pos,
                           const lol_at_home_shared::Position& target,
-                          double speed,
+                          float speed,
                           std::chrono::milliseconds timeElapsed)
       -> std::pair<lol_at_home_shared::Position, bool> {
-    const double deltaX = target.x - pos.x;
-    const double deltaY = target.y - pos.y;
+    const float deltaX = target.x - pos.x;
+    const float deltaY = target.y - pos.y;
 
-    const double distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
+    const float distance = std::sqrt((deltaX * deltaX) + (deltaY * deltaY));
     if (distance == 0.0) {
       return {target, true};
     }
 
-    const double seconds = std::chrono::duration<double>(timeElapsed).count();
-    const double maxStep = speed * seconds;
+    const float seconds = std::chrono::duration<float>(timeElapsed).count();
+    const float maxStep = speed * seconds;
 
     if (distance <= maxStep) {
       return {target, true};
     }
 
     lol_at_home_shared::Position newPos = pos;
-    const double ratio = maxStep / distance;
+    const float ratio = maxStep / distance;
     newPos.x += deltaX * ratio;
     newPos.y += deltaY * ratio;
 

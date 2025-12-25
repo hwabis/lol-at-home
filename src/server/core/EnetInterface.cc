@@ -15,6 +15,12 @@ EnetInterface::EnetInterface(
   ENetAddress address{.host = ENET_HOST_ANY, .port = port};
   constexpr int numOfPlayers = 10;  // technically doesn't handle spectators lol
   host_ = enet_host_create(&address, numOfPlayers, 1, 0, 0);
+  if (host_ == nullptr) {
+    spdlog::error("Failed to create ENet server host");
+    throw std::runtime_error("ENet server creation failed");
+  }
+
+  spdlog::info("Server listening on port " + std::to_string(port));
 }
 
 EnetInterface::~EnetInterface() {
