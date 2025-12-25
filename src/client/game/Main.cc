@@ -2,19 +2,24 @@
 #include "Components.h"
 #include "Game.h"
 #include "InboundEvent.h"
-#include "InputSystem.h"
 #include "NetworkClient.h"
 #include "OutboundEvent.h"
-#include "RenderSystem.h"
 #include "ThreadSafeQueue.h"
+#include "systems/InputSystem.h"
+#include "systems/NetworkSyncSystem.h"
+#include "systems/RenderSystem.h"
 
 namespace {
 
 auto getScene(const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
+                  lol_at_home_game::InboundEvent>>& inboundEvents,
+              const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
                   lol_at_home_game::OutboundEvent>>& outboundEvents)
     -> lol_at_home_engine::Scene {
   lol_at_home_engine::Scene scene;
 
+  scene.AddSystem(
+      std::make_unique<lol_at_home_game::NetworkSyncSystem>(inboundEvents));
   scene.AddSystem(std::make_unique<lol_at_home_game::RenderSystem>());
   scene.AddSystem(
       std::make_unique<lol_at_home_game::InputSystem>(outboundEvents));
@@ -34,6 +39,7 @@ auto runNetworkClient(const std::shared_ptr<lol_at_home_game::ThreadSafeQueue<
     -> void {
   std::jthread thread([inboundEvents, outboundEvents]() {
     lol_at_home_game::NetworkClient client(inboundEvents, outboundEvents);
+    client.Connect("127.0.0.1", 1111);
     while (true) {
       client.Poll();
       std::this_thread::sleep_for(std::chrono::milliseconds(16));
@@ -61,6 +67,6 @@ auto main() -> int {
           lol_at_home_game::ThreadSafeQueue<lol_at_home_game::OutboundEvent>>();
 
   runNetworkClient(inboundEvents, outboundEvents);
-  game.Run(getScene(outboundEvents));
+  game.Run(getScene(inboundEvents, outboundEvents));
   return 0;
 }

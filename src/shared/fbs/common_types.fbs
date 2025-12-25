@@ -1,8 +1,8 @@
 namespace lol_at_home_shared;
 
 struct PositionFB {
-  x: double;
-  y: double;
+  x: float;
+  y: float;
 }
 
 enum AbilitySlotFB: ubyte {

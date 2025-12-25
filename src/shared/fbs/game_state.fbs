@@ -2,15 +2,15 @@ include "common_types.fbs";
 namespace lol_at_home_shared;
 
 struct HealthFB {
-  current_health: double;
-  max_health: double;
-  health_regen_per_sec: double;
+  current_health: float;
+  max_health: float;
+  health_regen_per_sec: float;
 }
 
 struct ManaFB {
-  mana: double;
-  max_mana: double;
-  mana_regen_per_sec: double;
+  mana: float;
+  max_mana: float;
+  mana_regen_per_sec: float;
 }
 
 enum MovementStateFB: ubyte {
@@ -19,7 +19,7 @@ enum MovementStateFB: ubyte {
 }
 
 struct MovableFB {
-  speed: double;
+  speed: float;
   state: MovementStateFB;
   target_pos: PositionFB;
 }

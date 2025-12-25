@@ -25,6 +25,8 @@ class NetworkClient {
   auto Poll() -> void;
 
  private:
+  auto pushOutbound() -> void;
+
   ENetHost* client_ = nullptr;
   ENetPeer* serverPeer_ = nullptr;
   bool connected_ = false;

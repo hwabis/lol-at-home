@@ -40,8 +40,7 @@ class HealthSystem : public IEcsSystem {
       }
 
       if (health.currentHealth < health.maxHealth) {
-        const double seconds =
-            std::chrono::duration<double>(timeElapsed).count();
+        const float seconds = std::chrono::duration<float>(timeElapsed).count();
         health.currentHealth = std::min(
             health.maxHealth,
             health.currentHealth + (seconds * health.healthRegenPerSec));

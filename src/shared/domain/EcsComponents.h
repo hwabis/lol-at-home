@@ -7,23 +7,21 @@
 
 namespace lol_at_home_shared {
 
-// todo replace all doubles with floats... like EVERYWHERE
-
 struct Position {
-  double x{};
-  double y{};
+  float x{};
+  float y{};
 };
 
 struct Health {
-  double currentHealth{};
-  double maxHealth{};
-  double healthRegenPerSec{};
+  float currentHealth{};
+  float maxHealth{};
+  float healthRegenPerSec{};
 };
 
 struct Mana {
-  double mana{};
-  double maxMana{};
-  double manaRegenPerSec{};
+  float mana{};
+  float maxMana{};
+  float manaRegenPerSec{};
 };
 
 enum class MovementState : uint8_t {
@@ -32,7 +30,7 @@ enum class MovementState : uint8_t {
 };
 
 struct Movable {
-  double speed{};  // units per sec
+  float speed{};  // units per sec
   MovementState state = MovementState::Idle;
   Position targetPosition;  // ignored if state == idle
 };

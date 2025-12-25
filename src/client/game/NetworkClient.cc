@@ -1,5 +1,6 @@
 #include "NetworkClient.h"
 #include <spdlog/spdlog.h>
+#include "s2c_message_generated.h"
 
 namespace lol_at_home_game {
 
@@ -113,7 +114,51 @@ void NetworkClient::Poll() {
             reinterpret_cast<std::byte*>(event.packet->data) +
                 event.packet->dataLength);
 
-        // todo push stuff to inboundEvents_
+        const auto* s2cMessage =
+            lol_at_home_shared::GetS2CMessageFB(data.data());
+
+        switch (s2cMessage->message_type()) {
+          case lol_at_home_shared::S2CDataFB::GameStateDeltaFB: {
+            const auto* gameStateDelta =
+                s2cMessage->message_as_GameStateDeltaFB();
+
+            if (gameStateDelta->entities() != nullptr) {
+              for (const auto* entityFB : *gameStateDelta->entities()) {
+                EntityUpdatedEvent updateEvent;
+                updateEvent.serverEntityId = entityFB->id();
+
+                if (entityFB->position() != nullptr) {
+                  updateEvent.position.x = entityFB->position()->x();
+                  updateEvent.position.y = entityFB->position()->y();
+                }
+
+                InboundEvent event;
+                event.event = updateEvent;
+                inboundEvents_->Push(event);
+              }
+            }
+
+            if (gameStateDelta->deleted_entity_ids() != nullptr) {
+              for (uint32_t deletedId : *gameStateDelta->deleted_entity_ids()) {
+                EntityDeletedEvent deleteEvent{};
+                deleteEvent.serverEntityId = deletedId;
+
+                InboundEvent event;
+                event.event = deleteEvent;
+                inboundEvents_->Push(event);
+              }
+            }
+
+            break;
+          }
+          case lol_at_home_shared::S2CDataFB::PlayerAssignmentFB:
+          case lol_at_home_shared::S2CDataFB::ChatBroadcastFB:
+            break;
+          case lol_at_home_shared::S2CDataFB::NONE: {
+            spdlog::warn("Received empty or unknown message type");
+            break;
+          }
+        }
 
         enet_packet_destroy(event.packet);
         break;
@@ -130,7 +175,23 @@ void NetworkClient::Poll() {
     }
   }
 
-  // todo send outbound events
+  pushOutbound();
+}
+
+void NetworkClient::pushOutbound() {
+  std::queue<OutboundEvent> outbound = outboundEvents_->PopAll();
+  while (!outbound.empty()) {
+    auto& event = outbound.front();
+
+    ENetPacket* packet =
+        enet_packet_create(event.c2sMessage.data(), event.c2sMessage.size(),
+                           ENET_PACKET_FLAG_RELIABLE);
+
+    enet_peer_send(serverPeer_, 0, packet);
+    outbound.pop();
+  }
+
+  enet_host_flush(client_);
 }
 
 }  // namespace lol_at_home_game
