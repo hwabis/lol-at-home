@@ -21,7 +21,7 @@ void InboundEventVisitor::operator()(const PlayerAssignedEvent& event) {
   registry_->emplace<RenderableCircle>(localEntity, 50.0F);
 }
 
-void InboundEventVisitor::operator()(const ChatMessageEvent& event) {
+void InboundEventVisitor::operator()(const ChatMessageEvent& /*event*/) {
   // todo
 }
 

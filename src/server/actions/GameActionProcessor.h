@@ -59,11 +59,11 @@ class GameActionProcessor {
     abilityImpl->Execute(*registry_, ability, action.target);
   }
 
-  void operator()(const lol_at_home_shared::AutoAttackAction& action) {
+  void operator()(const lol_at_home_shared::AutoAttackAction& /*action*/) {
     // todo
   }
 
-  void operator()(const lol_at_home_shared::StopGameAction& action) {
+  void operator()(const lol_at_home_shared::StopGameAction& /*action*/) {
     // todo
   }
 
@@ -78,8 +78,10 @@ class GameActionProcessor {
     // at compile time (compiler warning otherwise)
     switch (abilityId) {
       // todo
-      // in fact the compiler is emitting a warning right nao
+      default:
+        break;
     }
+    return nullptr;
   }
 };
 

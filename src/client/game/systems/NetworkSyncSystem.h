@@ -14,7 +14,7 @@ class NetworkSyncSystem : public lol_at_home_engine::IEcsSystem {
       : inboundEvents_(std::move(inboundEvents)) {}
 
   void Cycle(entt::registry& registry,
-             lol_at_home_engine::SceneInfo& info,
+             lol_at_home_engine::SceneInfo& /*info*/,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     std::queue<InboundEvent> events = inboundEvents_->PopAll();
 
