@@ -6,11 +6,11 @@
 namespace lol_at_home_game {
 
 struct LocalPlayer {
-  entt::entity serverEntityId;
+  uint32_t serverEntityId;
 };
 
 struct Transform {
-  lol_at_home_engine::Vector2 position{};
+  lol_at_home_engine::Vector2 worldPosition{};
   float rotation{};
   float scale{1.0F};
 };

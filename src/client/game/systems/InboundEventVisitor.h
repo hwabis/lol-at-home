@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
+#include <optional>
 #include <unordered_map>
 #include "InboundEvent.h"
 

@@ -12,13 +12,8 @@ InboundEventVisitor::InboundEventVisitor(
 void InboundEventVisitor::operator()(const PlayerAssignedEvent& event) {
   spdlog::info("We are entity: " + std::to_string(event.myEntityId));
 
-  entt::entity localEntity = registry_->create();
-  (*serverToClient_)[event.myEntityId] = localEntity;
-
-  registry_->emplace<LocalPlayer>(localEntity,
-                                  static_cast<entt::entity>(event.myEntityId));
-  registry_->emplace<Transform>(localEntity);
-  registry_->emplace<RenderableCircle>(localEntity, 50.0F);
+  // todo we can replace with a proper struct if we want lol
+  registry_->ctx().emplace<uint32_t>(event.myEntityId);
 }
 
 void InboundEventVisitor::operator()(const ChatMessageEvent& /*event*/) {
@@ -41,8 +36,16 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     registry_->emplace<RenderableCircle>(clientEntity, 50.0F);
   }
 
+  auto* pendingId = registry_->ctx().find<uint32_t>();
+  if ((pendingId != nullptr) && event.serverEntityId == *pendingId) {
+    if (!registry_->all_of<LocalPlayer>(clientEntity)) {
+      registry_->emplace<LocalPlayer>(clientEntity, event.serverEntityId);
+      spdlog::info("Tagged local player!");
+    }
+  }
+
   auto& transform = registry_->get<Transform>(clientEntity);
-  transform.position = event.position;
+  transform.worldPosition = event.worldPosition;
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {

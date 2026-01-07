@@ -38,7 +38,7 @@ class InputSystem : public lol_at_home_engine::IEcsSystem {
           lol_at_home_shared::CreateMoveActionFB(builder, &targetPos);
 
       auto gameAction = lol_at_home_shared::CreateGameActionFB(
-          builder, static_cast<uint32_t>(localPlayer.serverEntityId),
+          builder, localPlayer.serverEntityId,
           lol_at_home_shared::GameActionDataFB::MoveActionFB,
           moveAction.Union());
 

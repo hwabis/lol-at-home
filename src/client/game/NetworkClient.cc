@@ -135,8 +135,8 @@ void NetworkClient::Poll() {
                 updateEvent.serverEntityId = entityFB->id();
 
                 if (entityFB->position() != nullptr) {
-                  updateEvent.position.x = entityFB->position()->x();
-                  updateEvent.position.y = entityFB->position()->y();
+                  updateEvent.worldPosition.x = entityFB->position()->x();
+                  updateEvent.worldPosition.y = entityFB->position()->y();
                 }
 
                 InboundEvent event;

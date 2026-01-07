@@ -20,7 +20,7 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
       auto& transform = view.get<Transform>(entity);
       auto& circle = view.get<RenderableCircle>(entity);
 
-      auto screenPos = info.camera.WorldToScreen(transform.position);
+      auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
 
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 

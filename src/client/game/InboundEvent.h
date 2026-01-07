@@ -18,7 +18,7 @@ struct ChatMessageEvent {
 
 struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
-  lol_at_home_engine::Vector2 position;
+  lol_at_home_engine::Vector2 worldPosition{};
   // todo add all the other components as well, prob as optional (represents ecs
   // components)
 };

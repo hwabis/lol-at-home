@@ -37,7 +37,6 @@ class ChampionFactory {
 
     registry.emplace<Position>(entity, 100.0, 200.0);
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
-    // todo remove (this is just reminding me other champs have mana lolol)
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
     registry.emplace<Movable>(entity, 340.0);
     registry.emplace<Team>(entity, teamColor);
@@ -48,6 +47,7 @@ class ChampionFactory {
     abilities.abilities[AbilitySlot::E] = {.tag = AbilityTag::Garen_E};
     abilities.abilities[AbilitySlot::R] = {.tag = AbilityTag::Garen_R};
     registry.emplace<Abilities>(entity, abilities);
+
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,
     // readability-magic-numbers)
 
