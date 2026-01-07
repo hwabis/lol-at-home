@@ -224,19 +224,22 @@ void GameStateSerializer::deserializeAbilities(entt::registry& registry,
                                                const AbilitiesFB* abilitiesFB) {
   if (abilitiesFB != nullptr) {
     Abilities abilities;
-    for (const auto* abilityEntryFB : *abilitiesFB->abilities()) {
-      auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
-      const auto* AbilityFB = abilityEntryFB->ability();
+    if (abilitiesFB != nullptr && abilitiesFB->abilities() != nullptr) {
+      for (const auto* abilityEntryFB : *abilitiesFB->abilities()) {
+        auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
+        const auto* AbilityFB = abilityEntryFB->ability();
 
-      Abilities::Ability ability{
-          .tag = static_cast<AbilityTag>(AbilityFB->id()),
-          .cooldownRemaining = AbilityFB->cooldown_remaining(),
-          .rank = AbilityFB->rank(),
-          .currentCharges = AbilityFB->current_charges(),
-          .maxCharges = AbilityFB->max_charges()};
+        Abilities::Ability ability{
+            .tag = static_cast<AbilityTag>(AbilityFB->id()),
+            .cooldownRemaining = AbilityFB->cooldown_remaining(),
+            .rank = AbilityFB->rank(),
+            .currentCharges = AbilityFB->current_charges(),
+            .maxCharges = AbilityFB->max_charges()};
 
-      abilities.abilities[slot] = ability;
+        abilities.abilities[slot] = ability;
+      }
     }
+
     registry.emplace_or_replace<Abilities>(entity, abilities);
   }
 }

@@ -41,6 +41,8 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     if (!registry_->all_of<LocalPlayer>(clientEntity)) {
       registry_->emplace<LocalPlayer>(clientEntity, event.serverEntityId);
       spdlog::info("Tagged local player!");
+
+      registry_->ctx().erase<uint32_t>();
     }
   }
 
