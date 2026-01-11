@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL3/SDL_render.h>
 #include "Components.h"
 #include "IEcsSystem.h"
 
@@ -11,10 +12,19 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
              lol_at_home_engine::SceneInfo& info,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     auto* renderer = info.sdlRenderer;
-
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    drawChampions(registry, info);
+    drawHealthBars(registry, info);
+
+    SDL_RenderPresent(renderer);
+  }
+
+ private:
+  static void drawChampions(entt::registry& registry,
+                            lol_at_home_engine::SceneInfo& info) {
+    auto* renderer = info.sdlRenderer;
     auto view = registry.view<Transform, RenderableCircle>();
     for (auto entity : view) {
       auto& transform = view.get<Transform>(entity);
@@ -36,8 +46,34 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
                        centerY + static_cast<float>(yDraw));
       }
     }
+  }
 
-    SDL_RenderPresent(renderer);
+  static void drawHealthBars(entt::registry& registry,
+                             lol_at_home_engine::SceneInfo& info) {
+    auto* renderer = info.sdlRenderer;
+    auto view = registry.view<Transform, RenderableCircle, Health>();
+    for (auto entity : view) {
+      auto& transform = view.get<Transform>(entity);
+      auto& circle = view.get<RenderableCircle>(entity);
+      auto& health = view.get<Health>(entity);
+
+      auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
+
+      float healthRatio = std::clamp(health.current / health.max, 0.0F, 1.0F);
+      constexpr float barWidth = 100.0F;
+      constexpr float barHeight = 10.0F;
+      float barX = screenPos.x - barWidth * 0.5F;
+      float barY = screenPos.y - circle.radius - barHeight - 10.0F;
+
+      SDL_FRect background{barX, barY, barWidth, barHeight};
+      SDL_FRect foreground{background.x, background.y, barWidth * healthRatio,
+                           background.h};
+
+      SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+      SDL_RenderFillRect(renderer, &background);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_RenderFillRect(renderer, &foreground);
+    }
   }
 };
 

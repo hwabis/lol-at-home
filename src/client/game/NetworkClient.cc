@@ -139,6 +139,13 @@ void NetworkClient::Poll() {
                   updateEvent.worldPosition.y = entityFB->position()->y();
                 }
 
+                if (entityFB->health() != nullptr) {
+                  updateEvent.health = {
+                      .current = entityFB->health()->current_health(),
+                      .regenPerSec = entityFB->health()->health_regen_per_sec(),
+                      .max = entityFB->health()->max_health()};
+                }
+
                 InboundEvent event;
                 event.event = updateEvent;
                 inboundEvents_->Push(event);

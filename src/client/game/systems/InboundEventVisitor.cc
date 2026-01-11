@@ -31,8 +31,10 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     clientEntity = registry_->create();
     (*serverToClient_)[event.serverEntityId] = clientEntity;
 
+    // default-initialize all these, they will be updated anyway
     registry_->emplace<Transform>(clientEntity);
-    registry_->emplace<RenderableCircle>(clientEntity, 50.0F);
+    registry_->emplace<RenderableCircle>(clientEntity);
+    registry_->emplace<Health>(clientEntity);
   }
 
   if (serverAssignedId_.has_value() &&
@@ -45,6 +47,10 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
 
   auto& transform = registry_->get<Transform>(clientEntity);
   transform.worldPosition = event.worldPosition;
+  auto& renderableCircle = registry_->get<RenderableCircle>(clientEntity);
+  renderableCircle.radius = 50.0F;  // if server event provides radius, use that
+  auto& health = registry_->get<Health>(clientEntity);
+  health = event.health;
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {

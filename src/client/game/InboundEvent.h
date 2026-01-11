@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <variant>
+#include "Components.h"
 #include "Vector2.h"
 
 namespace lol_at_home_game {
@@ -19,8 +20,8 @@ struct ChatMessageEvent {
 struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
   lol_at_home_engine::Vector2 worldPosition{};
-  // todo add all the other components as well, prob as optional (represents ecs
-  // components)
+  Health health{};
+  // todo add all the other components as well THIS IS SO ANNOYING
 };
 
 struct EntityDeletedEvent {

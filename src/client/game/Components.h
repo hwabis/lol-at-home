@@ -19,4 +19,10 @@ struct RenderableCircle {
   float radius{1.0F};
 };
 
+struct Health {
+  float current{};
+  float regenPerSec{};
+  float max{};
+};
+
 }  // namespace lol_at_home_game
