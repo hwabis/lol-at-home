@@ -21,6 +21,7 @@ class InboundEventVisitor {
  private:
   entt::registry* registry_;
   std::unordered_map<uint32_t, entt::entity>* serverToClient_;
+  inline static std::optional<uint32_t> serverAssignedId_;
 };
 
 }  // namespace lol_at_home_game

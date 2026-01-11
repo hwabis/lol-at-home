@@ -12,8 +12,7 @@ InboundEventVisitor::InboundEventVisitor(
 void InboundEventVisitor::operator()(const PlayerAssignedEvent& event) {
   spdlog::info("We are entity: " + std::to_string(event.myEntityId));
 
-  // todo we can replace with a proper struct if we want lol
-  registry_->ctx().emplace<uint32_t>(event.myEntityId);
+  serverAssignedId_ = event.myEntityId;
 }
 
 void InboundEventVisitor::operator()(const ChatMessageEvent& /*event*/) {
@@ -36,13 +35,11 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     registry_->emplace<RenderableCircle>(clientEntity, 50.0F);
   }
 
-  auto* pendingId = registry_->ctx().find<uint32_t>();
-  if ((pendingId != nullptr) && event.serverEntityId == *pendingId) {
+  if (serverAssignedId_.has_value() &&
+      *serverAssignedId_ == event.serverEntityId) {
     if (!registry_->all_of<LocalPlayer>(clientEntity)) {
       registry_->emplace<LocalPlayer>(clientEntity, event.serverEntityId);
       spdlog::info("Tagged local player!");
-
-      registry_->ctx().erase<uint32_t>();
     }
   }
 
