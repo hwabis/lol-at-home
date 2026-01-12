@@ -36,10 +36,10 @@ class ChampionFactory {
     // readability-magic-numbers)
 
     registry.emplace<Position>(entity, 100.0, 200.0);
+    registry.emplace<Team>(entity, teamColor);
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
     registry.emplace<Movable>(entity, 340.0);
-    registry.emplace<Team>(entity, teamColor);
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};

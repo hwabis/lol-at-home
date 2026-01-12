@@ -31,10 +31,13 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     clientEntity = registry_->create();
     (*serverToClient_)[event.serverEntityId] = clientEntity;
 
-    // default-initialize all these, they will be updated anyway
+    // default-initialize all these, they will be updated below anyway
     registry_->emplace<Transform>(clientEntity);
     registry_->emplace<RenderableCircle>(clientEntity);
     registry_->emplace<Health>(clientEntity);
+
+    // these are one-time set at creation
+    registry_->emplace<Team>(clientEntity, event.team);
   }
 
   if (serverAssignedId_.has_value() &&

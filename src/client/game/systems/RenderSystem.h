@@ -51,11 +51,12 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   static void drawHealthBars(entt::registry& registry,
                              lol_at_home_engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<Transform, RenderableCircle, Health>();
+    auto view = registry.view<Transform, RenderableCircle, Health, Team>();
     for (auto entity : view) {
       auto& transform = view.get<Transform>(entity);
       auto& circle = view.get<RenderableCircle>(entity);
       auto& health = view.get<Health>(entity);
+      auto& team = view.get<Team>(entity);
 
       auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
 
@@ -71,7 +72,15 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
 
       SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
       SDL_RenderFillRect(renderer, &background);
-      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+      switch (team.color) {
+        case Team::Color::Blue:
+          SDL_SetRenderDrawColor(renderer, 0, 122, 255, 255);
+          break;
+        case Team::Color::Red:
+          SDL_SetRenderDrawColor(renderer, 255, 59, 48, 255);
+          break;
+      }
       SDL_RenderFillRect(renderer, &foreground);
     }
   }

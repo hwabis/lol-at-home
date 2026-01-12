@@ -1,5 +1,7 @@
 #include "NetworkClient.h"
 #include <spdlog/spdlog.h>
+#include <random>
+#include "Components.h"
 #include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
 
@@ -56,8 +58,12 @@ auto NetworkClient::Connect(const char* host, uint16_t port) -> bool {
     spdlog::info("Connected to server");
     connected_ = true;
 
-    // lmaooo todo be able to choose champ/team
-    sendChampionSelect();
+    // lmaooo todo be able to choose champ/team later, through ui or smth. for
+    // now let's make it completely random.. if you wanna switch teams just
+    // relaunch the game xDD
+    std::mt19937 rng{std::random_device{}()};
+    sendChampionSelect(static_cast<lol_at_home_shared::TeamColorFB>(
+        std::uniform_int_distribution<>(0, 1)(rng)));
 
     return true;
   }
@@ -137,6 +143,14 @@ void NetworkClient::Poll() {
                 if (entityFB->position() != nullptr) {
                   updateEvent.worldPosition.x = entityFB->position()->x();
                   updateEvent.worldPosition.y = entityFB->position()->y();
+                }
+
+                if (entityFB->team() != nullptr) {
+                  updateEvent.team = {
+                      .color = entityFB->team()->color() ==
+                                       lol_at_home_shared::TeamColorFB::Blue
+                                   ? Team::Color::Blue
+                                   : Team::Color::Red};
                 }
 
                 if (entityFB->health() != nullptr) {
@@ -222,12 +236,11 @@ void NetworkClient::pushOutbound() {
   enet_host_flush(client_);
 }
 
-void NetworkClient::sendChampionSelect() {
+void NetworkClient::sendChampionSelect(lol_at_home_shared::TeamColorFB team) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto championSelect = lol_at_home_shared::CreateChampionSelectFB(
-      builder, lol_at_home_shared::ChampionIdFB::Garen,
-      lol_at_home_shared::TeamColorFB::Blue);
+      builder, lol_at_home_shared::ChampionIdFB::Garen, team);
 
   auto c2sMessage = lol_at_home_shared::CreateC2SMessageFB(
       builder, lol_at_home_shared::C2SDataFB::ChampionSelectFB,

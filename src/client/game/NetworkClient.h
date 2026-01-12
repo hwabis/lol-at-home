@@ -5,6 +5,7 @@
 #include "InboundEvent.h"
 #include "OutboundEvent.h"
 #include "ThreadSafeQueue.h"
+#include "game_common_generated.h"
 
 namespace lol_at_home_game {
 
@@ -26,7 +27,7 @@ class NetworkClient {
 
  private:
   auto pushOutbound() -> void;
-  auto sendChampionSelect() -> void;
+  auto sendChampionSelect(lol_at_home_shared::TeamColorFB team) -> void;
 
   ENetHost* client_ = nullptr;
   ENetPeer* serverPeer_ = nullptr;

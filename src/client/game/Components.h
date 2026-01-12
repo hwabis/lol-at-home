@@ -25,4 +25,8 @@ struct Health {
   float max{};
 };
 
+struct Team {
+  enum class Color : uint8_t { Blue, Red } color;
+};
+
 }  // namespace lol_at_home_game

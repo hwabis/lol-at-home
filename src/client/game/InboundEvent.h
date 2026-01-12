@@ -21,6 +21,7 @@ struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
   lol_at_home_engine::Vector2 worldPosition{};
   Health health{};
+  Team team{};
   // todo add all the other components as well THIS IS SO ANNOYING
 };
 
