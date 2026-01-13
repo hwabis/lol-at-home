@@ -25,16 +25,15 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   static void drawChampions(entt::registry& registry,
                             lol_at_home_engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<Transform, RenderableCircle>();
+    auto view = registry.view<Transform>();
     for (auto entity : view) {
       auto& transform = view.get<Transform>(entity);
-      auto& circle = view.get<RenderableCircle>(entity);
 
       auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
 
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-      float radius = circle.radius * transform.scale;
+      float radius = transform.championRadius;
       float centerX = screenPos.x;
       float centerY = screenPos.y;
 
@@ -51,10 +50,9 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   static void drawHealthBars(entt::registry& registry,
                              lol_at_home_engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<Transform, RenderableCircle, Health, Team>();
+    auto view = registry.view<Transform, Health, Team>();
     for (auto entity : view) {
       auto& transform = view.get<Transform>(entity);
-      auto& circle = view.get<RenderableCircle>(entity);
       auto& health = view.get<Health>(entity);
       auto& team = view.get<Team>(entity);
 
@@ -64,7 +62,7 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
       constexpr float barWidth = 100.0F;
       constexpr float barHeight = 10.0F;
       float barX = screenPos.x - barWidth * 0.5F;
-      float barY = screenPos.y - circle.radius - barHeight - 10.0F;
+      float barY = screenPos.y - transform.championRadius - barHeight - 10.0F;
 
       SDL_FRect background{barX, barY, barWidth, barHeight};
       SDL_FRect foreground{background.x, background.y, barWidth * healthRatio,

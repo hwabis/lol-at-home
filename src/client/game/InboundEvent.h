@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <variant>
 #include "Components.h"
@@ -19,9 +20,9 @@ struct ChatMessageEvent {
 
 struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
-  lol_at_home_engine::Vector2 worldPosition{};
-  Health health{};
-  Team team{};
+  std::optional<Transform> transform;
+  std::optional<Team> team;
+  std::optional<Health> health;
   // todo add all the other components as well THIS IS SO ANNOYING
 };
 

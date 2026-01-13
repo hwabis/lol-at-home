@@ -11,12 +11,9 @@ struct LocalPlayer {
 
 struct Transform {
   lol_at_home_engine::Vector2 worldPosition{};
-  float rotation{};
-  float scale{1.0F};
-};
-
-struct RenderableCircle {
-  float radius{1.0F};
+  // todo default init this, and in EntityUpdatedEvent creation, set it to the
+  // value from the flatbuffer
+  float championRadius = 50.0F;
 };
 
 struct Health {
@@ -26,7 +23,11 @@ struct Health {
 };
 
 struct Team {
-  enum class Color : uint8_t { Blue, Red } color;
+  // todo add a neutral team
+  enum class Color : uint8_t {
+    Blue,
+    Red,
+  } color;
 };
 
 }  // namespace lol_at_home_game

@@ -141,12 +141,16 @@ void NetworkClient::Poll() {
                 updateEvent.serverEntityId = entityFB->id();
 
                 if (entityFB->position() != nullptr) {
-                  updateEvent.worldPosition.x = entityFB->position()->x();
-                  updateEvent.worldPosition.y = entityFB->position()->y();
+                  updateEvent.transform = Transform{
+                      .worldPosition =
+                          lol_at_home_engine::Vector2{
+                              .x = entityFB->position()->x(),
+                              .y = entityFB->position()->y()},
+                  };
                 }
 
                 if (entityFB->team() != nullptr) {
-                  updateEvent.team = {
+                  updateEvent.team = Team{
                       .color = entityFB->team()->color() ==
                                        lol_at_home_shared::TeamColorFB::Blue
                                    ? Team::Color::Blue
@@ -154,7 +158,7 @@ void NetworkClient::Poll() {
                 }
 
                 if (entityFB->health() != nullptr) {
-                  updateEvent.health = {
+                  updateEvent.health = Health{
                       .current = entityFB->health()->current_health(),
                       .regenPerSec = entityFB->health()->health_regen_per_sec(),
                       .max = entityFB->health()->max_health()};
@@ -236,6 +240,7 @@ void NetworkClient::pushOutbound() {
   enet_host_flush(client_);
 }
 
+// todo uhh this should be in src/shared or smth
 void NetworkClient::sendChampionSelect(lol_at_home_shared::TeamColorFB team) {
   flatbuffers::FlatBufferBuilder builder;
 

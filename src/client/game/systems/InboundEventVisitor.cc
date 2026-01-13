@@ -32,12 +32,18 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     (*serverToClient_)[event.serverEntityId] = clientEntity;
 
     // default-initialize all these, they will be updated below anyway
-    registry_->emplace<Transform>(clientEntity);
-    registry_->emplace<RenderableCircle>(clientEntity);
-    registry_->emplace<Health>(clientEntity);
 
-    // these are one-time set at creation
-    registry_->emplace<Team>(clientEntity, event.team);
+    if (event.transform.has_value()) {
+      registry_->emplace<Transform>(clientEntity);
+    }
+
+    if (event.team.has_value()) {
+      registry_->emplace<Team>(clientEntity);
+    }
+
+    if (event.health.has_value()) {
+      registry_->emplace<Health>(clientEntity);
+    }
   }
 
   if (serverAssignedId_.has_value() &&
@@ -48,12 +54,17 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     }
   }
 
-  auto& transform = registry_->get<Transform>(clientEntity);
-  transform.worldPosition = event.worldPosition;
-  auto& renderableCircle = registry_->get<RenderableCircle>(clientEntity);
-  renderableCircle.radius = 50.0F;  // if server event provides radius, use that
-  auto& health = registry_->get<Health>(clientEntity);
-  health = event.health;
+  if (event.transform.has_value()) {
+    registry_->emplace_or_replace<Transform>(clientEntity, *event.transform);
+  }
+
+  if (event.team.has_value()) {
+    registry_->emplace_or_replace<Team>(clientEntity, *event.team);
+  }
+
+  if (event.health.has_value()) {
+    registry_->emplace_or_replace<Health>(clientEntity, *event.health);
+  }
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {
