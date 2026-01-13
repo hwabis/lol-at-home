@@ -30,20 +30,6 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
   } else {
     clientEntity = registry_->create();
     (*serverToClient_)[event.serverEntityId] = clientEntity;
-
-    // default-initialize all these, they will be updated below anyway
-
-    if (event.transform.has_value()) {
-      registry_->emplace<Transform>(clientEntity);
-    }
-
-    if (event.team.has_value()) {
-      registry_->emplace<Team>(clientEntity);
-    }
-
-    if (event.health.has_value()) {
-      registry_->emplace<Health>(clientEntity);
-    }
   }
 
   if (serverAssignedId_.has_value() &&

@@ -35,11 +35,14 @@ class ChampionFactory {
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,
     // readability-magic-numbers)
 
-    registry.emplace<Position>(entity, 100.0, 200.0);
+    constexpr float startX = 100.0F;
+    constexpr float startY = 200.0F;
+    registry.emplace<Position>(entity, startX, startY);
     registry.emplace<Team>(entity, teamColor);
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
-    registry.emplace<Movable>(entity, 340.0);
+    registry.emplace<Movable>(entity, 340.0, MovementState::Idle,
+                              Position{startX, startY});
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};
