@@ -1,7 +1,6 @@
 #include "NetworkClient.h"
 #include <spdlog/spdlog.h>
 #include <random>
-#include "Components.h"
 #include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
 
@@ -141,27 +140,26 @@ void NetworkClient::Poll() {
                 updateEvent.serverEntityId = entityFB->id();
 
                 if (entityFB->position() != nullptr) {
-                  updateEvent.transform = Transform{
-                      .worldPosition =
-                          lol_at_home_engine::Vector2{
-                              .x = entityFB->position()->x(),
-                              .y = entityFB->position()->y()},
+                  updateEvent.position = lol_at_home_shared::Position{
+                      .x = entityFB->position()->x(),
+                      .y = entityFB->position()->y(),
                   };
                 }
 
                 if (entityFB->team() != nullptr) {
-                  updateEvent.team = Team{
+                  updateEvent.team = lol_at_home_shared::Team{
                       .color = entityFB->team()->color() ==
                                        lol_at_home_shared::TeamColorFB::Blue
-                                   ? Team::Color::Blue
-                                   : Team::Color::Red};
+                                   ? lol_at_home_shared::Team::Color::Blue
+                                   : lol_at_home_shared::Team::Color::Red};
                 }
 
                 if (entityFB->health() != nullptr) {
-                  updateEvent.health = Health{
+                  updateEvent.health = lol_at_home_shared::Health{
                       .current = entityFB->health()->current_health(),
+                      .max = entityFB->health()->max_health(),
                       .regenPerSec = entityFB->health()->health_regen_per_sec(),
-                      .max = entityFB->health()->max_health()};
+                  };
                 }
 
                 InboundEvent event;

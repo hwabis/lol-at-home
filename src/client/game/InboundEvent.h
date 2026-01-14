@@ -4,8 +4,7 @@
 #include <optional>
 #include <string>
 #include <variant>
-#include "Components.h"
-#include "Vector2.h"
+#include "domain/EcsComponents.h"
 
 namespace lol_at_home_game {
 
@@ -20,9 +19,9 @@ struct ChatMessageEvent {
 
 struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
-  std::optional<Transform> transform;
-  std::optional<Team> team;
-  std::optional<Health> health;
+  std::optional<lol_at_home_shared::Position> position;
+  std::optional<lol_at_home_shared::Team> team;
+  std::optional<lol_at_home_shared::Health> health;
   // todo add all the other components as well THIS IS SO ANNOYING
 };
 

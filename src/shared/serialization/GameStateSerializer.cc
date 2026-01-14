@@ -11,18 +11,17 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
                      const entt::registry& registry,
                      entt::entity entity)
     -> std::optional<flatbuffers::Offset<EntityFB>> {
-  PositionFB posData{};
-  const PositionFB* posPtr = nullptr;
-  if (const auto* pos = registry.try_get<Position>(entity)) {
-    posData = PositionFB(pos->x, pos->y);
+  lol_at_home_shared::PositionFB posData{};
+  const lol_at_home_shared::PositionFB* posPtr = nullptr;
+  if (const auto* pos = registry.try_get<lol_at_home_shared::Position>(entity)) {
+    posData = lol_at_home_shared::PositionFB(pos->x, pos->y);
     posPtr = &posData;
   }
 
   HealthFB HealthData{};
   const HealthFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
-    HealthData = HealthFB(health->currentHealth, health->maxHealth,
-                          health->healthRegenPerSec);
+    HealthData = HealthFB(health->current, health->max, health->regenPerSec);
     healthPtr = &HealthData;
   }
 
@@ -46,17 +45,16 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
         break;
     }
 
-    MovableData =
-        MovableFB(movable->speed, moveState,
-                  {movable->targetPosition.x, movable->targetPosition.y});
+    MovableData = MovableFB(movable->speed, moveState,
+                            {movable->targetX, movable->targetY});
     movablePtr = &MovableData;
   }
 
   TeamFB TeamData{};
   const TeamFB* teamPtr = nullptr;
   if (const auto* team = registry.try_get<Team>(entity)) {
-    TeamData = TeamFB(team->teamColor == Team::Color::Blue ? TeamColorFB::Blue
-                                                           : TeamColorFB::Red);
+    TeamData = TeamFB(team->color == Team::Color::Blue ? TeamColorFB::Blue
+                                                       : TeamColorFB::Red);
     teamPtr = &TeamData;
   }
 
@@ -164,7 +162,7 @@ void GameStateSerializer::deserializePosition(entt::registry& registry,
                                               entt::entity entity,
                                               const PositionFB* pos) {
   if (pos != nullptr) {
-    registry.emplace_or_replace<Position>(entity, pos->x(), pos->y());
+    registry.emplace_or_replace<lol_at_home_shared::Position>(entity, pos->x(), pos->y());
   }
 }
 
@@ -204,8 +202,8 @@ void GameStateSerializer::deserializeMovable(entt::registry& registry,
     registry.emplace_or_replace<Movable>(
         entity, Movable{.speed = movable->speed(),
                         .state = moveState,
-                        .targetPosition = {.x = movable->target_pos().x(),
-                                           .y = movable->target_pos().y()}});
+                        .targetX = movable->target_pos().x(),
+                        .targetY = movable->target_pos().y()});
   }
 }
 

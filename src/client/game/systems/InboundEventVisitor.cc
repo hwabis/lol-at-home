@@ -1,7 +1,7 @@
 #include "InboundEventVisitor.h"
+#include <spdlog/spdlog.h>
 #include "Components.h"
 
-#include <spdlog/spdlog.h>
 namespace lol_at_home_game {
 
 InboundEventVisitor::InboundEventVisitor(
@@ -40,16 +40,19 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     }
   }
 
-  if (event.transform.has_value()) {
-    registry_->emplace_or_replace<Transform>(clientEntity, *event.transform);
+  if (event.position.has_value()) {
+    registry_->emplace_or_replace<lol_at_home_shared::Position>(
+        clientEntity, *event.position);
   }
 
   if (event.team.has_value()) {
-    registry_->emplace_or_replace<Team>(clientEntity, *event.team);
+    registry_->emplace_or_replace<lol_at_home_shared::Team>(clientEntity,
+                                                            *event.team);
   }
 
   if (event.health.has_value()) {
-    registry_->emplace_or_replace<Health>(clientEntity, *event.health);
+    registry_->emplace_or_replace<lol_at_home_shared::Health>(clientEntity,
+                                                              *event.health);
   }
 }
 

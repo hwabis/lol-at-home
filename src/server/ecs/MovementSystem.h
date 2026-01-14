@@ -21,7 +21,8 @@ class MovementSystem : public IEcsSystem {
       auto& movable = view.get<lol_at_home_shared::Movable>(entity);
 
       auto [newPos, reached] =
-          moveTowards(pos, movable.targetPosition, movable.speed, timeElapsed);
+          moveTowards(pos, {.x = movable.targetX, .y = movable.targetY},
+                      movable.speed, timeElapsed);
 
       pos = newPos;
       movable.state = reached ? lol_at_home_shared::MovementState::Idle

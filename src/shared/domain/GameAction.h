@@ -2,7 +2,6 @@
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "domain/EcsComponents.h"
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTarget.h"
 
@@ -10,7 +9,8 @@ namespace lol_at_home_shared {
 
 struct MoveAction {
   entt::entity source{};
-  lol_at_home_shared::Position targetPosition;
+  float targetX{};
+  float targetY{};
 };
 
 struct AbilityAction {

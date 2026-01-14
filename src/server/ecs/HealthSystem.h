@@ -21,29 +21,28 @@ class HealthSystem : public IEcsSystem {
       auto& health = view.get<lol_at_home_shared::Health>(entity);
 
       if (auto* healthEvent = registry.try_get<PendingDamage>(entity)) {
-        health.currentHealth -= healthEvent->amount;
+        health.current -= healthEvent->amount;
         dirtyInstant.push_back(entity);
         registry.remove<PendingDamage>(entity);
       }
 
       if (auto* healthEvent = registry.try_get<PendingHeal>(entity)) {
-        health.currentHealth += healthEvent->amount;
-        health.currentHealth = std::min(health.currentHealth, health.maxHealth);
+        health.current += healthEvent->amount;
+        health.current = std::min(health.current, health.max);
         dirtyInstant.push_back(entity);
         registry.remove<PendingHeal>(entity);
       }
 
-      if (health.currentHealth <= 0) {
+      if (health.current <= 0) {
         deletedEntities.push_back(entity);
         registry.destroy(entity);
         continue;
       }
 
-      if (health.currentHealth < health.maxHealth) {
+      if (health.current < health.max) {
         const float seconds = std::chrono::duration<float>(timeElapsed).count();
-        health.currentHealth = std::min(
-            health.maxHealth,
-            health.currentHealth + (seconds * health.healthRegenPerSec));
+        health.current = std::min(
+            health.max, health.current + (seconds * health.regenPerSec));
         dirtyPeriodic.push_back(entity);
       }
     }

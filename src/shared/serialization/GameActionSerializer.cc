@@ -24,15 +24,15 @@ struct AbilityTargetSerializer {
 
   auto operator()(const OnePointSkillshot& target) const
       -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
-    PositionFB pos(target.Target.x, target.Target.y);
+    PositionFB pos(target.targetX, target.targetY);
     return {AbilityTargetDataFB::OnePointSkillshotFB,
             CreateOnePointSkillshotFB(*builder, &pos).Union()};
   }
 
   auto operator()(const TwoPointSkillshot& target) const
       -> std::pair<AbilityTargetDataFB, flatbuffers::Offset<void>> {
-    PositionFB pos1(target.Target1.x, target.Target1.y);
-    PositionFB pos2(target.Target2.x, target.Target2.y);
+    PositionFB pos1(target.target1X, target.target1Y);
+    PositionFB pos2(target.target2X, target.target2Y);
     return {AbilityTargetDataFB::TwoPointSkillshotFB,
             CreateTwoPointSkillshotFB(*builder, &pos1, &pos2).Union()};
   }
@@ -44,7 +44,7 @@ struct GameActionSerializeVisitor {
 
   auto operator()(const MoveAction& action) const
       -> flatbuffers::Offset<GameActionFB> {
-    PositionFB pos(action.targetPosition.x, action.targetPosition.y);
+    PositionFB pos(action.targetX, action.targetY);
     auto moveOffset = CreateMoveActionFB(*builder, &pos);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
                               GameActionDataFB::MoveActionFB,
@@ -55,9 +55,9 @@ struct GameActionSerializeVisitor {
       -> flatbuffers::Offset<GameActionFB> {
     auto [targetType, targetOffset] =
         std::visit(AbilityTargetSerializer{builder}, action.target);
-    auto abilityOffset = CreateAbilityActionFB(
-        *builder, static_cast<AbilitySlotFB>(action.slot), targetType,
-        targetOffset);
+    auto abilityOffset =
+        CreateAbilityActionFB(*builder, static_cast<AbilitySlotFB>(action.slot),
+                              targetType, targetOffset);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
                               GameActionDataFB::AbilityActionFB,
                               abilityOffset.Union());
@@ -97,10 +97,9 @@ auto GameActionSerializer::Deserialize(
   switch (action.action_type()) {
     case GameActionDataFB::MoveActionFB: {
       const auto* moveData = action.action_as_MoveActionFB();
-      return MoveAction{
-          .source = source,
-          .targetPosition = {.x = moveData->target_position()->x(),
-                             .y = moveData->target_position()->y()}};
+      return MoveAction{.source = source,
+                        .targetX = moveData->target_position()->x(),
+                        .targetY = moveData->target_position()->y()};
     }
 
     case GameActionDataFB::AbilityActionFB: {
@@ -120,16 +119,17 @@ auto GameActionSerializer::Deserialize(
 
         case AbilityTargetDataFB::OnePointSkillshotFB: {
           const auto* ops = AbilityFB->target_as_OnePointSkillshotFB();
-          target = OnePointSkillshot{
-              {.x = ops->target()->x(), .y = ops->target()->y()}};
+          target = OnePointSkillshot{.targetX = ops->target()->x(),
+                                     .targetY = ops->target()->y()};
           break;
         }
 
         case AbilityTargetDataFB::TwoPointSkillshotFB: {
           const auto* tps = AbilityFB->target_as_TwoPointSkillshotFB();
-          target = TwoPointSkillshot{
-              .Target1 = {.x = tps->target1()->x(), .y = tps->target1()->y()},
-              .Target2 = {.x = tps->target2()->x(), .y = tps->target2()->y()}};
+          target = TwoPointSkillshot{.target1X = tps->target1()->x(),
+                                     .target1Y = tps->target1()->y(),
+                                     .target2X = tps->target2()->x(),
+                                     .target2Y = tps->target2()->y()};
           break;
         }
 
@@ -138,10 +138,9 @@ auto GameActionSerializer::Deserialize(
         }
       }
 
-      return AbilityAction{
-          .source = source,
-          .slot = static_cast<AbilitySlot>(AbilityFB->slot()),
-          .target = target};
+      return AbilityAction{.source = source,
+                           .slot = static_cast<AbilitySlot>(AbilityFB->slot()),
+                           .target = target};
     }
 
     case GameActionDataFB::AutoAttackActionFB: {

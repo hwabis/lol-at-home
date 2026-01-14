@@ -10,12 +10,13 @@ namespace lol_at_home_shared {
 struct Position {
   float x{};
   float y{};
+  float championRadius = 50.0F;
 };
 
 struct Health {
-  float currentHealth{};
-  float maxHealth{};
-  float healthRegenPerSec{};
+  float current{};
+  float max{};
+  float regenPerSec{};
 };
 
 struct Mana {
@@ -32,12 +33,14 @@ enum class MovementState : uint8_t {
 struct Movable {
   float speed{};  // units per sec
   MovementState state = MovementState::Idle;
-  Position targetPosition;  // ignored if state == idle
+  float targetX{};  // ignored if state == idle
+  float targetY{};  // ignored if state == idle
 };
 
 struct Team {
+  // todo add a neutral team
   enum class Color : uint8_t { Blue, Red };
-  Color teamColor;
+  Color color;
 };
 
 struct Abilities {

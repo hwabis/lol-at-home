@@ -13,13 +13,16 @@ struct EntityTarget {
 };
 
 struct OnePointSkillshot {
-  lol_at_home_shared::Position Target;
+  float targetX{};
+  float targetY{};
 };
 
 // Rumble R, Viktor E
 struct TwoPointSkillshot {
-  lol_at_home_shared::Position Target1;
-  lol_at_home_shared::Position Target2;
+  float target1X{};
+  float target1Y{};
+  float target2X{};
+  float target2Y{};
 };
 
 using AbilityTargetVariant =

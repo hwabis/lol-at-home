@@ -24,7 +24,8 @@ class GameActionProcessor {
             registry_->try_get<lol_at_home_shared::Movable>(action.source)) {
       *movable = {.speed = movable->speed,
                   .state = lol_at_home_shared::MovementState::Moving,
-                  .targetPosition = action.targetPosition};
+                  .targetX = action.targetX,
+                  .targetY = action.targetY};
       instantDirty_->push_back(action.source);
     } else {
       spdlog::warn("Entity has no Movable component");

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <SDL3/SDL_render.h>
-#include "Components.h"
 #include "IEcsSystem.h"
+#include "domain/EcsComponents.h"
 
 namespace lol_at_home_game {
 
@@ -25,15 +25,16 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   static void drawChampions(entt::registry& registry,
                             lol_at_home_engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<Transform>();
+    auto view = registry.view<lol_at_home_shared::Position>();
     for (auto entity : view) {
-      auto& transform = view.get<Transform>(entity);
+      auto& position = view.get<lol_at_home_shared::Position>(entity);
 
-      auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
+      lol_at_home_engine::Vector2 worldPos{.x = position.x, .y = position.y};
+      auto screenPos = info.camera.WorldToScreen(worldPos);
 
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-      float radius = transform.championRadius;
+      float radius = position.championRadius;
       float centerX = screenPos.x;
       float centerY = screenPos.y;
 
@@ -50,19 +51,22 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   static void drawHealthBars(entt::registry& registry,
                              lol_at_home_engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<Transform, Health, Team>();
+    auto view =
+        registry.view<lol_at_home_shared::Position, lol_at_home_shared::Health,
+                      lol_at_home_shared::Team>();
     for (auto entity : view) {
-      auto& transform = view.get<Transform>(entity);
-      auto& health = view.get<Health>(entity);
-      auto& team = view.get<Team>(entity);
+      auto& position = view.get<lol_at_home_shared::Position>(entity);
+      auto& health = view.get<lol_at_home_shared::Health>(entity);
+      auto& team = view.get<lol_at_home_shared::Team>(entity);
 
-      auto screenPos = info.camera.WorldToScreen(transform.worldPosition);
+      lol_at_home_engine::Vector2 worldPos{.x = position.x, .y = position.y};
+      auto screenPos = info.camera.WorldToScreen(worldPos);
 
       float healthRatio = std::clamp(health.current / health.max, 0.0F, 1.0F);
       constexpr float barWidth = 100.0F;
       constexpr float barHeight = 10.0F;
       float barX = screenPos.x - barWidth * 0.5F;
-      float barY = screenPos.y - transform.championRadius - barHeight - 10.0F;
+      float barY = screenPos.y - position.championRadius - barHeight - 10.0F;
 
       SDL_FRect background{barX, barY, barWidth, barHeight};
       SDL_FRect foreground{background.x, background.y, barWidth * healthRatio,
@@ -72,10 +76,10 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
       SDL_RenderFillRect(renderer, &background);
 
       switch (team.color) {
-        case Team::Color::Blue:
+        case lol_at_home_shared::Team::Color::Blue:
           SDL_SetRenderDrawColor(renderer, 0, 122, 255, 255);
           break;
-        case Team::Color::Red:
+        case lol_at_home_shared::Team::Color::Red:
           SDL_SetRenderDrawColor(renderer, 255, 59, 48, 255);
           break;
       }
