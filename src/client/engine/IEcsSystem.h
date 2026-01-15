@@ -4,7 +4,7 @@
 #include <entt/entt.hpp>
 #include "SceneInfo.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 class IEcsSystem {
  public:
@@ -21,4 +21,4 @@ class IEcsSystem {
                      std::chrono::duration<double, std::milli> deltaTime) = 0;
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

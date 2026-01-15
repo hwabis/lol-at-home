@@ -1,10 +1,10 @@
 #pragma once
 
 #include <entt/entt.hpp>
-#include "domain/EcsComponents.h"
 #include "abilities/AbilityTarget.h"
+#include "domain/EcsComponents.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class AbilityImpl {
  public:
@@ -14,10 +14,9 @@ class AbilityImpl {
   AbilityImpl(AbilityImpl&&) = default;
   auto operator=(AbilityImpl&&) -> AbilityImpl& = default;
 
-  virtual void Execute(
-      entt::registry& registry,
-      const lol_at_home_shared::Abilities::Ability& ability,
-      const lol_at_home_shared::AbilityTargetVariant& target) = 0;
+  virtual void Execute(entt::registry& registry,
+                       const lah::shared::Abilities::Ability& ability,
+                       const lah::shared::AbilityTargetVariant& target) = 0;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

@@ -4,7 +4,7 @@
 #include "domain/GameAction.h"
 #include "game_actions_generated.h"
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 class GameActionSerializer {
  public:
@@ -13,11 +13,11 @@ class GameActionSerializer {
   // Called on client
   static auto Serialize(flatbuffers::FlatBufferBuilder& builder,
                         const GameActionVariant& action)
-      -> flatbuffers::Offset<lol_at_home_shared::GameActionFB>;
+      -> flatbuffers::Offset<lah_shared::GameActionFB>;
 
   // Called on server
-  static auto Deserialize(const lol_at_home_shared::GameActionFB& action)
+  static auto Deserialize(const lah_shared::GameActionFB& action)
       -> std::optional<GameActionVariant>;
 };
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

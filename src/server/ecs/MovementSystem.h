@@ -4,7 +4,7 @@
 #include "domain/EcsComponents.h"
 #include "ecs/IEcsSystem.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class MovementSystem : public IEcsSystem {
  public:
@@ -13,20 +13,18 @@ class MovementSystem : public IEcsSystem {
              std::vector<entt::entity>& dirtyPeriodic,
              std::vector<entt::entity>& /*dirtyInstant*/,
              std::vector<entt::entity>& /*deletedEntities*/) override {
-    auto view =
-        registry
-            .view<lol_at_home_shared::Position, lol_at_home_shared::Movable>();
+    auto view = registry.view<lah::shared::Position, lah::shared::Movable>();
     for (auto entity : view) {
-      auto& pos = view.get<lol_at_home_shared::Position>(entity);
-      auto& movable = view.get<lol_at_home_shared::Movable>(entity);
+      auto& pos = view.get<lah::shared::Position>(entity);
+      auto& movable = view.get<lah::shared::Movable>(entity);
 
       auto [newPos, reached] =
           moveTowards(pos, {.x = movable.targetX, .y = movable.targetY},
                       movable.speed, timeElapsed);
 
       pos = newPos;
-      movable.state = reached ? lol_at_home_shared::MovementState::Idle
-                              : lol_at_home_shared::MovementState::Moving;
+      movable.state = reached ? lah::shared::MovementState::Idle
+                              : lah::shared::MovementState::Moving;
 
       // Technically movement system never sends updates instantly (we currently
       // have no way of knowing when the target position has changed, aka the
@@ -42,11 +40,11 @@ class MovementSystem : public IEcsSystem {
   }
 
  private:
-  static auto moveTowards(const lol_at_home_shared::Position& pos,
-                          const lol_at_home_shared::Position& target,
+  static auto moveTowards(const lah::shared::Position& pos,
+                          const lah::shared::Position& target,
                           float speed,
                           std::chrono::milliseconds timeElapsed)
-      -> std::pair<lol_at_home_shared::Position, bool> {
+      -> std::pair<lah::shared::Position, bool> {
     const float deltaX = target.x - pos.x;
     const float deltaY = target.y - pos.y;
 
@@ -62,7 +60,7 @@ class MovementSystem : public IEcsSystem {
       return {target, true};
     }
 
-    lol_at_home_shared::Position newPos = pos;
+    lah::shared::Position newPos = pos;
     const float ratio = maxStep / distance;
     newPos.x += deltaX * ratio;
     newPos.y += deltaY * ratio;
@@ -71,4 +69,4 @@ class MovementSystem : public IEcsSystem {
   }
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

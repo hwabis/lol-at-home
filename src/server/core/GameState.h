@@ -7,7 +7,7 @@
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class GameState : public IPeriodic {
  public:
@@ -37,4 +37,4 @@ class GameState : public IPeriodic {
   std::unordered_map<IEcsSystem*, int> syncIntervals_;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

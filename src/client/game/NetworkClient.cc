@@ -4,7 +4,7 @@
 #include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
 NetworkClient::NetworkClient(
     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inboundEvents,
@@ -61,7 +61,7 @@ auto NetworkClient::Connect(const char* host, uint16_t port) -> bool {
     // now let's make it completely random.. if you wanna switch teams just
     // relaunch the game xDD
     std::mt19937 rng{std::random_device{}()};
-    sendChampionSelect(static_cast<lol_at_home_shared::TeamColorFB>(
+    sendChampionSelect(static_cast<lah_shared::TeamColorFB>(
         std::uniform_int_distribution<>(0, 1)(rng)));
 
     return true;
@@ -124,11 +124,10 @@ void NetworkClient::Poll() {
             reinterpret_cast<std::byte*>(event.packet->data) +
                 event.packet->dataLength);
 
-        const auto* s2cMessage =
-            lol_at_home_shared::GetS2CMessageFB(data.data());
+        const auto* s2cMessage = lah_shared::GetS2CMessageFB(data.data());
 
         switch (s2cMessage->message_type()) {
-          case lol_at_home_shared::S2CDataFB::GameStateDeltaFB: {
+          case lah_shared::S2CDataFB::GameStateDeltaFB: {
             spdlog::debug("Received GameStateDeltaFB");
 
             const auto* gameStateDelta =
@@ -140,22 +139,22 @@ void NetworkClient::Poll() {
                 updateEvent.serverEntityId = entityFB->id();
 
                 if (entityFB->position() != nullptr) {
-                  updateEvent.position = lol_at_home_shared::Position{
+                  updateEvent.position = lah::shared::Position{
                       .x = entityFB->position()->x(),
                       .y = entityFB->position()->y(),
                   };
                 }
 
                 if (entityFB->team() != nullptr) {
-                  updateEvent.team = lol_at_home_shared::Team{
+                  updateEvent.team = lah::shared::Team{
                       .color = entityFB->team()->color() ==
-                                       lol_at_home_shared::TeamColorFB::Blue
-                                   ? lol_at_home_shared::Team::Color::Blue
-                                   : lol_at_home_shared::Team::Color::Red};
+                                       lah_shared::TeamColorFB::Blue
+                                   ? lah::shared::Team::Color::Blue
+                                   : lah::shared::Team::Color::Red};
                 }
 
                 if (entityFB->health() != nullptr) {
-                  updateEvent.health = lol_at_home_shared::Health{
+                  updateEvent.health = lah::shared::Health{
                       .current = entityFB->health()->current_health(),
                       .max = entityFB->health()->max_health(),
                       .regenPerSec = entityFB->health()->health_regen_per_sec(),
@@ -181,7 +180,7 @@ void NetworkClient::Poll() {
 
             break;
           }
-          case lol_at_home_shared::S2CDataFB::PlayerAssignmentFB: {
+          case lah_shared::S2CDataFB::PlayerAssignmentFB: {
             spdlog::debug("Received PlayerAssignmentFB");
 
             const auto* assignment =
@@ -196,9 +195,9 @@ void NetworkClient::Poll() {
 
             break;
           }
-          case lol_at_home_shared::S2CDataFB::ChatBroadcastFB:
+          case lah_shared::S2CDataFB::ChatBroadcastFB:
             break;
-          case lol_at_home_shared::S2CDataFB::NONE: {
+          case lah_shared::S2CDataFB::NONE: {
             spdlog::warn("Received empty or unknown message type");
             break;
           }
@@ -239,15 +238,14 @@ void NetworkClient::pushOutbound() {
 }
 
 // todo uhh this should be in src/shared or smth
-void NetworkClient::sendChampionSelect(lol_at_home_shared::TeamColorFB team) {
+void NetworkClient::sendChampionSelect(lah_shared::TeamColorFB team) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto championSelect = lol_at_home_shared::CreateChampionSelectFB(
-      builder, lol_at_home_shared::ChampionIdFB::Garen, team);
+  auto championSelect = lah_shared::CreateChampionSelectFB(
+      builder, lah_shared::ChampionIdFB::Garen, team);
 
-  auto c2sMessage = lol_at_home_shared::CreateC2SMessageFB(
-      builder, lol_at_home_shared::C2SDataFB::ChampionSelectFB,
-      championSelect.Union());
+  auto c2sMessage = lah_shared::CreateC2SMessageFB(
+      builder, lah_shared::C2SDataFB::ChampionSelectFB, championSelect.Union());
 
   builder.Finish(c2sMessage);
 
@@ -260,4 +258,4 @@ void NetworkClient::sendChampionSelect(lol_at_home_shared::TeamColorFB team) {
   spdlog::info("Sent champion select");
 }
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

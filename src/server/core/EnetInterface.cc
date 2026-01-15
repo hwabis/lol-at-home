@@ -4,7 +4,7 @@
 #include "domain/EcsComponents.h"
 #include "serialization/GameActionSerializer.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 EnetInterface::EnetInterface(
     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
@@ -71,16 +71,16 @@ void EnetInterface::populateInbound() {
             reinterpret_cast<const std::byte*>(event.packet->data),
             reinterpret_cast<const std::byte*>(event.packet->data) +
                 event.packet->dataLength);
-        const lol_at_home_shared::C2SMessageFB* c2sMessage =
-            lol_at_home_shared::GetC2SMessageFB(data.data());
+        const lah_shared::C2SMessageFB* c2sMessage =
+            lah_shared::GetC2SMessageFB(data.data());
 
         switch (c2sMessage->message_type()) {
-          case lol_at_home_shared::C2SDataFB::GameActionFB: {
-            const lol_at_home_shared::GameActionFB* action =
+          case lah_shared::C2SDataFB::GameActionFB: {
+            const lah_shared::GameActionFB* action =
                 c2sMessage->message_as_GameActionFB();
 
-            std::optional<lol_at_home_shared::GameActionVariant> actionVariant =
-                lol_at_home_shared::GameActionSerializer::Deserialize(*action);
+            std::optional<lah::shared::GameActionVariant> actionVariant =
+                lah::shared::GameActionSerializer::Deserialize(*action);
 
             if (actionVariant.has_value()) {
               inbound_->Push(
@@ -90,8 +90,8 @@ void EnetInterface::populateInbound() {
             break;
           }
 
-          case lol_at_home_shared::C2SDataFB::ChatMessageFB: {
-            const lol_at_home_shared::ChatMessageFB* chat_fb =
+          case lah_shared::C2SDataFB::ChatMessageFB: {
+            const lah_shared::ChatMessageFB* chat_fb =
                 c2sMessage->message_as_ChatMessageFB();
 
             InboundChatEvent chatEvent{.message = chat_fb->text()->str()};
@@ -101,14 +101,14 @@ void EnetInterface::populateInbound() {
             break;
           }
 
-          case lol_at_home_shared::C2SDataFB::ChampionSelectFB: {
+          case lah_shared::C2SDataFB::ChampionSelectFB: {
             const auto* champSelect = c2sMessage->message_as_ChampionSelectFB();
-            auto champId = static_cast<lol_at_home_shared::ChampionId>(
+            auto champId = static_cast<lah::shared::ChampionId>(
                 champSelect->champion_id());
-            auto team = champSelect->team_color() ==
-                                lol_at_home_shared::TeamColorFB::Red
-                            ? lol_at_home_shared::Team::Color::Red
-                            : lol_at_home_shared::Team::Color::Blue;
+            auto team =
+                champSelect->team_color() == lah_shared::TeamColorFB::Red
+                    ? lah::shared::Team::Color::Red
+                    : lah::shared::Team::Color::Blue;
 
             inbound_->Push(
                 InboundEvent{.peer = event.peer,
@@ -118,7 +118,7 @@ void EnetInterface::populateInbound() {
             break;
           }
 
-          case lol_at_home_shared::C2SDataFB::NONE: {
+          case lah_shared::C2SDataFB::NONE: {
             spdlog::warn("Received empty or unknown message type");
             break;
           }
@@ -141,4 +141,4 @@ void EnetInterface::populateInbound() {
   }
 }
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

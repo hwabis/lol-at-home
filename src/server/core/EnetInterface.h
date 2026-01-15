@@ -6,7 +6,7 @@
 #include "util/IPeriodic.h"
 #include "util/ThreadSafeQueue.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class EnetInterface : public IPeriodic {
  public:
@@ -32,4 +32,4 @@ class EnetInterface : public IPeriodic {
   std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound_;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

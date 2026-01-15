@@ -6,7 +6,7 @@
 #include "Camera.h"
 #include "InputAccessor.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 struct GameConfig {
   enum class WindowType : uint8_t {
@@ -34,4 +34,4 @@ struct SceneInfo {
   // NOLINTEND(misc-non-private-member-variables-in-classes)
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

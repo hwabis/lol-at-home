@@ -6,7 +6,7 @@
 #include <variant>
 #include "domain/EcsComponents.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
 struct PlayerAssignedEvent {
   uint32_t myEntityId{};
@@ -19,9 +19,9 @@ struct ChatMessageEvent {
 
 struct EntityUpdatedEvent {
   uint32_t serverEntityId{};
-  std::optional<lol_at_home_shared::Position> position;
-  std::optional<lol_at_home_shared::Team> team;
-  std::optional<lol_at_home_shared::Health> health;
+  std::optional<lah::shared::Position> position;
+  std::optional<lah::shared::Team> team;
+  std::optional<lah::shared::Health> health;
   // todo add all the other components as well THIS IS SO ANNOYING
 };
 
@@ -38,4 +38,4 @@ struct InboundEvent {
   InboundEventVariant event;
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

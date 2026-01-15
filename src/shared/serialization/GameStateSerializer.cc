@@ -3,7 +3,9 @@
 #include "domain/EcsComponents.h"
 #include "game_state_generated.h"
 
-namespace lol_at_home_shared {
+using namespace lah_shared;
+
+namespace lah::shared {
 
 namespace {
 
@@ -11,10 +13,10 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
                      const entt::registry& registry,
                      entt::entity entity)
     -> std::optional<flatbuffers::Offset<EntityFB>> {
-  lol_at_home_shared::PositionFB posData{};
-  const lol_at_home_shared::PositionFB* posPtr = nullptr;
-  if (const auto* pos = registry.try_get<lol_at_home_shared::Position>(entity)) {
-    posData = lol_at_home_shared::PositionFB(pos->x, pos->y);
+  PositionFB posData{};
+  const PositionFB* posPtr = nullptr;
+  if (const auto* pos = registry.try_get<Position>(entity)) {
+    posData = PositionFB(pos->x, pos->y);
     posPtr = &posData;
   }
 
@@ -94,8 +96,8 @@ auto GameStateSerializer::Serialize(
     const entt::registry& registry,
     const std::vector<entt::entity>& dirtyEntities,
     const std::vector<entt::entity>& deletedEntities)
-    -> flatbuffers::Offset<lol_at_home_shared::GameStateDeltaFB> {
-  std::vector<flatbuffers::Offset<lol_at_home_shared::EntityFB>> entityOffsets;
+    -> flatbuffers::Offset<lah_shared::GameStateDeltaFB> {
+  std::vector<flatbuffers::Offset<lah_shared::EntityFB>> entityOffsets;
 
   if (dirtyEntities.empty()) {
     for (auto entity : registry.view<entt::entity>()) {
@@ -134,7 +136,7 @@ auto GameStateSerializer::Serialize(
 
 auto GameStateSerializer::Deserialize(
     entt::registry& registry,
-    const lol_at_home_shared::GameStateDeltaFB& gamestate) -> void {
+    const lah_shared::GameStateDeltaFB& gamestate) -> void {
   for (const auto* entityFB : *gamestate.entities()) {
     auto entity = static_cast<entt::entity>(entityFB->id());
 
@@ -162,7 +164,7 @@ void GameStateSerializer::deserializePosition(entt::registry& registry,
                                               entt::entity entity,
                                               const PositionFB* pos) {
   if (pos != nullptr) {
-    registry.emplace_or_replace<lol_at_home_shared::Position>(entity, pos->x(), pos->y());
+    registry.emplace_or_replace<Position>(entity, pos->x(), pos->y());
   }
 }
 
@@ -242,4 +244,4 @@ void GameStateSerializer::deserializeAbilities(entt::registry& registry,
   }
 }
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

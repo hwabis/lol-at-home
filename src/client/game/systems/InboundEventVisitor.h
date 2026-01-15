@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "InboundEvent.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
 class InboundEventVisitor {
  public:
@@ -24,4 +24,4 @@ class InboundEventVisitor {
   inline static std::optional<uint32_t> serverAssignedId_;
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

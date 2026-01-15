@@ -4,7 +4,7 @@
 #include <entt/entt.hpp>
 #include "IEcsSystem.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 class Renderer;
 
@@ -36,4 +36,4 @@ class Scene {
   std::vector<std::unique_ptr<IEcsSystem>> systems_;
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

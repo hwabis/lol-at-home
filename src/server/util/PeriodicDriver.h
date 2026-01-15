@@ -5,7 +5,7 @@
 #include <thread>
 #include "IPeriodic.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class PeriodicDriver {
  public:
@@ -54,4 +54,4 @@ class PeriodicDriver {
   std::jthread driverThread_;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

@@ -4,7 +4,7 @@
 #include "Scene.h"
 #include "SceneInfo.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 class Game {
  public:
@@ -23,4 +23,4 @@ class Game {
   SceneInfo info_;
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

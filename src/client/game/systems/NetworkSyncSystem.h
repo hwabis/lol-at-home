@@ -5,16 +5,16 @@
 #include "InboundEventVisitor.h"
 #include "ThreadSafeQueue.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
-class NetworkSyncSystem : public lol_at_home_engine::IEcsSystem {
+class NetworkSyncSystem : public lah::engine::IEcsSystem {
  public:
   explicit NetworkSyncSystem(
       std::shared_ptr<ThreadSafeQueue<InboundEvent>> inboundEvents)
       : inboundEvents_(std::move(inboundEvents)) {}
 
   void Cycle(entt::registry& registry,
-             lol_at_home_engine::SceneInfo& /*info*/,
+             lah::engine::SceneInfo& /*info*/,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     std::queue<InboundEvent> events = inboundEvents_->PopAll();
 
@@ -30,4 +30,4 @@ class NetworkSyncSystem : public lol_at_home_engine::IEcsSystem {
   std::unordered_map<uint32_t, entt::entity> serverToClient_;
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

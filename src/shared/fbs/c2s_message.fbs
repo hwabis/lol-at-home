@@ -1,5 +1,5 @@
 include "game_actions.fbs";
-namespace lol_at_home_shared;
+namespace lah_shared;
 
 table ChatMessageFB {
   text: string;

@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <chrono>
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 Game::Game(const GameConfig& config) : info_(config) {}
 
@@ -110,4 +110,4 @@ void Game::sceneLoop() {
   }
 }
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class IPeriodic {
  public:
@@ -17,4 +17,4 @@ class IPeriodic {
   virtual void Cycle(std::chrono::milliseconds timeElapsed) = 0;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

@@ -5,7 +5,7 @@
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTag.h"
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 struct Position {
   float x{};
@@ -55,4 +55,4 @@ struct Abilities {
   std::unordered_map<AbilitySlot, Ability> abilities;
 };
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

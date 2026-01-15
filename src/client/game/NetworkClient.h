@@ -7,7 +7,7 @@
 #include "ThreadSafeQueue.h"
 #include "game_common_generated.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
 class NetworkClient {
  public:
@@ -27,7 +27,7 @@ class NetworkClient {
 
  private:
   auto pushOutbound() -> void;
-  auto sendChampionSelect(lol_at_home_shared::TeamColorFB team) -> void;
+  auto sendChampionSelect(lah_shared::TeamColorFB team) -> void;
 
   ENetHost* client_ = nullptr;
   ENetPeer* serverPeer_ = nullptr;
@@ -37,4 +37,4 @@ class NetworkClient {
   std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outboundEvents_;
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

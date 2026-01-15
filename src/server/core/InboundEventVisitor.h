@@ -7,7 +7,7 @@
 #include "OutboundEvent.h"
 #include "util/ThreadSafeQueue.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class InboundEventVisitor {
  public:
@@ -21,7 +21,7 @@ class InboundEventVisitor {
   void operator()(const ChampionSelectedEvent& event) const;
   void operator()(const ClientDisconnectedEvent& event) const;
   void operator()(const InboundChatEvent& event) const;
-  void operator()(const lol_at_home_shared::GameActionVariant& action) const;
+  void operator()(const lah::shared::GameActionVariant& action) const;
 
  private:
   ENetPeer* peer_;
@@ -31,4 +31,4 @@ class InboundEventVisitor {
   ThreadSafeQueue<OutboundEvent>* outbound_;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

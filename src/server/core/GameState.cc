@@ -6,7 +6,7 @@
 #include "s2c_message_generated.h"
 #include "serialization/GameStateSerializer.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
                      std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outbound,
@@ -52,8 +52,7 @@ void GameState::processInbound(std::vector<entt::entity>& instantDirty) {
     InboundEvent event = inboundEvents.front();
     inboundEvents.pop();
 
-    if (std::holds_alternative<lol_at_home_shared::GameActionVariant>(
-            event.event)) {
+    if (std::holds_alternative<lah::shared::GameActionVariant>(event.event)) {
       if (!validateInboundEventPeer(event)) {
         continue;
       }
@@ -73,7 +72,7 @@ auto GameState::validateInboundEventPeer(const InboundEvent& event) -> bool {
         [](const auto& specificAction) -> entt::entity {
           return specificAction.source;
         },
-        std::get<lol_at_home_shared::GameActionVariant>(event.event));
+        std::get<lah::shared::GameActionVariant>(event.event));
 
     if (claimedSource != authoritativeSource) {
       spdlog::warn("IMPERSONATION ATTEMPT: Peer owns entity " +
@@ -121,11 +120,10 @@ auto GameState::cycleSystems(std::chrono::milliseconds timeElapsed)
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
   flatbuffers::FlatBufferBuilder builder{};
-  auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
+  auto snapshotOffset = lah::shared::GameStateSerializer::Serialize(
       builder, registry_, dirtyEntities, deletedEntities);
-  auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::GameStateDeltaFB,
-      snapshotOffset.Union());
+  auto s2cMessage = lah_shared::CreateS2CMessageFB(
+      builder, lah_shared::S2CDataFB::GameStateDeltaFB, snapshotOffset.Union());
   builder.Finish(s2cMessage);
 
   std::vector<std::byte> payload(
@@ -136,4 +134,4 @@ void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
   outbound_->Push(OutboundEvent{.target = nullptr, .s2cMessage = payload});
 }
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

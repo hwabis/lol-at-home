@@ -4,12 +4,12 @@
 #include "IEcsSystem.h"
 #include "domain/EcsComponents.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
-class RenderSystem : public lol_at_home_engine::IEcsSystem {
+class RenderSystem : public lah::engine::IEcsSystem {
  public:
   void Cycle(entt::registry& registry,
-             lol_at_home_engine::SceneInfo& info,
+             lah::engine::SceneInfo& info,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     auto* renderer = info.sdlRenderer;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -23,13 +23,13 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
 
  private:
   static void drawChampions(entt::registry& registry,
-                            lol_at_home_engine::SceneInfo& info) {
+                            lah::engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<lol_at_home_shared::Position>();
+    auto view = registry.view<lah::shared::Position>();
     for (auto entity : view) {
-      auto& position = view.get<lol_at_home_shared::Position>(entity);
+      auto& position = view.get<lah::shared::Position>(entity);
 
-      lol_at_home_engine::Vector2 worldPos{.x = position.x, .y = position.y};
+      lah::engine::Vector2 worldPos{.x = position.x, .y = position.y};
       auto screenPos = info.camera.WorldToScreen(worldPos);
 
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -49,17 +49,17 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   }
 
   static void drawHealthBars(entt::registry& registry,
-                             lol_at_home_engine::SceneInfo& info) {
+                             lah::engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
     auto view =
-        registry.view<lol_at_home_shared::Position, lol_at_home_shared::Health,
-                      lol_at_home_shared::Team>();
+        registry.view<lah::shared::Position, lah::shared::Health,
+                      lah::shared::Team>();
     for (auto entity : view) {
-      auto& position = view.get<lol_at_home_shared::Position>(entity);
-      auto& health = view.get<lol_at_home_shared::Health>(entity);
-      auto& team = view.get<lol_at_home_shared::Team>(entity);
+      auto& position = view.get<lah::shared::Position>(entity);
+      auto& health = view.get<lah::shared::Health>(entity);
+      auto& team = view.get<lah::shared::Team>(entity);
 
-      lol_at_home_engine::Vector2 worldPos{.x = position.x, .y = position.y};
+      lah::engine::Vector2 worldPos{.x = position.x, .y = position.y};
       auto screenPos = info.camera.WorldToScreen(worldPos);
 
       float healthRatio = std::clamp(health.current / health.max, 0.0F, 1.0F);
@@ -76,10 +76,10 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
       SDL_RenderFillRect(renderer, &background);
 
       switch (team.color) {
-        case lol_at_home_shared::Team::Color::Blue:
+        case lah::shared::Team::Color::Blue:
           SDL_SetRenderDrawColor(renderer, 0, 122, 255, 255);
           break;
-        case lol_at_home_shared::Team::Color::Red:
+        case lah::shared::Team::Color::Red:
           SDL_SetRenderDrawColor(renderer, 255, 59, 48, 255);
           break;
       }
@@ -88,4 +88,4 @@ class RenderSystem : public lol_at_home_engine::IEcsSystem {
   }
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

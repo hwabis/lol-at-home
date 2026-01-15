@@ -5,7 +5,7 @@
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTarget.h"
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 struct MoveAction {
   entt::entity source{};
@@ -15,7 +15,7 @@ struct MoveAction {
 
 struct AbilityAction {
   entt::entity source{};
-  lol_at_home_shared::AbilitySlot slot{};
+  lah::shared::AbilitySlot slot{};
   AbilityTargetVariant target;
 };
 
@@ -31,4 +31,4 @@ struct StopGameAction {
 using GameActionVariant =
     std::variant<MoveAction, AbilityAction, AutoAttackAction, StopGameAction>;
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

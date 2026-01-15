@@ -4,21 +4,21 @@
 #include "domain/ChampionId.h"
 #include "domain/EcsComponents.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class ChampionFactory {
  public:
   ChampionFactory() = delete;
 
   static auto CreateChampion(entt::registry& registry,
-                             lol_at_home_shared::ChampionId championId,
-                             lol_at_home_shared::Team::Color teamColor)
+                             lah::shared::ChampionId championId,
+                             lah::shared::Team::Color teamColor)
       -> entt::entity {
     // todo probably wanna split each champ into own class
     switch (championId) {
-      case lol_at_home_shared::ChampionId::Garen:
+      case lah::shared::ChampionId::Garen:
         return createGaren(registry, teamColor);
-      case lol_at_home_shared::ChampionId::Teemo:
+      case lah::shared::ChampionId::Teemo:
         // todo
         return entt::entity(0);
     }
@@ -26,9 +26,8 @@ class ChampionFactory {
 
  private:
   static auto createGaren(entt::registry& registry,
-                          lol_at_home_shared::Team::Color teamColor)
-      -> entt::entity {
-    using namespace lol_at_home_shared;
+                          lah::shared::Team::Color teamColor) -> entt::entity {
+    using namespace lah::shared;
 
     entt::entity entity = registry.create();
 
@@ -37,7 +36,7 @@ class ChampionFactory {
 
     constexpr float startX = 100.0F;
     constexpr float startY = 200.0F;
-    registry.emplace<lol_at_home_shared::Position>(entity, startX, startY);
+    registry.emplace<lah::shared::Position>(entity, startX, startY);
     registry.emplace<Team>(entity, teamColor);
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
@@ -58,4 +57,4 @@ class ChampionFactory {
   }
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

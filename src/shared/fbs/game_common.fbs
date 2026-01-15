@@ -1,4 +1,4 @@
-namespace lol_at_home_shared;
+namespace lah_shared;
 
 struct PositionFB {
   x: float;

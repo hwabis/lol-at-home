@@ -1,6 +1,6 @@
 include "game_state.fbs";
 
-namespace lol_at_home_shared;
+namespace lah_shared;
 
 // todo still not certain about this player assignment stuff
 table PlayerAssignmentFB {

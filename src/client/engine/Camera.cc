@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 // todo make struct (typedefs) between worldpos and screenpos
 auto Camera::WorldToScreen(Vector2 worldPos) const -> Vector2 {
@@ -30,4 +30,4 @@ void Camera::RecalculateView(Vector2 viewportSize) {
   zoom_ = viewportSize.y / referenceHeight;
 }
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

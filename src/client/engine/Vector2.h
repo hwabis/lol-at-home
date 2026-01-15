@@ -1,6 +1,6 @@
 #pragma once
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 struct Vector2 {
   // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
@@ -25,4 +25,4 @@ struct Vector2 {
   }
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

@@ -2,7 +2,7 @@
 
 #include "Vector2.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 class Camera {
  public:
@@ -29,4 +29,4 @@ class Camera {
   static constexpr float referenceHeight = 720.0F;
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

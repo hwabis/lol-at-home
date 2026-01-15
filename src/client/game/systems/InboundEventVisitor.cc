@@ -2,7 +2,7 @@
 #include <spdlog/spdlog.h>
 #include "Components.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
 InboundEventVisitor::InboundEventVisitor(
     entt::registry* registry,
@@ -41,18 +41,17 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
   }
 
   if (event.position.has_value()) {
-    registry_->emplace_or_replace<lol_at_home_shared::Position>(
-        clientEntity, *event.position);
+    registry_->emplace_or_replace<lah::shared::Position>(clientEntity,
+                                                         *event.position);
   }
 
   if (event.team.has_value()) {
-    registry_->emplace_or_replace<lol_at_home_shared::Team>(clientEntity,
-                                                            *event.team);
+    registry_->emplace_or_replace<lah::shared::Team>(clientEntity, *event.team);
   }
 
   if (event.health.has_value()) {
-    registry_->emplace_or_replace<lol_at_home_shared::Health>(clientEntity,
-                                                              *event.health);
+    registry_->emplace_or_replace<lah::shared::Health>(clientEntity,
+                                                       *event.health);
   }
 }
 
@@ -64,4 +63,4 @@ void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {
   }
 }
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

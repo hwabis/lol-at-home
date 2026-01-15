@@ -8,16 +8,16 @@
 #include "ThreadSafeQueue.h"
 #include "c2s_message_generated.h"
 
-namespace lol_at_home_game {
+namespace lah::game {
 
-class InputSystem : public lol_at_home_engine::IEcsSystem {
+class InputSystem : public lah::engine::IEcsSystem {
  public:
   explicit InputSystem(
       std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outboundEvents)
       : outboundEvents_(std::move(outboundEvents)) {}
 
   void Cycle(entt::registry& registry,
-             lol_at_home_engine::SceneInfo& info,
+             lah::engine::SceneInfo& info,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     if (info.input.IsMouseButtonPressed(SDL_BUTTON_RIGHT)) {
       auto mousePos = info.input.GetMousePosition();
@@ -33,18 +33,15 @@ class InputSystem : public lol_at_home_engine::IEcsSystem {
 
       flatbuffers::FlatBufferBuilder builder;
 
-      auto targetPos = lol_at_home_shared::PositionFB(worldPos.x, worldPos.y);
-      auto moveAction =
-          lol_at_home_shared::CreateMoveActionFB(builder, &targetPos);
+      auto targetPos = lah_shared::PositionFB(worldPos.x, worldPos.y);
+      auto moveAction = lah_shared::CreateMoveActionFB(builder, &targetPos);
 
-      auto gameAction = lol_at_home_shared::CreateGameActionFB(
+      auto gameAction = lah_shared::CreateGameActionFB(
           builder, localPlayer.serverEntityId,
-          lol_at_home_shared::GameActionDataFB::MoveActionFB,
-          moveAction.Union());
+          lah_shared::GameActionDataFB::MoveActionFB, moveAction.Union());
 
-      auto c2sMessage = lol_at_home_shared::CreateC2SMessageFB(
-          builder, lol_at_home_shared::C2SDataFB::GameActionFB,
-          gameAction.Union());
+      auto c2sMessage = lah_shared::CreateC2SMessageFB(
+          builder, lah_shared::C2SDataFB::GameActionFB, gameAction.Union());
 
       builder.Finish(c2sMessage);
 
@@ -61,4 +58,4 @@ class InputSystem : public lol_at_home_engine::IEcsSystem {
   std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outboundEvents_;
 };
 
-}  // namespace lol_at_home_game
+}  // namespace lah::game

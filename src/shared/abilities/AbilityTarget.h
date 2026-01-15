@@ -2,9 +2,8 @@
 
 #include <entt/entt.hpp>
 #include <variant>
-#include "domain/EcsComponents.h"
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 struct NoTarget {};
 
@@ -28,4 +27,4 @@ struct TwoPointSkillshot {
 using AbilityTargetVariant =
     std::variant<NoTarget, EntityTarget, OnePointSkillshot, TwoPointSkillshot>;
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

@@ -6,7 +6,7 @@
 #include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class GameActionProcessor {
  public:
@@ -14,16 +14,16 @@ class GameActionProcessor {
                       std::vector<entt::entity>* instantDirty)
       : registry_(registry), instantDirty_(instantDirty) {}
 
-  void operator()(const lol_at_home_shared::MoveAction& action) {
+  void operator()(const lah::shared::MoveAction& action) {
     if (!registry_->valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
     if (auto* movable =
-            registry_->try_get<lol_at_home_shared::Movable>(action.source)) {
+            registry_->try_get<lah::shared::Movable>(action.source)) {
       *movable = {.speed = movable->speed,
-                  .state = lol_at_home_shared::MovementState::Moving,
+                  .state = lah::shared::MovementState::Moving,
                   .targetX = action.targetX,
                   .targetY = action.targetY};
       instantDirty_->push_back(action.source);
@@ -32,14 +32,13 @@ class GameActionProcessor {
     }
   }
 
-  void operator()(const lol_at_home_shared::AbilityAction& action) {
+  void operator()(const lah::shared::AbilityAction& action) {
     if (!registry_->valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
       return;
     }
 
-    auto* abilities =
-        registry_->try_get<lol_at_home_shared::Abilities>(action.source);
+    auto* abilities = registry_->try_get<lah::shared::Abilities>(action.source);
     if (abilities == nullptr) {
       spdlog::warn("Entity has no Abilities component");
       return;
@@ -60,11 +59,11 @@ class GameActionProcessor {
     abilityImpl->Execute(*registry_, ability, action.target);
   }
 
-  void operator()(const lol_at_home_shared::AutoAttackAction& /*action*/) {
+  void operator()(const lah::shared::AutoAttackAction& /*action*/) {
     // todo
   }
 
-  void operator()(const lol_at_home_shared::StopGameAction& /*action*/) {
+  void operator()(const lah::shared::StopGameAction& /*action*/) {
     // todo
   }
 
@@ -73,7 +72,7 @@ class GameActionProcessor {
   std::vector<entt::entity>* instantDirty_;
 
   // todo maybe make this into ability registry class
-  static auto getAbilityImpl(lol_at_home_shared::AbilityTag abilityId)
+  static auto getAbilityImpl(lah::shared::AbilityTag abilityId)
       -> std::unique_ptr<AbilityImpl> {
     // The reason we do to a switch instead of a map is to cover all AbilityTag
     // at compile time (compiler warning otherwise)
@@ -86,4 +85,4 @@ class GameActionProcessor {
   }
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

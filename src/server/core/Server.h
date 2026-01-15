@@ -5,7 +5,7 @@
 #include "core/OutboundEvent.h"
 #include "util/ThreadSafeQueue.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class Server {
  public:
@@ -18,4 +18,4 @@ class Server {
       std::make_shared<ThreadSafeQueue<OutboundEvent>>();
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

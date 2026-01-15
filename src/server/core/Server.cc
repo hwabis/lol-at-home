@@ -4,7 +4,7 @@
 #include "core/GameState.h"
 #include "util/PeriodicDriver.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 auto Server::Run() -> void {
   constexpr int simulationHz = 60;
@@ -24,4 +24,4 @@ auto Server::Run() -> void {
   std::cin.get();
 }
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

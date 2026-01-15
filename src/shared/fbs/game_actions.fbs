@@ -1,5 +1,5 @@
 include "game_common.fbs";
-namespace lol_at_home_shared;
+namespace lah_shared;
 
 table NoTargetFB {}
 

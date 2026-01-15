@@ -4,7 +4,7 @@
 #include <vector>
 #include "game_state_generated.h"
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 class GameStateSerializer {
  public:
@@ -15,32 +15,32 @@ class GameStateSerializer {
                         const entt::registry& registry,
                         const std::vector<entt::entity>& dirtyEntities,
                         const std::vector<entt::entity>& deletedEntities)
-      -> flatbuffers::Offset<lol_at_home_shared::GameStateDeltaFB>;
+      -> flatbuffers::Offset<lah_shared::GameStateDeltaFB>;
 
   // Called on client
   static auto Deserialize(entt::registry& registry,
-                          const lol_at_home_shared::GameStateDeltaFB& gamestate)
+                          const lah_shared::GameStateDeltaFB& gamestate)
       -> void;
 
  private:
   static void deserializePosition(entt::registry& registry,
                                   entt::entity entity,
-                                  const PositionFB* pos);
+                                  const lah_shared::PositionFB* pos);
   static void deserializeHealth(entt::registry& registry,
                                 entt::entity entity,
-                                const HealthFB* health);
+                                const lah_shared::HealthFB* health);
   static void deserializeMana(entt::registry& registry,
                               entt::entity entity,
-                              const ManaFB* mana);
+                              const lah_shared::ManaFB* mana);
   static void deserializeMovable(entt::registry& registry,
                                  entt::entity entity,
-                                 const MovableFB* movable);
+                                 const lah_shared::MovableFB* movable);
   static void deserializeTeam(entt::registry& registry,
                               entt::entity entity,
-                              const TeamFB* team);
+                              const lah_shared::TeamFB* team);
   static void deserializeAbilities(entt::registry& registry,
                                    entt::entity entity,
-                                   const AbilitiesFB* abilitiesFB);
+                                   const lah_shared::AbilitiesFB* abilitiesFB);
 };
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

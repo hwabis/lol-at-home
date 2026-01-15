@@ -1,7 +1,9 @@
 #include "serialization/GameActionSerializer.h"
 #include <flatbuffers/flatbuffers.h>
 
-namespace lol_at_home_shared {
+using namespace lah_shared;
+
+namespace lah::shared {
 
 namespace {
 
@@ -43,28 +45,28 @@ struct GameActionSerializeVisitor {
   flatbuffers::FlatBufferBuilder* builder;
 
   auto operator()(const MoveAction& action) const
-      -> flatbuffers::Offset<GameActionFB> {
-    PositionFB pos(action.targetX, action.targetY);
+      -> flatbuffers::Offset<lah_shared::GameActionFB> {
+    lah_shared::PositionFB pos(action.targetX, action.targetY);
     auto moveOffset = CreateMoveActionFB(*builder, &pos);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
-                              GameActionDataFB::MoveActionFB,
+                              lah_shared::GameActionDataFB::MoveActionFB,
                               moveOffset.Union());
   }
 
   auto operator()(const AbilityAction& action)
-      -> flatbuffers::Offset<GameActionFB> {
+      -> flatbuffers::Offset<lah_shared::GameActionFB> {
     auto [targetType, targetOffset] =
         std::visit(AbilityTargetSerializer{builder}, action.target);
-    auto abilityOffset =
-        CreateAbilityActionFB(*builder, static_cast<AbilitySlotFB>(action.slot),
-                              targetType, targetOffset);
+    auto abilityOffset = CreateAbilityActionFB(
+        *builder, static_cast<lah_shared::AbilitySlotFB>(action.slot),
+        targetType, targetOffset);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
-                              GameActionDataFB::AbilityActionFB,
+                              lah_shared::GameActionDataFB::AbilityActionFB,
                               abilityOffset.Union());
   }
 
   auto operator()(const AutoAttackAction& action) const
-      -> flatbuffers::Offset<GameActionFB> {
+      -> flatbuffers::Offset<lah_shared::GameActionFB> {
     auto attackOffset = CreateAutoAttackActionFB(
         *builder, static_cast<uint32_t>(action.target));
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
@@ -85,12 +87,11 @@ struct GameActionSerializeVisitor {
 
 auto GameActionSerializer::Serialize(flatbuffers::FlatBufferBuilder& builder,
                                      const GameActionVariant& action)
-    -> flatbuffers::Offset<lol_at_home_shared::GameActionFB> {
+    -> flatbuffers::Offset<GameActionFB> {
   return std::visit(GameActionSerializeVisitor{&builder}, action);
 }
 
-auto GameActionSerializer::Deserialize(
-    const lol_at_home_shared::GameActionFB& action)
+auto GameActionSerializer::Deserialize(const GameActionFB& action)
     -> std::optional<GameActionVariant> {
   auto source = static_cast<entt::entity>(action.source());
 
@@ -158,4 +159,4 @@ auto GameActionSerializer::Deserialize(
   }
 }
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

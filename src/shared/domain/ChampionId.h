@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace lol_at_home_shared {
+namespace lah::shared {
 
 // Enum values much match corresponding FB
 enum class ChampionId : uint8_t {
@@ -11,4 +11,4 @@ enum class ChampionId : uint8_t {
   Teemo = 1,
 };
 
-}  // namespace lol_at_home_shared
+}  // namespace lah::shared

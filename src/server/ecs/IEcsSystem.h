@@ -3,7 +3,7 @@
 #include <chrono>
 #include <entt/entt.hpp>
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class IEcsSystem {
  public:
@@ -25,4 +25,4 @@ class IEcsSystem {
   [[nodiscard]] virtual auto GetPeriodicSyncRateHz() const -> int = 0;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

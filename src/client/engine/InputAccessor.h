@@ -4,7 +4,7 @@
 #include <span>
 #include "Vector2.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 class InputAccessor {
  public:
@@ -26,4 +26,4 @@ class InputAccessor {
   std::span<const bool> previousKeyState_;
 };
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

@@ -6,7 +6,7 @@
 #include "ecs/EcsComponents.h"
 #include "ecs/IEcsSystem.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 class HealthSystem : public IEcsSystem {
  public:
@@ -15,10 +15,10 @@ class HealthSystem : public IEcsSystem {
              std::vector<entt::entity>& dirtyPeriodic,
              std::vector<entt::entity>& dirtyInstant,
              std::vector<entt::entity>& deletedEntities) override {
-    auto view = registry.view<lol_at_home_shared::Health>();
+    auto view = registry.view<lah::shared::Health>();
 
     for (auto entity : view) {
-      auto& health = view.get<lol_at_home_shared::Health>(entity);
+      auto& health = view.get<lah::shared::Health>(entity);
 
       if (auto* healthEvent = registry.try_get<PendingDamage>(entity)) {
         health.current -= healthEvent->amount;
@@ -54,4 +54,4 @@ class HealthSystem : public IEcsSystem {
   }
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

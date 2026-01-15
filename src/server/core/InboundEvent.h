@@ -2,13 +2,14 @@
 
 #include <enet/enet.h>
 #include "domain/ChampionId.h"
+#include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 struct ChampionSelectedEvent {
-  lol_at_home_shared::ChampionId championId;
-  lol_at_home_shared::Team::Color teamColor;
+  lah::shared::ChampionId championId;
+  lah::shared::Team::Color teamColor;
 };
 struct ClientDisconnectedEvent {};
 struct InboundChatEvent {
@@ -18,11 +19,11 @@ struct InboundChatEvent {
 using InboundEventVariant = std::variant<ChampionSelectedEvent,
                                          ClientDisconnectedEvent,
                                          InboundChatEvent,
-                                         lol_at_home_shared::GameActionVariant>;
+                                         lah::shared::GameActionVariant>;
 
 struct InboundEvent {
   ENetPeer* peer{};
   InboundEventVariant event;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

@@ -1,6 +1,6 @@
 #include "InputAccessor.h"
 
-namespace lol_at_home_engine {
+namespace lah::engine {
 
 void InputAccessor::Update() {
   previousMouseState_ = currentMouseState_;
@@ -34,4 +34,4 @@ auto InputAccessor::IsKeyPressed(SDL_Keycode key) const -> bool {
   return currentKeyState_[scancode];
 }
 
-}  // namespace lol_at_home_engine
+}  // namespace lah::engine

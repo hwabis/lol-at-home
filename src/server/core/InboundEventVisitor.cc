@@ -6,7 +6,7 @@
 #include "s2c_message_generated.h"
 #include "serialization/GameStateSerializer.h"
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 InboundEventVisitor::InboundEventVisitor(
     ENetPeer* peer,
@@ -27,11 +27,10 @@ void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
   peerToEntityMap_->emplace(peer_, entity);
 
   flatbuffers::FlatBufferBuilder builder{};
-  auto paOffset = lol_at_home_shared::CreatePlayerAssignmentFB(
+  auto paOffset = lah_shared::CreatePlayerAssignmentFB(
       builder, static_cast<uint32_t>(entity));
-  auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::PlayerAssignmentFB,
-      paOffset.Union());
+  auto s2cMessage = lah_shared::CreateS2CMessageFB(
+      builder, lah_shared::S2CDataFB::PlayerAssignmentFB, paOffset.Union());
   builder.Finish(s2cMessage);
 
   std::vector<std::byte> payload(
@@ -48,11 +47,10 @@ void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
   for (auto entity : registry_->view<entt::entity>()) {
     allEntities.push_back(entity);
   }
-  auto snapshotOffset = lol_at_home_shared::GameStateSerializer::Serialize(
+  auto snapshotOffset = lah::shared::GameStateSerializer::Serialize(
       builder, *registry_, allEntities, {});  // No deletions
-  s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::GameStateDeltaFB,
-      snapshotOffset.Union());
+  s2cMessage = lah_shared::CreateS2CMessageFB(
+      builder, lah_shared::S2CDataFB::GameStateDeltaFB, snapshotOffset.Union());
   builder.Finish(s2cMessage);
 
   payload = std::vector<std::byte>(
@@ -83,11 +81,10 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
   flatbuffers::FlatBufferBuilder builder{};
 
   auto textOffset = builder.CreateString(event.message);
-  auto chatBroadcast = lol_at_home_shared::CreateChatBroadcastFB(
+  auto chatBroadcast = lah_shared::CreateChatBroadcastFB(
       builder, static_cast<uint32_t>(senderEntity), textOffset);
-  auto s2cMessage = lol_at_home_shared::CreateS2CMessageFB(
-      builder, lol_at_home_shared::S2CDataFB::ChatBroadcastFB,
-      chatBroadcast.Union());
+  auto s2cMessage = lah_shared::CreateS2CMessageFB(
+      builder, lah_shared::S2CDataFB::ChatBroadcastFB, chatBroadcast.Union());
   builder.Finish(s2cMessage);
 
   std::vector<std::byte> payload(
@@ -98,8 +95,8 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
 }
 
 void InboundEventVisitor::operator()(
-    const lol_at_home_shared::GameActionVariant& action) const {
+    const lah::shared::GameActionVariant& action) const {
   std::visit(GameActionProcessor{registry_, instantDirty_}, action);
 }
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

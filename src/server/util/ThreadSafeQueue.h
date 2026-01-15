@@ -3,7 +3,7 @@
 #include <mutex>
 #include <queue>
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 template <typename T>
 class ThreadSafeQueue {
@@ -49,4 +49,4 @@ class ThreadSafeQueue {
   mutable std::mutex mutex_;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server

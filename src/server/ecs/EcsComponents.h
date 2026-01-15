@@ -2,10 +2,10 @@
 
 #include <entt/entt.hpp>
 
-namespace lol_at_home_server {
+namespace lah::server {
 
 // keep in mind all structs here should be server-only.
-// stuff client should also see goes in lol_at_home_shared
+// stuff client should also see goes in lah::shared
 
 struct PendingDamage {
   entt::entity source;  // Who dealt the damage
@@ -17,4 +17,4 @@ struct PendingHeal {
   float amount;
 };
 
-}  // namespace lol_at_home_server
+}  // namespace lah::server
