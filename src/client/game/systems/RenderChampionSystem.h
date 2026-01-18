@@ -13,6 +13,7 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     drawChampions(registry, info);
     drawHealthBars(registry, info);
+    // todo render champion status
   }
 
  private:

@@ -32,9 +32,17 @@ class GameStateSerializer {
   static void deserializeMana(entt::registry& registry,
                               entt::entity entity,
                               const lah_shared::ManaFB* mana);
-  static void deserializeMovable(entt::registry& registry,
-                                 entt::entity entity,
-                                 const lah_shared::MovableFB* movable);
+  static void deserializeMovementStats(
+      entt::registry& registry,
+      entt::entity entity,
+      const lah_shared::MovementStatsFB* movementStats);
+  static void deserializeCharacterState(
+      entt::registry& registry,
+      entt::entity entity,
+      const lah_shared::CharacterStateDataFB* characterStateData);
+  static void deserializeMoveTarget(entt::registry& registry,
+                                    entt::entity entity,
+                                    const lah_shared::MoveTargetFB* moveTarget);
   static void deserializeTeam(entt::registry& registry,
                               entt::entity entity,
                               const lah_shared::TeamFB* team);

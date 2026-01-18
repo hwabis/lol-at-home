@@ -13,14 +13,21 @@ struct ManaFB {
   mana_regen_per_sec: float;
 }
 
-enum MovementStateFB: ubyte {
-  Idle = 0,
-  Moving = 1,
+struct MovementStatsFB {
+  speed: float;
 }
 
-struct MovableFB {
-  speed: float;
-  state: MovementStateFB;
+enum CharacterStateFB: ubyte {
+  Idle = 0,
+  Moving = 1,
+  AutoAttackWindup = 2,
+}
+
+struct CharacterStateDataFB {
+  state: CharacterStateFB;
+}
+
+struct MoveTargetFB {
   target_pos: PositionFB;
 }
 
@@ -57,7 +64,9 @@ table EntityFB {
   position: PositionFB;
   health: HealthFB;
   mana: ManaFB;
-  movable: MovableFB;
+  movement_stats: MovementStatsFB;
+  character_state: CharacterStateDataFB;
+  move_target: MoveTargetFB;
   team: TeamFB;
   abilities: AbilitiesFB;
 }

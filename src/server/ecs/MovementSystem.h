@@ -13,18 +13,23 @@ class MovementSystem : public IEcsSystem {
              std::vector<entt::entity>& dirtyPeriodic,
              std::vector<entt::entity>& /*dirtyInstant*/,
              std::vector<entt::entity>& /*deletedEntities*/) override {
-    auto view = registry.view<lah::shared::Position, lah::shared::Movable>();
+    auto view =
+        registry.view<lah::shared::Position, lah::shared::MovementStats,
+                      lah::shared::CharacterState, lah::shared::MoveTarget>();
     for (auto entity : view) {
       auto& pos = view.get<lah::shared::Position>(entity);
-      auto& movable = view.get<lah::shared::Movable>(entity);
+      auto& characterState = view.get<lah::shared::CharacterState>(entity);
+      auto& movementStats = view.get<lah::shared::MovementStats>(entity);
+      auto& moveTarget = view.get<lah::shared::MoveTarget>(entity);
 
       auto [newPos, reached] =
-          moveTowards(pos, {.x = movable.targetX, .y = movable.targetY},
-                      movable.speed, timeElapsed);
+          moveTowards(pos, {.x = moveTarget.targetX, .y = moveTarget.targetY},
+                      movementStats.speed, timeElapsed);
 
       pos = newPos;
-      movable.state = reached ? lah::shared::MovementState::Idle
-                              : lah::shared::MovementState::Moving;
+      characterState.state = reached
+                                 ? lah::shared::CharacterState::State::Idle
+                                 : lah::shared::CharacterState::State::Moving;
 
       // Technically movement system never sends updates instantly (we currently
       // have no way of knowing when the target position has changed, aka the

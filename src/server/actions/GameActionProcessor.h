@@ -28,15 +28,18 @@ class GameActionProcessor {
       return;
     }
 
-    if (auto* movable =
-            registry_->try_get<lah::shared::Movable>(action.source)) {
-      *movable = {.speed = movable->speed,
-                  .state = lah::shared::MovementState::Moving,
-                  .targetX = action.targetX,
-                  .targetY = action.targetY};
+    if (auto* moveTarget =
+            registry_->try_get<lah::shared::MoveTarget>(action.source)) {
+      *moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
+
+      if (auto* characterState =
+              registry_->try_get<lah::shared::CharacterState>(action.source)) {
+        characterState->state = lah::shared::CharacterState::State::Moving;
+      }
+
       instantDirty_->push_back(action.source);
     } else {
-      spdlog::warn("Entity has no Movable component");
+      spdlog::warn("Entity has no MoveTarget component");
     }
   }
 

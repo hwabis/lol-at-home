@@ -34,22 +34,38 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     manaPtr = &ManaData;
   }
 
-  MovableFB MovableData{};
-  const MovableFB* movablePtr = nullptr;
-  if (const auto* movable = registry.try_get<Movable>(entity)) {
-    MovementStateFB moveState{};
-    switch (movable->state) {
-      case MovementState::Idle:
-        moveState = MovementStateFB::Idle;
+  MovementStatsFB MovementStatsData{};
+  const MovementStatsFB* movementStatsPtr = nullptr;
+  if (const auto* movementStats = registry.try_get<MovementStats>(entity)) {
+    MovementStatsData = MovementStatsFB(movementStats->speed);
+    movementStatsPtr = &MovementStatsData;
+  }
+
+  CharacterStateDataFB CharacterStateData{};
+  const CharacterStateDataFB* characterStatePtr = nullptr;
+  if (const auto* characterState = registry.try_get<CharacterState>(entity)) {
+    CharacterStateFB charState{};
+    switch (characterState->state) {
+      case CharacterState::State::Idle:
+        charState = CharacterStateFB::Idle;
         break;
-      case MovementState::Moving:
-        moveState = MovementStateFB::Moving;
+      case CharacterState::State::Moving:
+        charState = CharacterStateFB::Moving;
+        break;
+      case CharacterState::State::AutoAttackWindup:
+        charState = CharacterStateFB::AutoAttackWindup;
         break;
     }
 
-    MovableData = MovableFB(movable->speed, moveState,
-                            {movable->targetX, movable->targetY});
-    movablePtr = &MovableData;
+    CharacterStateData = CharacterStateDataFB(charState);
+    characterStatePtr = &CharacterStateData;
+  }
+
+  MoveTargetFB MoveTargetData{};
+  const MoveTargetFB* moveTargetPtr = nullptr;
+  if (const auto* moveTarget = registry.try_get<MoveTarget>(entity)) {
+    MoveTargetData = MoveTargetFB({moveTarget->targetX, moveTarget->targetY});
+    moveTargetPtr = &MoveTargetData;
   }
 
   TeamFB TeamData{};
@@ -82,9 +98,9 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     abilitiesOffset = CreateAbilitiesFB(builder, entriesVector);
   }
 
-  auto entityOffset =
-      CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
-                     manaPtr, movablePtr, teamPtr, abilitiesOffset);
+  auto entityOffset = CreateEntityFB(
+      builder, static_cast<uint32_t>(entity), posPtr, healthPtr, manaPtr,
+      movementStatsPtr, characterStatePtr, moveTargetPtr, teamPtr, abilitiesOffset);
 
   return entityOffset;
 }
@@ -147,7 +163,9 @@ auto GameStateSerializer::Deserialize(
     deserializePosition(registry, entity, entityFB->position());
     deserializeHealth(registry, entity, entityFB->health());
     deserializeMana(registry, entity, entityFB->mana());
-    deserializeMovable(registry, entity, entityFB->movable());
+    deserializeMovementStats(registry, entity, entityFB->movement_stats());
+    deserializeCharacterState(registry, entity, entityFB->character_state());
+    deserializeMoveTarget(registry, entity, entityFB->move_target());
     deserializeTeam(registry, entity, entityFB->team());
     deserializeAbilities(registry, entity, entityFB->abilities());
   }
@@ -187,25 +205,46 @@ void GameStateSerializer::deserializeMana(entt::registry& registry,
   }
 }
 
-void GameStateSerializer::deserializeMovable(entt::registry& registry,
-                                             entt::entity entity,
-                                             const MovableFB* movable) {
-  if (movable != nullptr) {
-    MovementState moveState{};
-    switch (movable->state()) {
-      case MovementStateFB::Idle:
-        moveState = MovementState::Idle;
+void GameStateSerializer::deserializeMovementStats(
+    entt::registry& registry,
+    entt::entity entity,
+    const MovementStatsFB* movementStats) {
+  if (movementStats != nullptr) {
+    registry.emplace_or_replace<MovementStats>(
+        entity, MovementStats{.speed = movementStats->speed()});
+  }
+}
+
+void GameStateSerializer::deserializeCharacterState(
+    entt::registry& registry,
+    entt::entity entity,
+    const CharacterStateDataFB* characterStateData) {
+  if (characterStateData != nullptr) {
+    CharacterState::State state{};
+    switch (characterStateData->state()) {
+      case CharacterStateFB::Idle:
+        state = CharacterState::State::Idle;
         break;
-      case MovementStateFB::Moving:
-        moveState = MovementState::Moving;
+      case CharacterStateFB::Moving:
+        state = CharacterState::State::Moving;
+        break;
+      case CharacterStateFB::AutoAttackWindup:
+        state = CharacterState::State::AutoAttackWindup;
         break;
     }
 
-    registry.emplace_or_replace<Movable>(
-        entity, Movable{.speed = movable->speed(),
-                        .state = moveState,
-                        .targetX = movable->target_pos().x(),
-                        .targetY = movable->target_pos().y()});
+    registry.emplace_or_replace<CharacterState>(entity, CharacterState{.state = state});
+  }
+}
+
+void GameStateSerializer::deserializeMoveTarget(
+    entt::registry& registry,
+    entt::entity entity,
+    const MoveTargetFB* moveTarget) {
+  if (moveTarget != nullptr) {
+    registry.emplace_or_replace<MoveTarget>(
+        entity, MoveTarget{.targetX = moveTarget->target_pos().x(),
+                           .targetY = moveTarget->target_pos().y()});
   }
 }
 

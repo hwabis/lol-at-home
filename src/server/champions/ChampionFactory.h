@@ -40,8 +40,9 @@ class ChampionFactory {
     registry.emplace<Team>(entity, teamColor);
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
-    registry.emplace<Movable>(entity, 340.0, MovementState::Idle, startX,
-                              startY);
+    registry.emplace<MovementStats>(entity, 340.0);
+    registry.emplace<CharacterState>(entity, CharacterState::State::Idle);
+    registry.emplace<MoveTarget>(entity, startX, startY);
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};

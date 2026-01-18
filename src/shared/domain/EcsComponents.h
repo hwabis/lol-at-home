@@ -25,16 +25,22 @@ struct Mana {
   float manaRegenPerSec{};
 };
 
-enum class MovementState : uint8_t {
-  Idle = 0,
-  Moving = 1,
+struct MovementStats {
+  float speed{};  // units per sec
 };
 
-struct Movable {
-  float speed{};  // units per sec
-  MovementState state = MovementState::Idle;
-  float targetX{};  // ignored if state == idle
-  float targetY{};  // ignored if state == idle
+struct CharacterState {
+  enum class State : uint8_t {
+    Idle = 0,
+    Moving = 1,
+    AutoAttackWindup = 2,
+  };
+  State state = State::Idle;
+};
+
+struct MoveTarget {
+  float targetX{};
+  float targetY{};
 };
 
 struct Team {
