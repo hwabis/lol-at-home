@@ -1,29 +1,17 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <string>
-#include <utility>
 #include "Camera.h"
+#include "GameConfig.h"
 #include "InputAccessor.h"
 
 namespace lah::engine {
 
-struct GameConfig {
-  enum class WindowType : uint8_t {
-    Windowed,
-    Fullscreen,
-    BorderlessFullscreen,
-  };
-
-  std::string windowTitle;
-  WindowType windowType;
-  Vector2 windowSize{};  // only used in windowed mode
-  int targetFPS{};
-};
-
 struct SceneInfo {
-  explicit SceneInfo(GameConfig config)
-      : config(std::move(config)), camera(config.windowSize) {}
+  explicit SceneInfo(const GameConfig& config)
+      : config(config), camera(config.windowSize) {
+    camera.SetPosition(config.initialCameraPosition);
+  }
 
   // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
   GameConfig config;

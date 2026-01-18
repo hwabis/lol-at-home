@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <spdlog/spdlog.h>
 #include <chrono>
@@ -97,7 +98,13 @@ void Game::sceneLoop() {
     }
 
     info_.input.Update();
+
+    SDL_SetRenderDrawColor(info_.sdlRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(info_.sdlRenderer);
+
     scene_.Cycle(info_, deltaTime);
+
+    SDL_RenderPresent(info_.sdlRenderer);
 
     auto frameEnd = std::chrono::steady_clock::now();
     auto frameTime =

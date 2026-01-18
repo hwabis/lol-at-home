@@ -6,19 +6,13 @@
 
 namespace lah::game {
 
-class RenderSystem : public lah::engine::IEcsSystem {
+class RenderChampionSystem : public lah::engine::IEcsSystem {
  public:
   void Cycle(entt::registry& registry,
              lah::engine::SceneInfo& info,
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
-    auto* renderer = info.sdlRenderer;
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
     drawChampions(registry, info);
     drawHealthBars(registry, info);
-
-    SDL_RenderPresent(renderer);
   }
 
  private:
@@ -51,9 +45,8 @@ class RenderSystem : public lah::engine::IEcsSystem {
   static void drawHealthBars(entt::registry& registry,
                              lah::engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view =
-        registry.view<lah::shared::Position, lah::shared::Health,
-                      lah::shared::Team>();
+    auto view = registry.view<lah::shared::Position, lah::shared::Health,
+                              lah::shared::Team>();
     for (auto entity : view) {
       auto& position = view.get<lah::shared::Position>(entity);
       auto& health = view.get<lah::shared::Health>(entity);

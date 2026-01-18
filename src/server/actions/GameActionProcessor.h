@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <entt/entt.hpp>
 #include "abilities/AbilityImpl.h"
+#include "domain/ArenaConfig.h"
 #include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
 
@@ -17,6 +18,13 @@ class GameActionProcessor {
   void operator()(const lah::shared::MoveAction& action) {
     if (!registry_->valid(action.source)) {
       spdlog::warn("Attempted to process action on invalid entity");
+      return;
+    }
+
+    if (!lah::shared::IsInArena(action.targetX, action.targetY)) {
+      spdlog::info("Move action rejected: outside arena bounds : " +
+                   std::to_string(action.targetX) + ", " +
+                   std::to_string(action.targetY));
       return;
     }
 

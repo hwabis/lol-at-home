@@ -8,7 +8,8 @@
 #include "systems/InputCameraSystem.h"
 #include "systems/InputMovementSystem.h"
 #include "systems/NetworkSyncSystem.h"
-#include "systems/RenderSystem.h"
+#include "systems/RenderChampionSystem.h"
+#include "systems/RenderMapSystem.h"
 
 namespace {
 
@@ -21,7 +22,8 @@ auto getScene(
 
   scene.AddSystem(
       std::make_unique<lah::game::NetworkSyncSystem>(inboundEvents));
-  scene.AddSystem(std::make_unique<lah::game::RenderSystem>());
+  scene.AddSystem(std::make_unique<lah::game::RenderMapSystem>());
+  scene.AddSystem(std::make_unique<lah::game::RenderChampionSystem>());
   scene.AddSystem(std::make_unique<lah::game::InputCameraSystem>());
   scene.AddSystem(
       std::make_unique<lah::game::InputMovementSystem>(outboundEvents));
@@ -52,6 +54,7 @@ auto main() -> int {
       .windowType = lah::engine::GameConfig::WindowType::Windowed,
       .windowSize = {.x = 1280.0F, .y = 720.0F},
       .targetFPS = 60,
+      .initialCameraPosition = {.x = 500.0F, .y = 500.0F},
   });
 
   std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::InboundEvent>>
