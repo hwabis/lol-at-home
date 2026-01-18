@@ -5,33 +5,35 @@
 #include "NetworkClient.h"
 #include "OutboundEvent.h"
 #include "ThreadSafeQueue.h"
-#include "systems/InputSystem.h"
+#include "systems/InputCameraSystem.h"
+#include "systems/InputMovementSystem.h"
 #include "systems/NetworkSyncSystem.h"
 #include "systems/RenderSystem.h"
 
 namespace {
 
-auto getScene(const std::shared_ptr<lah::game::ThreadSafeQueue<
-                  lah::game::InboundEvent>>& inboundEvents,
-              const std::shared_ptr<lah::game::ThreadSafeQueue<
-                  lah::game::OutboundEvent>>& outboundEvents)
-    -> lah::engine::Scene {
+auto getScene(
+    const std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::InboundEvent>>&
+        inboundEvents,
+    const std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::OutboundEvent>>&
+        outboundEvents) -> lah::engine::Scene {
   lah::engine::Scene scene;
 
   scene.AddSystem(
       std::make_unique<lah::game::NetworkSyncSystem>(inboundEvents));
   scene.AddSystem(std::make_unique<lah::game::RenderSystem>());
+  scene.AddSystem(std::make_unique<lah::game::InputCameraSystem>());
   scene.AddSystem(
-      std::make_unique<lah::game::InputSystem>(outboundEvents));
+      std::make_unique<lah::game::InputMovementSystem>(outboundEvents));
 
   return scene;
 }
 
-auto runNetworkClient(const std::shared_ptr<lah::game::ThreadSafeQueue<
-                          lah::game::InboundEvent>>& inboundEvents,
-                      const std::shared_ptr<lah::game::ThreadSafeQueue<
-                          lah::game::OutboundEvent>>& outboundEvents)
-    -> std::jthread {
+auto runNetworkClient(
+    const std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::InboundEvent>>&
+        inboundEvents,
+    const std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::OutboundEvent>>&
+        outboundEvents) -> std::jthread {
   return std::jthread([inboundEvents, outboundEvents](std::stop_token stoken) {
     lah::game::NetworkClient client(inboundEvents, outboundEvents);
     client.Connect("127.0.0.1", 1111);
@@ -52,12 +54,10 @@ auto main() -> int {
       .targetFPS = 60,
   });
 
-  std::shared_ptr<
-      lah::game::ThreadSafeQueue<lah::game::InboundEvent>>
+  std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::InboundEvent>>
       inboundEvents = std::make_shared<
           lah::game::ThreadSafeQueue<lah::game::InboundEvent>>();
-  std::shared_ptr<
-      lah::game::ThreadSafeQueue<lah::game::OutboundEvent>>
+  std::shared_ptr<lah::game::ThreadSafeQueue<lah::game::OutboundEvent>>
       outboundEvents = std::make_shared<
           lah::game::ThreadSafeQueue<lah::game::OutboundEvent>>();
 

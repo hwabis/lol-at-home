@@ -10,9 +10,9 @@
 
 namespace lah::game {
 
-class InputSystem : public lah::engine::IEcsSystem {
+class InputMovementSystem : public lah::engine::IEcsSystem {
  public:
-  explicit InputSystem(
+  explicit InputMovementSystem(
       std::shared_ptr<ThreadSafeQueue<OutboundEvent>> outboundEvents)
       : outboundEvents_(std::move(outboundEvents)) {}
 
@@ -25,7 +25,7 @@ class InputSystem : public lah::engine::IEcsSystem {
 
       auto view = registry.view<LocalPlayer>();
       if (view.empty()) {
-        spdlog::warn("No LocalPlayer entity found for InputSystem");
+        spdlog::warn("No LocalPlayer entity found for InputMovementSystem");
         return;
       }
 
