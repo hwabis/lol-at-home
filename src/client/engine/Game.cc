@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <spdlog/spdlog.h>
 #include <chrono>
 
@@ -19,6 +20,12 @@ void Game::initSDL() {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     spdlog::error(std::string("SDL_Init failed: ") + SDL_GetError());
     throw std::runtime_error("SDL initialization failed");
+  }
+
+  if (!TTF_Init()) {
+    spdlog::error(std::string("TTF_Init failed: ") + SDL_GetError());
+    SDL_Quit();
+    throw std::runtime_error("TTF initialization failed");
   }
 
   unsigned long long flags = 0;
@@ -51,9 +58,21 @@ void Game::initSDL() {
     SDL_Quit();
     throw std::runtime_error("Renderer creation failed");
   }
+
+  // todo load our own font (currently cross-platform  also broken lol)
+  info_.font = TTF_OpenFont(R"(C:\Windows\Fonts\arial.ttf)", 24);
+  if (info_.font == nullptr) {
+    spdlog::error(std::string("TTF_OpenFont failed: ") + SDL_GetError());
+    throw std::runtime_error("Font loading failed");
+  }
 }
 
 void Game::cleanupSDL() {
+  if (info_.font != nullptr) {
+    TTF_CloseFont(info_.font);
+    info_.font = nullptr;
+  }
+
   if (info_.sdlRenderer != nullptr) {
     SDL_DestroyRenderer(info_.sdlRenderer);
     info_.sdlRenderer = nullptr;
@@ -64,6 +83,7 @@ void Game::cleanupSDL() {
     info_.window = nullptr;
   }
 
+  TTF_Quit();
   SDL_Quit();
 }
 

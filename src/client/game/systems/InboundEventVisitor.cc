@@ -53,6 +53,11 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     registry_->emplace_or_replace<lah::shared::Health>(clientEntity,
                                                        *event.health);
   }
+
+  if (event.characterState.has_value()) {
+    registry_->emplace_or_replace<lah::shared::CharacterState>(
+        clientEntity, *event.characterState);
+  }
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "Camera.h"
 #include "GameConfig.h"
 #include "InputAccessor.h"
@@ -19,6 +20,7 @@ struct SceneInfo {
   InputAccessor input{};
   SDL_Window* window = nullptr;
   SDL_Renderer* sdlRenderer = nullptr;
+  TTF_Font* font = nullptr;
   // NOLINTEND(misc-non-private-member-variables-in-classes)
 };
 

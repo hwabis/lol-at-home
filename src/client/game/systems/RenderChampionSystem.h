@@ -1,7 +1,10 @@
 #pragma once
 
 #include <SDL3/SDL_render.h>
+#include <spdlog/spdlog.h>
+#include "Components.h"
 #include "IEcsSystem.h"
+#include "TextRenderer.h"
 #include "domain/EcsComponents.h"
 
 namespace lah::game {
@@ -13,7 +16,7 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
              std::chrono::duration<double, std::milli> /*deltaTime*/) override {
     drawChampions(registry, info);
     drawHealthBars(registry, info);
-    // todo render champion status
+    drawCharacterState(registry, info);
   }
 
  private:
@@ -78,6 +81,50 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
           break;
       }
       SDL_RenderFillRect(renderer, &foreground);
+    }
+  }
+
+  static void drawCharacterState(entt::registry& registry,
+                                 lah::engine::SceneInfo& info) {
+    auto* renderer = info.sdlRenderer;
+    auto* font = info.font;
+
+    auto view =
+        registry.view<lah::game::LocalPlayer, lah::shared::CharacterState>();
+
+    bool foundPlayer = false;
+    for (auto entity : view) {
+      foundPlayer = true;
+      auto& state = view.get<lah::shared::CharacterState>(entity);
+
+      std::string stateText;
+      switch (state.state) {
+        case lah::shared::CharacterState::State::Idle:
+          stateText = "Idle";
+          break;
+        case lah::shared::CharacterState::State::Moving:
+          stateText = "Moving";
+          break;
+        case lah::shared::CharacterState::State::AutoAttackWindup:
+          stateText = "Auto Attack Windup";
+          break;
+      }
+
+      std::string displayText = std::string("State: ") + stateText;
+      lah::engine::TextRenderer::DrawText(renderer, font, displayText,
+                                          {.x = 10, .y = 10});
+
+      break;
+    }
+
+    if (!foundPlayer) {
+      static bool loggedOnce = false;
+      if (!loggedOnce) {
+        spdlog::warn(
+            "No LocalPlayer entity with CharacterState found for text "
+            "rendering");
+        loggedOnce = true;
+      }
     }
   }
 };

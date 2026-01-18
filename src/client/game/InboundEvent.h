@@ -22,6 +22,7 @@ struct EntityUpdatedEvent {
   std::optional<lah::shared::Position> position;
   std::optional<lah::shared::Team> team;
   std::optional<lah::shared::Health> health;
+  std::optional<lah::shared::CharacterState> characterState;
   // todo add all the other components as well THIS IS SO ANNOYING
 };
 

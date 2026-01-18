@@ -161,6 +161,24 @@ void NetworkClient::Poll() {
                   };
                 }
 
+                if (entityFB->character_state() != nullptr) {
+                  lah::shared::CharacterState::State state{};
+                  switch (entityFB->character_state()->state()) {
+                    case lah_shared::CharacterStateFB::Idle:
+                      state = lah::shared::CharacterState::State::Idle;
+                      break;
+                    case lah_shared::CharacterStateFB::Moving:
+                      state = lah::shared::CharacterState::State::Moving;
+                      break;
+                    case lah_shared::CharacterStateFB::AutoAttackWindup:
+                      state =
+                          lah::shared::CharacterState::State::AutoAttackWindup;
+                      break;
+                  }
+                  updateEvent.characterState =
+                      lah::shared::CharacterState{.state = state};
+                }
+
                 InboundEvent event;
                 event.event = updateEvent;
                 inboundEvents_->Push(event);
