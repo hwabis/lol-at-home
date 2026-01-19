@@ -74,7 +74,7 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
 
       switch (team.color) {
         case lah::shared::Team::Color::Blue:
-          SDL_SetRenderDrawColor(renderer, 0, 122, 255, 255);
+          SDL_SetRenderDrawColor(renderer, 8, 24, 168, 255);
           break;
         case lah::shared::Team::Color::Red:
           SDL_SetRenderDrawColor(renderer, 255, 59, 48, 255);

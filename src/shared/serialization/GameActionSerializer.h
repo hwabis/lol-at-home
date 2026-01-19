@@ -6,6 +6,7 @@
 
 namespace lah::shared {
 
+// todo these classes prob shoudnt just serialize.. want to also handle sending
 class GameActionSerializer {
  public:
   GameActionSerializer() = delete;

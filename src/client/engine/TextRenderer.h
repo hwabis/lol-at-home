@@ -14,10 +14,6 @@ class TextRenderer {
                        const std::string& text,
                        Vector2 pos,
                        SDL_Color color = {255, 255, 255, 255}) {
-    if (font == nullptr || renderer == nullptr) {
-      return;
-    }
-
     SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), 0, color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture != nullptr) {
