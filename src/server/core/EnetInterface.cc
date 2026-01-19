@@ -2,9 +2,40 @@
 #include <spdlog/spdlog.h>
 #include "c2s_message_generated.h"
 #include "domain/EcsComponents.h"
+#include "domain/GameAction.h"
 #include "serialization/GameActionSerializer.h"
 
 namespace lah::server {
+
+namespace {
+
+void logGameAction(const lah::shared::GameActionVariant& action) {
+  std::visit(
+      [](const auto& a) {
+        using T = std::decay_t<decltype(a)>;
+        if constexpr (std::is_same_v<T, lah::shared::MoveAction>) {
+          spdlog::info("Received MoveAction: source=" +
+                       std::to_string(static_cast<uint32_t>(a.source)) +
+                       " target=(" + std::to_string(a.targetX) + ", " +
+                       std::to_string(a.targetY) + ")");
+        } else if constexpr (std::is_same_v<T, lah::shared::AutoAttackAction>) {
+          spdlog::info(
+              "Received AutoAttackAction: source=" +
+              std::to_string(static_cast<uint32_t>(a.source)) +
+              " target=" + std::to_string(static_cast<uint32_t>(a.target)));
+        } else if constexpr (std::is_same_v<T, lah::shared::AbilityAction>) {
+          spdlog::info("Received AbilityAction: source=" +
+                       std::to_string(static_cast<uint32_t>(a.source)) +
+                       " slot=" + std::to_string(static_cast<int>(a.slot)));
+        } else if constexpr (std::is_same_v<T, lah::shared::StopGameAction>) {
+          spdlog::info("Received StopGameAction: source=" +
+                       std::to_string(static_cast<uint32_t>(a.source)));
+        }
+      },
+      action);
+}
+
+}  // namespace
 
 EnetInterface::EnetInterface(
     std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
@@ -64,9 +95,6 @@ void EnetInterface::populateInbound() {
       }
 
       case ENET_EVENT_TYPE_RECEIVE: {
-        spdlog::info("Received " + std::to_string(event.packet->dataLength) +
-                     " bytes from client");
-
         std::vector<std::byte> data(
             reinterpret_cast<const std::byte*>(event.packet->data),
             reinterpret_cast<const std::byte*>(event.packet->data) +
@@ -83,6 +111,7 @@ void EnetInterface::populateInbound() {
                 lah::shared::GameActionSerializer::Deserialize(*action);
 
             if (actionVariant.has_value()) {
+              logGameAction(*actionVariant);
               inbound_->Push(
                   InboundEvent{.peer = event.peer, .event = *actionVariant});
             }

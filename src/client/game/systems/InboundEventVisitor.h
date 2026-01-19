@@ -2,16 +2,13 @@
 
 #include <entt/entt.hpp>
 #include <optional>
-#include <unordered_map>
 #include "InboundEvent.h"
 
 namespace lah::game {
 
 class InboundEventVisitor {
  public:
-  explicit InboundEventVisitor(
-      entt::registry* registry,
-      std::unordered_map<uint32_t, entt::entity>* serverToClient);
+  explicit InboundEventVisitor(entt::registry* registry);
 
   void operator()(const PlayerAssignedEvent& event);
   void operator()(const ChatMessageEvent& event);
@@ -19,8 +16,10 @@ class InboundEventVisitor {
   void operator()(const EntityDeletedEvent& event);
 
  private:
+  auto findClientEntityByServerId(uint32_t serverId)
+      -> std::optional<entt::entity>;
+
   entt::registry* registry_;
-  std::unordered_map<uint32_t, entt::entity>* serverToClient_;
   inline static std::optional<uint32_t> serverAssignedId_;
 };
 

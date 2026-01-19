@@ -20,14 +20,13 @@ class NetworkSyncSystem : public lah::engine::IEcsSystem {
 
     while (!events.empty()) {
       auto& event = events.front();
-      std::visit(InboundEventVisitor{&registry, &serverToClient_}, event.event);
+      std::visit(InboundEventVisitor{&registry}, event.event);
       events.pop();
     }
   }
 
  private:
   std::shared_ptr<ThreadSafeQueue<InboundEvent>> inboundEvents_;
-  std::unordered_map<uint32_t, entt::entity> serverToClient_;
 };
 
 }  // namespace lah::game

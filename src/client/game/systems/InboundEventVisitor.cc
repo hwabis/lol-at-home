@@ -4,10 +4,19 @@
 
 namespace lah::game {
 
-InboundEventVisitor::InboundEventVisitor(
-    entt::registry* registry,
-    std::unordered_map<uint32_t, entt::entity>* serverToClient)
-    : registry_(registry), serverToClient_(serverToClient) {}
+InboundEventVisitor::InboundEventVisitor(entt::registry* registry)
+    : registry_(registry) {}
+
+auto InboundEventVisitor::findClientEntityByServerId(uint32_t serverId)
+    -> std::optional<entt::entity> {
+  auto view = registry_->view<ServerEntityId>();
+  for (auto entity : view) {
+    if (view.get<ServerEntityId>(entity).id == serverId) {
+      return entity;
+    }
+  }
+  return std::nullopt;
+}
 
 void InboundEventVisitor::operator()(const PlayerAssignedEvent& event) {
   spdlog::info("We are entity: " + std::to_string(event.myEntityId));
@@ -25,11 +34,12 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
 
   entt::entity clientEntity{};
 
-  if (serverToClient_->contains(event.serverEntityId)) {
-    clientEntity = (*serverToClient_)[event.serverEntityId];
+  auto existing = findClientEntityByServerId(event.serverEntityId);
+  if (existing.has_value()) {
+    clientEntity = *existing;
   } else {
     clientEntity = registry_->create();
-    (*serverToClient_)[event.serverEntityId] = clientEntity;
+    registry_->emplace<ServerEntityId>(clientEntity, event.serverEntityId);
   }
 
   if (serverAssignedId_.has_value() &&
@@ -61,10 +71,9 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {
-  if (serverToClient_->contains(event.serverEntityId)) {
-    entt::entity clientEntity = (*serverToClient_)[event.serverEntityId];
-    registry_->destroy(clientEntity);
-    serverToClient_->erase(event.serverEntityId);
+  auto existing = findClientEntityByServerId(event.serverEntityId);
+  if (existing.has_value()) {
+    registry_->destroy(*existing);
   }
 }
 

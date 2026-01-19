@@ -49,6 +49,10 @@ struct Team {
   Color color;
 };
 
+struct AutoAttackRange {
+  float range;
+};
+
 struct Abilities {
   struct Ability {
     AbilityTag tag{};

@@ -43,6 +43,7 @@ class ChampionFactory {
     registry.emplace<MovementStats>(entity, 340.0);
     registry.emplace<CharacterState>(entity, CharacterState::State::Idle);
     registry.emplace<MoveTarget>(entity, startX, startY);
+    registry.emplace<AutoAttackRange>(entity, 105.0F);
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};
