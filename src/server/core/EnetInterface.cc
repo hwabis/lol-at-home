@@ -123,6 +123,7 @@ void EnetInterface::populateInbound() {
           }
 
           case lah::shared::C2SMessageType::ChatMessage: {
+            // todo use DeserializeChatMessage
             const lah_shared::C2SMessageFB* c2sMessage =
                 lah_shared::GetC2SMessageFB(data.data());
             const lah_shared::ChatMessageFB* chatFb =
