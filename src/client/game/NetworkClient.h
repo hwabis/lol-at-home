@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <enet/enet.h>
 #include <entt/entt.hpp>
+#include <span>
 #include "InboundEvent.h"
 #include "OutboundEvent.h"
 #include "ThreadSafeQueue.h"
-#include "game_common_generated.h"
 
 namespace lah::game {
 
@@ -27,7 +28,8 @@ class NetworkClient {
 
  private:
   auto pushOutbound() -> void;
-  auto sendChampionSelect(lah_shared::TeamColorFB team) -> void;
+  auto sendChampionSelect(lah::shared::Team::Color team) -> void;
+  auto handleGameStateDelta(std::span<const std::byte> data) -> void;
 
   ENetHost* client_ = nullptr;
   ENetPeer* serverPeer_ = nullptr;

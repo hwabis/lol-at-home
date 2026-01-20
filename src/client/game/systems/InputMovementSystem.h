@@ -1,13 +1,13 @@
 #pragma once
 
-#include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
 #include "Components.h"
 #include "IEcsSystem.h"
 #include "OutboundEvent.h"
 #include "ThreadSafeQueue.h"
-#include "c2s_message_generated.h"
 #include "domain/EcsComponents.h"
+#include "domain/GameAction.h"
+#include "serialization/C2SMessageSerializer.h"
 
 namespace lah::game {
 
@@ -88,51 +88,28 @@ class InputMovementSystem : public lah::engine::IEcsSystem {
     return std::nullopt;
   }
 
-  // todo really should be in shared?
   void sendMoveAction(uint32_t sourceEntityId, float targetX, float targetY) {
-    flatbuffers::FlatBufferBuilder builder;
-
-    auto targetPos = lah_shared::PositionFB(targetX, targetY);
-    auto moveAction = lah_shared::CreateMoveActionFB(builder, &targetPos);
-
-    auto gameAction = lah_shared::CreateGameActionFB(
-        builder, sourceEntityId, lah_shared::GameActionDataFB::MoveActionFB,
-        moveAction.Union());
-
-    auto c2sMessage = lah_shared::CreateC2SMessageFB(
-        builder, lah_shared::C2SDataFB::GameActionFB, gameAction.Union());
-
-    builder.Finish(c2sMessage);
+    lah::shared::MoveAction action{
+        .source = static_cast<entt::entity>(sourceEntityId),
+        .targetX = targetX,
+        .targetY = targetY,
+    };
 
     OutboundEvent event;
-    event.c2sMessage = std::vector<std::byte>(
-        reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
-        reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
-            builder.GetSize());
+    event.c2sMessage =
+        lah::shared::C2SMessageSerializer::SerializeGameAction(action);
     outboundEvents_->Push(event);
   }
 
   void sendAutoAttackAction(uint32_t sourceEntityId, uint32_t targetEntityId) {
-    flatbuffers::FlatBufferBuilder builder;
-
-    auto autoAttackAction =
-        lah_shared::CreateAutoAttackActionFB(builder, targetEntityId);
-
-    auto gameAction = lah_shared::CreateGameActionFB(
-        builder, sourceEntityId,
-        lah_shared::GameActionDataFB::AutoAttackActionFB,
-        autoAttackAction.Union());
-
-    auto c2sMessage = lah_shared::CreateC2SMessageFB(
-        builder, lah_shared::C2SDataFB::GameActionFB, gameAction.Union());
-
-    builder.Finish(c2sMessage);
+    lah::shared::AutoAttackAction action{
+        .source = static_cast<entt::entity>(sourceEntityId),
+        .target = static_cast<entt::entity>(targetEntityId),
+    };
 
     OutboundEvent event;
-    event.c2sMessage = std::vector<std::byte>(
-        reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
-        reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
-            builder.GetSize());
+    event.c2sMessage =
+        lah::shared::C2SMessageSerializer::SerializeGameAction(action);
     outboundEvents_->Push(event);
   }
 

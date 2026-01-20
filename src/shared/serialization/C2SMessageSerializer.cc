@@ -1,5 +1,7 @@
-#include "serialization/GameActionSerializer.h"
+#include "serialization/C2SMessageSerializer.h"
 #include <flatbuffers/flatbuffers.h>
+#include "c2s_message_generated.h"
+#include "game_actions_generated.h"
 
 using namespace lah_shared;
 
@@ -45,28 +47,28 @@ struct GameActionSerializeVisitor {
   flatbuffers::FlatBufferBuilder* builder;
 
   auto operator()(const MoveAction& action) const
-      -> flatbuffers::Offset<lah_shared::GameActionFB> {
-    lah_shared::PositionFB pos(action.targetX, action.targetY);
+      -> flatbuffers::Offset<GameActionFB> {
+    PositionFB pos(action.targetX, action.targetY);
     auto moveOffset = CreateMoveActionFB(*builder, &pos);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
-                              lah_shared::GameActionDataFB::MoveActionFB,
+                              GameActionDataFB::MoveActionFB,
                               moveOffset.Union());
   }
 
   auto operator()(const AbilityAction& action)
-      -> flatbuffers::Offset<lah_shared::GameActionFB> {
+      -> flatbuffers::Offset<GameActionFB> {
     auto [targetType, targetOffset] =
         std::visit(AbilityTargetSerializer{builder}, action.target);
-    auto abilityOffset = CreateAbilityActionFB(
-        *builder, static_cast<lah_shared::AbilitySlotFB>(action.slot),
-        targetType, targetOffset);
+    auto abilityOffset =
+        CreateAbilityActionFB(*builder, static_cast<AbilitySlotFB>(action.slot),
+                              targetType, targetOffset);
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
-                              lah_shared::GameActionDataFB::AbilityActionFB,
+                              GameActionDataFB::AbilityActionFB,
                               abilityOffset.Union());
   }
 
   auto operator()(const AutoAttackAction& action) const
-      -> flatbuffers::Offset<lah_shared::GameActionFB> {
+      -> flatbuffers::Offset<GameActionFB> {
     auto attackOffset = CreateAutoAttackActionFB(
         *builder, static_cast<uint32_t>(action.target));
     return CreateGameActionFB(*builder, static_cast<uint32_t>(action.source),
@@ -83,15 +85,7 @@ struct GameActionSerializeVisitor {
   }
 };
 
-}  // namespace
-
-auto GameActionSerializer::Serialize(flatbuffers::FlatBufferBuilder& builder,
-                                     const GameActionVariant& action)
-    -> flatbuffers::Offset<GameActionFB> {
-  return std::visit(GameActionSerializeVisitor{&builder}, action);
-}
-
-auto GameActionSerializer::Deserialize(const GameActionFB& action)
+auto deserializeGameActionFromFB(const GameActionFB& action)
     -> std::optional<GameActionVariant> {
   auto source = static_cast<entt::entity>(action.source());
 
@@ -104,29 +98,29 @@ auto GameActionSerializer::Deserialize(const GameActionFB& action)
     }
 
     case GameActionDataFB::AbilityActionFB: {
-      const auto* AbilityFB = action.action_as_AbilityActionFB();
+      const auto* abilityFB = action.action_as_AbilityActionFB();
 
       AbilityTargetVariant target;
-      switch (AbilityFB->target_type()) {
+      switch (abilityFB->target_type()) {
         case AbilityTargetDataFB::NoTargetFB:
           target = NoTarget{};
           break;
 
         case AbilityTargetDataFB::EntityTargetFB: {
-          const auto* etarget = AbilityFB->target_as_EntityTargetFB();
+          const auto* etarget = abilityFB->target_as_EntityTargetFB();
           target = EntityTarget{static_cast<entt::entity>(etarget->target())};
           break;
         }
 
         case AbilityTargetDataFB::OnePointSkillshotFB: {
-          const auto* ops = AbilityFB->target_as_OnePointSkillshotFB();
+          const auto* ops = abilityFB->target_as_OnePointSkillshotFB();
           target = OnePointSkillshot{.targetX = ops->target()->x(),
                                      .targetY = ops->target()->y()};
           break;
         }
 
         case AbilityTargetDataFB::TwoPointSkillshotFB: {
-          const auto* tps = AbilityFB->target_as_TwoPointSkillshotFB();
+          const auto* tps = abilityFB->target_as_TwoPointSkillshotFB();
           target = TwoPointSkillshot{.target1X = tps->target1()->x(),
                                      .target1Y = tps->target1()->y(),
                                      .target2X = tps->target2()->x(),
@@ -140,7 +134,7 @@ auto GameActionSerializer::Deserialize(const GameActionFB& action)
       }
 
       return AbilityAction{.source = source,
-                           .slot = static_cast<AbilitySlot>(AbilityFB->slot()),
+                           .slot = static_cast<AbilitySlot>(abilityFB->slot()),
                            .target = target};
     }
 
@@ -157,6 +151,97 @@ auto GameActionSerializer::Deserialize(const GameActionFB& action)
     case GameActionDataFB::NONE:
       return std::nullopt;
   }
+
+  return std::nullopt;
+}
+
+}  // namespace
+
+auto C2SMessageSerializer::GetMessageType(std::span<const std::byte> data)
+    -> lah::shared::C2SMessageType {
+  const auto* c2sMessage = GetC2SMessageFB(data.data());
+
+  switch (c2sMessage->message_type()) {
+    case C2SDataFB::GameActionFB:
+      return lah::shared::C2SMessageType::GameAction;
+    case C2SDataFB::ChampionSelectFB:
+      return lah::shared::C2SMessageType::ChampionSelect;
+    case C2SDataFB::ChatMessageFB:
+      return lah::shared::C2SMessageType::ChatMessage;
+    case C2SDataFB::NONE:
+      return lah::shared::C2SMessageType::Unknown;
+  }
+
+  return lah::shared::C2SMessageType::Unknown;
+}
+
+auto C2SMessageSerializer::SerializeGameAction(const GameActionVariant& action)
+    -> std::vector<std::byte> {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto gameActionOffset =
+      std::visit(GameActionSerializeVisitor{&builder}, action);
+
+  auto c2sMessage = CreateC2SMessageFB(builder, C2SDataFB::GameActionFB,
+                                       gameActionOffset.Union());
+
+  builder.Finish(c2sMessage);
+
+  return std::vector<std::byte>(
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
+          builder.GetSize());
+}
+
+auto C2SMessageSerializer::SerializeChampionSelect(ChampionId champion,
+                                                   Team::Color team)
+    -> std::vector<std::byte> {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto championFB = static_cast<ChampionIdFB>(champion);
+  auto teamFB =
+      team == Team::Color::Blue ? TeamColorFB::Blue : TeamColorFB::Red;
+
+  auto championSelect = CreateChampionSelectFB(builder, championFB, teamFB);
+
+  auto c2sMessage = CreateC2SMessageFB(builder, C2SDataFB::ChampionSelectFB,
+                                       championSelect.Union());
+
+  builder.Finish(c2sMessage);
+
+  return std::vector<std::byte>(
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
+          builder.GetSize());
+}
+
+auto C2SMessageSerializer::DeserializeGameAction(
+    std::span<const std::byte> data) -> std::optional<GameActionVariant> {
+  const auto* c2sMessage = GetC2SMessageFB(data.data());
+
+  if (c2sMessage->message_type() != C2SDataFB::GameActionFB) {
+    return std::nullopt;
+  }
+
+  const auto* action = c2sMessage->message_as_GameActionFB();
+  return deserializeGameActionFromFB(*action);
+}
+
+auto C2SMessageSerializer::DeserializeChampionSelect(
+    std::span<const std::byte> data) -> std::optional<ChampionSelectData> {
+  const auto* c2sMessage = GetC2SMessageFB(data.data());
+
+  if (c2sMessage->message_type() != C2SDataFB::ChampionSelectFB) {
+    return std::nullopt;
+  }
+
+  const auto* champSelect = c2sMessage->message_as_ChampionSelectFB();
+
+  return ChampionSelectData{
+      .championId = static_cast<ChampionId>(champSelect->champion_id()),
+      .teamColor = champSelect->team_color() == TeamColorFB::Blue
+                       ? Team::Color::Blue
+                       : Team::Color::Red};
 }
 
 }  // namespace lah::shared

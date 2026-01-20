@@ -1,9 +1,8 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
 #include "c2s_message_generated.h"
-#include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
-#include "serialization/GameActionSerializer.h"
+#include "serialization/C2SMessageSerializer.h"
 
 namespace lah::server {
 
@@ -95,62 +94,49 @@ void EnetInterface::populateInbound() {
       }
 
       case ENET_EVENT_TYPE_RECEIVE: {
-        std::vector<std::byte> data(
+        std::span<const std::byte> data(
             reinterpret_cast<const std::byte*>(event.packet->data),
-            reinterpret_cast<const std::byte*>(event.packet->data) +
-                event.packet->dataLength);
-        const lah_shared::C2SMessageFB* c2sMessage =
-            lah_shared::GetC2SMessageFB(data.data());
+            event.packet->dataLength);
 
-        switch (c2sMessage->message_type()) {
-          case lah_shared::C2SDataFB::GameActionFB: {
-            const lah_shared::GameActionFB* action =
-                c2sMessage->message_as_GameActionFB();
-
-            std::optional<lah::shared::GameActionVariant> actionVariant =
-                lah::shared::GameActionSerializer::Deserialize(*action);
-
-            if (actionVariant.has_value()) {
+        switch (lah::shared::C2SMessageSerializer::GetMessageType(data)) {
+          case lah::shared::C2SMessageType::GameAction: {
+            if (auto actionVariant =
+                    lah::shared::C2SMessageSerializer::DeserializeGameAction(
+                        data)) {
               logGameAction(*actionVariant);
               inbound_->Push(
                   InboundEvent{.peer = event.peer, .event = *actionVariant});
             }
-
             break;
           }
 
-          case lah_shared::C2SDataFB::ChatMessageFB: {
-            const lah_shared::ChatMessageFB* chat_fb =
+          case lah::shared::C2SMessageType::ChampionSelect: {
+            if (auto champSelect = lah::shared::C2SMessageSerializer::
+                    DeserializeChampionSelect(data)) {
+              inbound_->Push(
+                  InboundEvent{.peer = event.peer,
+                               .event = ChampionSelectedEvent{
+                                   .championId = champSelect->championId,
+                                   .teamColor = champSelect->teamColor}});
+            }
+            break;
+          }
+
+          case lah::shared::C2SMessageType::ChatMessage: {
+            const lah_shared::C2SMessageFB* c2sMessage =
+                lah_shared::GetC2SMessageFB(data.data());
+            const lah_shared::ChatMessageFB* chatFb =
                 c2sMessage->message_as_ChatMessageFB();
 
-            InboundChatEvent chatEvent{.message = chat_fb->text()->str()};
-
+            InboundChatEvent chatEvent{.message = chatFb->text()->str()};
             inbound_->Push(
                 InboundEvent{.peer = event.peer, .event = chatEvent});
             break;
           }
 
-          case lah_shared::C2SDataFB::ChampionSelectFB: {
-            const auto* champSelect = c2sMessage->message_as_ChampionSelectFB();
-            auto champId = static_cast<lah::shared::ChampionId>(
-                champSelect->champion_id());
-            auto team =
-                champSelect->team_color() == lah_shared::TeamColorFB::Red
-                    ? lah::shared::Team::Color::Red
-                    : lah::shared::Team::Color::Blue;
-
-            inbound_->Push(
-                InboundEvent{.peer = event.peer,
-                             .event = ChampionSelectedEvent{
-                                 .championId = champId, .teamColor = team}});
-
-            break;
-          }
-
-          case lah_shared::C2SDataFB::NONE: {
+          case lah::shared::C2SMessageType::Unknown:
             spdlog::warn("Received empty or unknown message type");
             break;
-          }
         }
 
         enet_packet_destroy(event.packet);

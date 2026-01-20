@@ -1,7 +1,7 @@
-#include "serialization/GameStateSerializer.h"
+#include "serialization/S2CMessageSerializer.h"
 #include <flatbuffers/flatbuffers.h>
 #include "domain/EcsComponents.h"
-#include "game_state_generated.h"
+#include "s2c_message_generated.h"
 
 using namespace lah_shared;
 
@@ -98,22 +98,24 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     abilitiesOffset = CreateAbilitiesFB(builder, entriesVector);
   }
 
-  auto entityOffset = CreateEntityFB(
-      builder, static_cast<uint32_t>(entity), posPtr, healthPtr, manaPtr,
-      movementStatsPtr, characterStatePtr, moveTargetPtr, teamPtr, abilitiesOffset);
+  auto entityOffset =
+      CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
+                     manaPtr, movementStatsPtr, characterStatePtr,
+                     moveTargetPtr, teamPtr, abilitiesOffset);
 
   return entityOffset;
 }
 
 }  // namespace
 
-auto GameStateSerializer::Serialize(
-    flatbuffers::FlatBufferBuilder& builder,
+auto S2CMessageSerializer::SerializeGameStateDelta(
     const entt::registry& registry,
     const std::vector<entt::entity>& dirtyEntities,
     const std::vector<entt::entity>& deletedEntities)
-    -> flatbuffers::Offset<lah_shared::GameStateDeltaFB> {
-  std::vector<flatbuffers::Offset<lah_shared::EntityFB>> entityOffsets;
+    -> std::vector<std::byte> {
+  flatbuffers::FlatBufferBuilder builder;
+
+  std::vector<flatbuffers::Offset<EntityFB>> entityOffsets;
 
   if (dirtyEntities.empty()) {
     for (auto entity : registry.view<entt::entity>()) {
@@ -125,7 +127,6 @@ auto GameStateSerializer::Serialize(
   } else {
     for (auto entity : dirtyEntities) {
       if (!registry.valid(entity)) {
-        // It was deleted; it should be in deletedEntities so we'll get to it
         continue;
       }
 
@@ -145,15 +146,31 @@ auto GameStateSerializer::Serialize(
   auto entitiesVector = builder.CreateVector(entityOffsets);
   auto deletedVector = builder.CreateVector(deletedIds);
 
-  auto snapshot =
+  auto gameStateDelta =
       CreateGameStateDeltaFB(builder, entitiesVector, deletedVector);
-  return snapshot;
+
+  auto s2cMessage = CreateS2CMessageFB(builder, S2CDataFB::GameStateDeltaFB,
+                                       gameStateDelta.Union());
+
+  builder.Finish(s2cMessage);
+
+  return {reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+          reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
+              builder.GetSize()};
 }
 
-auto GameStateSerializer::Deserialize(
+auto S2CMessageSerializer::DeserializeGameStateDelta(
     entt::registry& registry,
-    const lah_shared::GameStateDeltaFB& gamestate) -> void {
-  for (const auto* entityFB : *gamestate.entities()) {
+    std::span<const std::byte> data) -> void {
+  const auto* s2cMessage = GetS2CMessageFB(data.data());
+
+  if (s2cMessage->message_type() != S2CDataFB::GameStateDeltaFB) {
+    return;
+  }
+
+  const auto* gamestate = s2cMessage->message_as_GameStateDeltaFB();
+
+  for (const auto* entityFB : *gamestate->entities()) {
     auto entity = static_cast<entt::entity>(entityFB->id());
 
     if (!registry.valid(entity)) {
@@ -170,7 +187,7 @@ auto GameStateSerializer::Deserialize(
     deserializeAbilities(registry, entity, entityFB->abilities());
   }
 
-  for (uint32_t deletedId : *gamestate.deleted_entity_ids()) {
+  for (uint32_t deletedId : *gamestate->deleted_entity_ids()) {
     auto entity = static_cast<entt::entity>(deletedId);
     if (registry.valid(entity)) {
       registry.destroy(entity);
@@ -178,17 +195,17 @@ auto GameStateSerializer::Deserialize(
   }
 }
 
-void GameStateSerializer::deserializePosition(entt::registry& registry,
-                                              entt::entity entity,
-                                              const PositionFB* pos) {
+void S2CMessageSerializer::deserializePosition(entt::registry& registry,
+                                               entt::entity entity,
+                                               const PositionFB* pos) {
   if (pos != nullptr) {
     registry.emplace_or_replace<Position>(entity, pos->x(), pos->y());
   }
 }
 
-void GameStateSerializer::deserializeHealth(entt::registry& registry,
-                                            entt::entity entity,
-                                            const HealthFB* health) {
+void S2CMessageSerializer::deserializeHealth(entt::registry& registry,
+                                             entt::entity entity,
+                                             const HealthFB* health) {
   if (health != nullptr) {
     registry.emplace_or_replace<Health>(entity, health->current_health(),
                                         health->max_health(),
@@ -196,16 +213,16 @@ void GameStateSerializer::deserializeHealth(entt::registry& registry,
   }
 }
 
-void GameStateSerializer::deserializeMana(entt::registry& registry,
-                                          entt::entity entity,
-                                          const ManaFB* mana) {
+void S2CMessageSerializer::deserializeMana(entt::registry& registry,
+                                           entt::entity entity,
+                                           const ManaFB* mana) {
   if (mana != nullptr) {
     registry.emplace_or_replace<Mana>(entity, mana->mana(), mana->max_mana(),
                                       mana->mana_regen_per_sec());
   }
 }
 
-void GameStateSerializer::deserializeMovementStats(
+void S2CMessageSerializer::deserializeMovementStats(
     entt::registry& registry,
     entt::entity entity,
     const MovementStatsFB* movementStats) {
@@ -215,7 +232,7 @@ void GameStateSerializer::deserializeMovementStats(
   }
 }
 
-void GameStateSerializer::deserializeCharacterState(
+void S2CMessageSerializer::deserializeCharacterState(
     entt::registry& registry,
     entt::entity entity,
     const CharacterStateDataFB* characterStateData) {
@@ -233,11 +250,12 @@ void GameStateSerializer::deserializeCharacterState(
         break;
     }
 
-    registry.emplace_or_replace<CharacterState>(entity, CharacterState{.state = state});
+    registry.emplace_or_replace<CharacterState>(entity,
+                                                CharacterState{.state = state});
   }
 }
 
-void GameStateSerializer::deserializeMoveTarget(
+void S2CMessageSerializer::deserializeMoveTarget(
     entt::registry& registry,
     entt::entity entity,
     const MoveTargetFB* moveTarget) {
@@ -248,9 +266,9 @@ void GameStateSerializer::deserializeMoveTarget(
   }
 }
 
-void GameStateSerializer::deserializeTeam(entt::registry& registry,
-                                          entt::entity entity,
-                                          const TeamFB* team) {
+void S2CMessageSerializer::deserializeTeam(entt::registry& registry,
+                                           entt::entity entity,
+                                           const TeamFB* team) {
   if (team != nullptr) {
     registry.emplace_or_replace<Team>(entity, team->color() == TeamColorFB::Blue
                                                   ? Team::Color::Blue
@@ -258,22 +276,23 @@ void GameStateSerializer::deserializeTeam(entt::registry& registry,
   }
 }
 
-void GameStateSerializer::deserializeAbilities(entt::registry& registry,
-                                               entt::entity entity,
-                                               const AbilitiesFB* abilitiesFB) {
+void S2CMessageSerializer::deserializeAbilities(
+    entt::registry& registry,
+    entt::entity entity,
+    const AbilitiesFB* abilitiesFB) {
   if (abilitiesFB != nullptr) {
     Abilities abilities;
     if (abilitiesFB != nullptr && abilitiesFB->abilities() != nullptr) {
       for (const auto* abilityEntryFB : *abilitiesFB->abilities()) {
         auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
-        const auto* AbilityFB = abilityEntryFB->ability();
+        const auto* abilityFB = abilityEntryFB->ability();
 
         Abilities::Ability ability{
-            .tag = static_cast<AbilityTag>(AbilityFB->id()),
-            .cooldownRemaining = AbilityFB->cooldown_remaining(),
-            .rank = AbilityFB->rank(),
-            .currentCharges = AbilityFB->current_charges(),
-            .maxCharges = AbilityFB->max_charges()};
+            .tag = static_cast<AbilityTag>(abilityFB->id()),
+            .cooldownRemaining = abilityFB->cooldown_remaining(),
+            .rank = abilityFB->rank(),
+            .currentCharges = abilityFB->current_charges(),
+            .maxCharges = abilityFB->max_charges()};
 
         abilities.abilities[slot] = ability;
       }
@@ -281,6 +300,81 @@ void GameStateSerializer::deserializeAbilities(entt::registry& registry,
 
     registry.emplace_or_replace<Abilities>(entity, abilities);
   }
+}
+
+auto S2CMessageSerializer::GetMessageType(std::span<const std::byte> data)
+    -> lah::shared::S2CMessageType {
+  const auto* s2cMessage = GetS2CMessageFB(data.data());
+
+  switch (s2cMessage->message_type()) {
+    case S2CDataFB::GameStateDeltaFB:
+      return lah::shared::S2CMessageType::GameStateDelta;
+    case S2CDataFB::PlayerAssignmentFB:
+      return lah::shared::S2CMessageType::PlayerAssignment;
+    case S2CDataFB::ChatBroadcastFB:
+      return lah::shared::S2CMessageType::ChatBroadcast;
+    case S2CDataFB::NONE:
+      return lah::shared::S2CMessageType::Unknown;
+  }
+
+  return lah::shared::S2CMessageType::Unknown;
+}
+
+auto S2CMessageSerializer::SerializePlayerAssignment(uint32_t entityId)
+    -> std::vector<std::byte> {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto paOffset = CreatePlayerAssignmentFB(builder, entityId);
+  auto s2cMessage = CreateS2CMessageFB(builder, S2CDataFB::PlayerAssignmentFB,
+                                       paOffset.Union());
+  builder.Finish(s2cMessage);
+
+  return {reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+          reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
+              builder.GetSize()};
+}
+
+auto S2CMessageSerializer::SerializeChatBroadcast(uint32_t senderEntityId,
+                                                  const std::string& message)
+    -> std::vector<std::byte> {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto textOffset = builder.CreateString(message);
+  auto chatBroadcast =
+      CreateChatBroadcastFB(builder, senderEntityId, textOffset);
+  auto s2cMessage = CreateS2CMessageFB(builder, S2CDataFB::ChatBroadcastFB,
+                                       chatBroadcast.Union());
+  builder.Finish(s2cMessage);
+
+  return {reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
+          reinterpret_cast<const std::byte*>(builder.GetBufferPointer()) +
+              builder.GetSize()};
+}
+
+auto S2CMessageSerializer::DeserializePlayerAssignment(
+    std::span<const std::byte> data) -> std::optional<PlayerAssignmentData> {
+  const auto* s2cMessage = GetS2CMessageFB(data.data());
+
+  if (s2cMessage->message_type() != S2CDataFB::PlayerAssignmentFB) {
+    return std::nullopt;
+  }
+
+  const auto* playerAssignment = s2cMessage->message_as_PlayerAssignmentFB();
+  return PlayerAssignmentData{.assignedEntityId =
+                                  playerAssignment->assigned_entity()};
+}
+
+auto S2CMessageSerializer::DeserializeChatBroadcast(
+    std::span<const std::byte> data) -> std::optional<ChatBroadcastData> {
+  const auto* s2cMessage = GetS2CMessageFB(data.data());
+
+  if (s2cMessage->message_type() != S2CDataFB::ChatBroadcastFB) {
+    return std::nullopt;
+  }
+
+  const auto* chatBroadcast = s2cMessage->message_as_ChatBroadcastFB();
+  return ChatBroadcastData{.senderEntityId = chatBroadcast->sender_entity(),
+                           .message = chatBroadcast->text()->str()};
 }
 
 }  // namespace lah::shared

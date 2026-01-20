@@ -1,8 +1,9 @@
 #include "NetworkClient.h"
 #include <spdlog/spdlog.h>
 #include <random>
-#include "c2s_message_generated.h"
 #include "s2c_message_generated.h"
+#include "serialization/C2SMessageSerializer.h"
+#include "serialization/S2CMessageSerializer.h"
 
 namespace lah::game {
 
@@ -61,8 +62,10 @@ auto NetworkClient::Connect(const char* host, uint16_t port) -> bool {
     // now let's make it completely random.. if you wanna switch teams just
     // relaunch the game xDD
     std::mt19937 rng{std::random_device{}()};
-    sendChampionSelect(static_cast<lah_shared::TeamColorFB>(
-        std::uniform_int_distribution<>(0, 1)(rng)));
+    auto team = std::uniform_int_distribution<>(0, 1)(rng) == 0
+                    ? lah::shared::Team::Color::Blue
+                    : lah::shared::Team::Color::Red;
+    sendChampionSelect(team);
 
     return true;
   }
@@ -119,103 +122,30 @@ void NetworkClient::Poll() {
   while (enet_host_service(client_, &event, 0) > 0) {
     switch (event.type) {
       case ENET_EVENT_TYPE_RECEIVE: {
-        std::vector<std::byte> data(
-            reinterpret_cast<std::byte*>(event.packet->data),
-            reinterpret_cast<std::byte*>(event.packet->data) +
-                event.packet->dataLength);
+        std::span<const std::byte> data(
+            reinterpret_cast<const std::byte*>(event.packet->data),
+            event.packet->dataLength);
 
-        const auto* s2cMessage = lah_shared::GetS2CMessageFB(data.data());
-
-        switch (s2cMessage->message_type()) {
-          case lah_shared::S2CDataFB::GameStateDeltaFB: {
-            spdlog::debug("Received GameStateDeltaFB");
-
-            const auto* gameStateDelta =
-                s2cMessage->message_as_GameStateDeltaFB();
-
-            if (gameStateDelta->entities() != nullptr) {
-              for (const auto* entityFB : *gameStateDelta->entities()) {
-                EntityUpdatedEvent updateEvent;
-                updateEvent.serverEntityId = entityFB->id();
-
-                if (entityFB->position() != nullptr) {
-                  updateEvent.position = lah::shared::Position{
-                      .x = entityFB->position()->x(),
-                      .y = entityFB->position()->y(),
-                  };
-                }
-
-                if (entityFB->team() != nullptr) {
-                  updateEvent.team = lah::shared::Team{
-                      .color = entityFB->team()->color() ==
-                                       lah_shared::TeamColorFB::Blue
-                                   ? lah::shared::Team::Color::Blue
-                                   : lah::shared::Team::Color::Red};
-                }
-
-                if (entityFB->health() != nullptr) {
-                  updateEvent.health = lah::shared::Health{
-                      .current = entityFB->health()->current_health(),
-                      .max = entityFB->health()->max_health(),
-                      .regenPerSec = entityFB->health()->health_regen_per_sec(),
-                  };
-                }
-
-                if (entityFB->character_state() != nullptr) {
-                  lah::shared::CharacterState::State state{};
-                  switch (entityFB->character_state()->state()) {
-                    case lah_shared::CharacterStateFB::Idle:
-                      state = lah::shared::CharacterState::State::Idle;
-                      break;
-                    case lah_shared::CharacterStateFB::Moving:
-                      state = lah::shared::CharacterState::State::Moving;
-                      break;
-                    case lah_shared::CharacterStateFB::AutoAttackWindup:
-                      state =
-                          lah::shared::CharacterState::State::AutoAttackWindup;
-                      break;
-                  }
-                  updateEvent.characterState =
-                      lah::shared::CharacterState{.state = state};
-                }
-
-                InboundEvent event;
-                event.event = updateEvent;
-                inboundEvents_->Push(event);
-              }
-            }
-
-            if (gameStateDelta->deleted_entity_ids() != nullptr) {
-              for (uint32_t deletedId : *gameStateDelta->deleted_entity_ids()) {
-                EntityDeletedEvent deleteEvent{};
-                deleteEvent.serverEntityId = deletedId;
-
-                InboundEvent event;
-                event.event = deleteEvent;
-                inboundEvents_->Push(event);
-              }
-            }
-
+        switch (lah::shared::S2CMessageSerializer::GetMessageType(data)) {
+          case lah::shared::S2CMessageType::GameStateDelta: {
+            spdlog::debug("Received GameStateDelta");
+            handleGameStateDelta(data);
             break;
           }
-          case lah_shared::S2CDataFB::PlayerAssignmentFB: {
-            spdlog::debug("Received PlayerAssignmentFB");
-
-            const auto* assignment =
-                s2cMessage->message_as_PlayerAssignmentFB();
-
-            PlayerAssignedEvent assignEvent{};
-            assignEvent.myEntityId = assignment->assigned_entity();
-
-            InboundEvent event;
-            event.event = assignEvent;
-            inboundEvents_->Push(event);
-
+          case lah::shared::S2CMessageType::PlayerAssignment: {
+            spdlog::debug("Received PlayerAssignment");
+            if (auto assignment = lah::shared::S2CMessageSerializer::
+                    DeserializePlayerAssignment(data)) {
+              PlayerAssignedEvent assignEvent{};
+              assignEvent.myEntityId = assignment->assignedEntityId;
+              inboundEvents_->Push(InboundEvent{.event = assignEvent});
+            }
             break;
           }
-          case lah_shared::S2CDataFB::ChatBroadcastFB:
+          case lah::shared::S2CMessageType::ChatBroadcast:
+            // TODO: handle chat
             break;
-          case lah_shared::S2CDataFB::NONE: {
+          case lah::shared::S2CMessageType::Unknown: {
             spdlog::warn("Received empty or unknown message type");
             break;
           }
@@ -255,25 +185,79 @@ void NetworkClient::pushOutbound() {
   enet_host_flush(client_);
 }
 
-// todo uhh this should be in src/shared or smth
-void NetworkClient::sendChampionSelect(lah_shared::TeamColorFB team) {
-  flatbuffers::FlatBufferBuilder builder;
+void NetworkClient::sendChampionSelect(lah::shared::Team::Color team) {
+  auto data = lah::shared::C2SMessageSerializer::SerializeChampionSelect(
+      lah::shared::ChampionId::Garen, team);
 
-  auto championSelect = lah_shared::CreateChampionSelectFB(
-      builder, lah_shared::ChampionIdFB::Garen, team);
-
-  auto c2sMessage = lah_shared::CreateC2SMessageFB(
-      builder, lah_shared::C2SDataFB::ChampionSelectFB, championSelect.Union());
-
-  builder.Finish(c2sMessage);
-
-  ENetPacket* packet = enet_packet_create(
-      builder.GetBufferPointer(), builder.GetSize(), ENET_PACKET_FLAG_RELIABLE);
+  ENetPacket* packet =
+      enet_packet_create(data.data(), data.size(), ENET_PACKET_FLAG_RELIABLE);
 
   enet_peer_send(serverPeer_, 0, packet);
   enet_host_flush(client_);
 
   spdlog::info("Sent champion select");
+}
+
+void NetworkClient::handleGameStateDelta(std::span<const std::byte> data) {
+  // todo actually use DeserializeGameStateDelta
+  const auto* s2cMessage = lah_shared::GetS2CMessageFB(data.data());
+  const auto* gameStateDelta = s2cMessage->message_as_GameStateDeltaFB();
+
+  if (gameStateDelta->entities() != nullptr) {
+    for (const auto* entityFB : *gameStateDelta->entities()) {
+      EntityUpdatedEvent updateEvent;
+      updateEvent.serverEntityId = entityFB->id();
+
+      if (entityFB->position() != nullptr) {
+        updateEvent.position = lah::shared::Position{
+            .x = entityFB->position()->x(),
+            .y = entityFB->position()->y(),
+        };
+      }
+
+      if (entityFB->team() != nullptr) {
+        updateEvent.team = lah::shared::Team{
+            .color = entityFB->team()->color() == lah_shared::TeamColorFB::Blue
+                         ? lah::shared::Team::Color::Blue
+                         : lah::shared::Team::Color::Red};
+      }
+
+      if (entityFB->health() != nullptr) {
+        updateEvent.health = lah::shared::Health{
+            .current = entityFB->health()->current_health(),
+            .max = entityFB->health()->max_health(),
+            .regenPerSec = entityFB->health()->health_regen_per_sec(),
+        };
+      }
+
+      if (entityFB->character_state() != nullptr) {
+        lah::shared::CharacterState::State state{};
+        switch (entityFB->character_state()->state()) {
+          case lah_shared::CharacterStateFB::Idle:
+            state = lah::shared::CharacterState::State::Idle;
+            break;
+          case lah_shared::CharacterStateFB::Moving:
+            state = lah::shared::CharacterState::State::Moving;
+            break;
+          case lah_shared::CharacterStateFB::AutoAttackWindup:
+            state = lah::shared::CharacterState::State::AutoAttackWindup;
+            break;
+        }
+        updateEvent.characterState =
+            lah::shared::CharacterState{.state = state};
+      }
+
+      inboundEvents_->Push(InboundEvent{.event = updateEvent});
+    }
+  }
+
+  if (gameStateDelta->deleted_entity_ids() != nullptr) {
+    for (uint32_t deletedId : *gameStateDelta->deleted_entity_ids()) {
+      EntityDeletedEvent deleteEvent{};
+      deleteEvent.serverEntityId = deletedId;
+      inboundEvents_->Push(InboundEvent{.event = deleteEvent});
+    }
+  }
 }
 
 }  // namespace lah::game

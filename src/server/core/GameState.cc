@@ -3,8 +3,7 @@
 #include "core/InboundEventVisitor.h"
 #include "ecs/HealthSystem.h"
 #include "ecs/MovementSystem.h"
-#include "s2c_message_generated.h"
-#include "serialization/GameStateSerializer.h"
+#include "serialization/S2CMessageSerializer.h"
 
 namespace lah::server {
 
@@ -119,17 +118,8 @@ auto GameState::cycleSystems(std::chrono::milliseconds timeElapsed)
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
-  flatbuffers::FlatBufferBuilder builder{};
-  auto snapshotOffset = lah::shared::GameStateSerializer::Serialize(
-      builder, registry_, dirtyEntities, deletedEntities);
-  auto s2cMessage = lah_shared::CreateS2CMessageFB(
-      builder, lah_shared::S2CDataFB::GameStateDeltaFB, snapshotOffset.Union());
-  builder.Finish(s2cMessage);
-
-  std::vector<std::byte> payload(
-      reinterpret_cast<const std::byte*>(builder.GetBufferPointer()),
-      reinterpret_cast<const std::byte*>(builder.GetBufferPointer() +
-                                         builder.GetSize()));
+  auto payload = lah::shared::S2CMessageSerializer::SerializeGameStateDelta(
+      registry_, dirtyEntities, deletedEntities);
 
   outbound_->Push(OutboundEvent{.target = nullptr, .s2cMessage = payload});
 }

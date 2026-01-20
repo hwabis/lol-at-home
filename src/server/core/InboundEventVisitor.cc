@@ -1,10 +1,8 @@
 #include "InboundEventVisitor.h"
-#include <flatbuffers/flatbuffers.h>
 #include <spdlog/spdlog.h>
 #include "actions/GameActionProcessor.h"
 #include "champions/ChampionFactory.h"
-#include "s2c_message_generated.h"
-#include "serialization/GameStateSerializer.h"
+#include "serialization/S2CMessageSerializer.h"
 
 namespace lah::server {
 
@@ -26,38 +24,20 @@ void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
 
   peerToEntityMap_->emplace(peer_, entity);
 
-  flatbuffers::FlatBufferBuilder builder{};
-  auto paOffset = lah_shared::CreatePlayerAssignmentFB(
-      builder, static_cast<uint32_t>(entity));
-  auto s2cMessage = lah_shared::CreateS2CMessageFB(
-      builder, lah_shared::S2CDataFB::PlayerAssignmentFB, paOffset.Union());
-  builder.Finish(s2cMessage);
-
-  std::vector<std::byte> payload(
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer()),
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer() +
-                                   builder.GetSize()));
+  auto payload = lah::shared::S2CMessageSerializer::SerializePlayerAssignment(
+      static_cast<uint32_t>(entity));
   outbound_->Push(OutboundEvent{.target = peer_, .s2cMessage = payload});
 
   // Send full game state to new player
-
-  builder.Clear();
-
   std::vector<entt::entity> allEntities;
   for (auto entity : registry_->view<entt::entity>()) {
     allEntities.push_back(entity);
   }
-  auto snapshotOffset = lah::shared::GameStateSerializer::Serialize(
-      builder, *registry_, allEntities, {});  // No deletions
-  s2cMessage = lah_shared::CreateS2CMessageFB(
-      builder, lah_shared::S2CDataFB::GameStateDeltaFB, snapshotOffset.Union());
-  builder.Finish(s2cMessage);
-
-  payload = std::vector<std::byte>(
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer()),
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer() +
-                                   builder.GetSize()));
-  outbound_->Push(OutboundEvent{.target = peer_, .s2cMessage = payload});
+  auto gameStatePayload =
+      lah::shared::S2CMessageSerializer::SerializeGameStateDelta(
+          *registry_, allEntities, {});
+  outbound_->Push(
+      OutboundEvent{.target = peer_, .s2cMessage = gameStatePayload});
 }
 
 void InboundEventVisitor::operator()(
@@ -78,19 +58,8 @@ void InboundEventVisitor::operator()(const InboundChatEvent& event) const {
   }
 
   entt::entity senderEntity = itr->second;
-  flatbuffers::FlatBufferBuilder builder{};
-
-  auto textOffset = builder.CreateString(event.message);
-  auto chatBroadcast = lah_shared::CreateChatBroadcastFB(
-      builder, static_cast<uint32_t>(senderEntity), textOffset);
-  auto s2cMessage = lah_shared::CreateS2CMessageFB(
-      builder, lah_shared::S2CDataFB::ChatBroadcastFB, chatBroadcast.Union());
-  builder.Finish(s2cMessage);
-
-  std::vector<std::byte> payload(
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer()),
-      reinterpret_cast<std::byte*>(builder.GetBufferPointer() +
-                                   builder.GetSize()));
+  auto payload = lah::shared::S2CMessageSerializer::SerializeChatBroadcast(
+      static_cast<uint32_t>(senderEntity), event.message);
   outbound_->Push(OutboundEvent{.target = nullptr, .s2cMessage = payload});
 }
 

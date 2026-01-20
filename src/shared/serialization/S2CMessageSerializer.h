@@ -1,26 +1,59 @@
 #pragma once
 
+#include <cstddef>
 #include <entt/entt.hpp>
+#include <optional>
+#include <span>
+#include <string>
 #include <vector>
 #include "game_state_generated.h"
 
 namespace lah::shared {
 
-class GameStateSerializer {
+struct PlayerAssignmentData {
+  uint32_t assignedEntityId;
+};
+
+struct ChatBroadcastData {
+  uint32_t senderEntityId;
+  std::string message;
+};
+
+enum class S2CMessageType : uint8_t {
+  GameStateDelta,
+  PlayerAssignment,
+  ChatBroadcast,
+  Unknown,
+};
+
+class S2CMessageSerializer {
  public:
-  GameStateSerializer() = delete;
+  S2CMessageSerializer() = delete;
 
-  // Called on server
-  static auto Serialize(flatbuffers::FlatBufferBuilder& builder,
-                        const entt::registry& registry,
-                        const std::vector<entt::entity>& dirtyEntities,
-                        const std::vector<entt::entity>& deletedEntities)
-      -> flatbuffers::Offset<lah_shared::GameStateDeltaFB>;
+  static auto GetMessageType(std::span<const std::byte> data) -> S2CMessageType;
 
-  // Called on client
-  static auto Deserialize(entt::registry& registry,
-                          const lah_shared::GameStateDeltaFB& gamestate)
+  static auto SerializeGameStateDelta(
+      const entt::registry& registry,
+      const std::vector<entt::entity>& dirtyEntities,
+      const std::vector<entt::entity>& deletedEntities)
+      -> std::vector<std::byte>;
+
+  static auto SerializePlayerAssignment(uint32_t entityId)
+      -> std::vector<std::byte>;
+
+  static auto SerializeChatBroadcast(uint32_t senderEntityId,
+                                     const std::string& message)
+      -> std::vector<std::byte>;
+
+  static auto DeserializeGameStateDelta(entt::registry& registry,
+                                        std::span<const std::byte> data)
       -> void;
+
+  static auto DeserializePlayerAssignment(std::span<const std::byte> data)
+      -> std::optional<PlayerAssignmentData>;
+
+  static auto DeserializeChatBroadcast(std::span<const std::byte> data)
+      -> std::optional<ChatBroadcastData>;
 
  private:
   static void deserializePosition(entt::registry& registry,
