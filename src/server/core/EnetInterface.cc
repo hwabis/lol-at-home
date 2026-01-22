@@ -1,6 +1,5 @@
 #include "EnetInterface.h"
 #include <spdlog/spdlog.h>
-#include "c2s_message_generated.h"
 #include "domain/GameAction.h"
 #include "serialization/C2SMessageSerializer.h"
 
@@ -123,15 +122,13 @@ void EnetInterface::populateInbound() {
           }
 
           case lah::shared::C2SMessageType::ChatMessage: {
-            // todo use DeserializeChatMessage
-            const lah_shared::C2SMessageFB* c2sMessage =
-                lah_shared::GetC2SMessageFB(data.data());
-            const lah_shared::ChatMessageFB* chatFb =
-                c2sMessage->message_as_ChatMessageFB();
-
-            InboundChatEvent chatEvent{.message = chatFb->text()->str()};
-            inbound_->Push(
-                InboundEvent{.peer = event.peer, .event = chatEvent});
+            if (auto chatData =
+                    lah::shared::C2SMessageSerializer::DeserializeChatMessage(
+                        data)) {
+              InboundChatEvent chatEvent{.message = chatData->message};
+              inbound_->Push(
+                  InboundEvent{.peer = event.peer, .event = chatEvent});
+            }
             break;
           }
 

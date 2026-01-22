@@ -302,6 +302,115 @@ void S2CMessageSerializer::deserializeAbilities(
   }
 }
 
+auto S2CMessageSerializer::DeserializeGameStateDeltaToData(
+    std::span<const std::byte> data) -> std::optional<GameStateDeltaData> {
+  const auto* s2cMessage = GetS2CMessageFB(data.data());
+
+  if (s2cMessage->message_type() != S2CDataFB::GameStateDeltaFB) {
+    return std::nullopt;
+  }
+
+  const auto* gamestate = s2cMessage->message_as_GameStateDeltaFB();
+  GameStateDeltaData result;
+
+  if (gamestate->entities() != nullptr) {
+    for (const auto* entityFB : *gamestate->entities()) {
+      EntitySnapshot snapshot;
+      snapshot.entityId = entityFB->id();
+
+      if (entityFB->position() != nullptr) {
+        snapshot.position = Position{
+            .x = entityFB->position()->x(),
+            .y = entityFB->position()->y(),
+        };
+      }
+
+      if (entityFB->health() != nullptr) {
+        snapshot.health = Health{
+            .current = entityFB->health()->current_health(),
+            .max = entityFB->health()->max_health(),
+            .regenPerSec = entityFB->health()->health_regen_per_sec(),
+        };
+      }
+
+      if (entityFB->mana() != nullptr) {
+        snapshot.mana = Mana{
+            .mana = entityFB->mana()->mana(),
+            .maxMana = entityFB->mana()->max_mana(),
+            .manaRegenPerSec = entityFB->mana()->mana_regen_per_sec(),
+        };
+      }
+
+      if (entityFB->movement_stats() != nullptr) {
+        snapshot.movementStats = MovementStats{
+            .speed = entityFB->movement_stats()->speed(),
+        };
+      }
+
+      if (entityFB->character_state() != nullptr) {
+        CharacterState::State state{};
+        switch (entityFB->character_state()->state()) {
+          case CharacterStateFB::Idle:
+            state = CharacterState::State::Idle;
+            break;
+          case CharacterStateFB::Moving:
+            state = CharacterState::State::Moving;
+            break;
+          case CharacterStateFB::AutoAttackWindup:
+            state = CharacterState::State::AutoAttackWindup;
+            break;
+        }
+        snapshot.characterState = CharacterState{.state = state};
+      }
+
+      if (entityFB->move_target() != nullptr) {
+        snapshot.moveTarget = MoveTarget{
+            .targetX = entityFB->move_target()->target_pos().x(),
+            .targetY = entityFB->move_target()->target_pos().y(),
+        };
+      }
+
+      if (entityFB->team() != nullptr) {
+        snapshot.team = Team{
+            .color = entityFB->team()->color() == TeamColorFB::Blue
+                         ? Team::Color::Blue
+                         : Team::Color::Red,
+        };
+      }
+
+      if (entityFB->abilities() != nullptr &&
+          entityFB->abilities()->abilities() != nullptr) {
+        Abilities abilities;
+        for (const auto* abilityEntryFB : *entityFB->abilities()->abilities()) {
+          auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
+          const auto* abilityFB = abilityEntryFB->ability();
+
+          Abilities::Ability ability{
+              .tag = static_cast<AbilityTag>(abilityFB->id()),
+              .cooldownRemaining = abilityFB->cooldown_remaining(),
+              .rank = abilityFB->rank(),
+              .currentCharges = abilityFB->current_charges(),
+              .maxCharges = abilityFB->max_charges(),
+          };
+
+          abilities.abilities[slot] = ability;
+        }
+        snapshot.abilities = abilities;
+      }
+
+      result.entities.push_back(snapshot);
+    }
+  }
+
+  if (gamestate->deleted_entity_ids() != nullptr) {
+    for (uint32_t deletedId : *gamestate->deleted_entity_ids()) {
+      result.deletedEntityIds.push_back(deletedId);
+    }
+  }
+
+  return result;
+}
+
 auto S2CMessageSerializer::GetMessageType(std::span<const std::byte> data)
     -> lah::shared::S2CMessageType {
   const auto* s2cMessage = GetS2CMessageFB(data.data());

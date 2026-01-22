@@ -6,6 +6,7 @@
 #include <span>
 #include <string>
 #include <vector>
+#include "domain/EcsComponents.h"
 #include "game_state_generated.h"
 
 namespace lah::shared {
@@ -17,6 +18,23 @@ struct PlayerAssignmentData {
 struct ChatBroadcastData {
   uint32_t senderEntityId;
   std::string message;
+};
+
+struct EntitySnapshot {
+  uint32_t entityId{};
+  std::optional<Position> position;
+  std::optional<Health> health;
+  std::optional<Mana> mana;
+  std::optional<MovementStats> movementStats;
+  std::optional<CharacterState> characterState;
+  std::optional<MoveTarget> moveTarget;
+  std::optional<Team> team;
+  std::optional<Abilities> abilities;
+};
+
+struct GameStateDeltaData {
+  std::vector<EntitySnapshot> entities;
+  std::vector<uint32_t> deletedEntityIds;
 };
 
 enum class S2CMessageType : uint8_t {
@@ -48,6 +66,9 @@ class S2CMessageSerializer {
   static auto DeserializeGameStateDelta(entt::registry& registry,
                                         std::span<const std::byte> data)
       -> void;
+
+  static auto DeserializeGameStateDeltaToData(std::span<const std::byte> data)
+      -> std::optional<GameStateDeltaData>;
 
   static auto DeserializePlayerAssignment(std::span<const std::byte> data)
       -> std::optional<PlayerAssignmentData>;

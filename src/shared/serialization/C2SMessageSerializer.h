@@ -15,6 +15,10 @@ struct ChampionSelectData {
   Team::Color teamColor;
 };
 
+struct ChatMessageData {
+  std::string message;
+};
+
 enum class C2SMessageType : uint8_t {
   GameAction,
   ChampionSelect,
@@ -39,6 +43,9 @@ class C2SMessageSerializer {
 
   static auto DeserializeChampionSelect(std::span<const std::byte> data)
       -> std::optional<ChampionSelectData>;
+
+  static auto DeserializeChatMessage(std::span<const std::byte> data)
+      -> std::optional<ChatMessageData>;
 };
 
 }  // namespace lah::shared

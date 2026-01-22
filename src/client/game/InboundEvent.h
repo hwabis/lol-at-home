@@ -1,10 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 #include <string>
 #include <variant>
-#include "domain/EcsComponents.h"
+#include "serialization/S2CMessageSerializer.h"
 
 namespace lah::game {
 
@@ -17,17 +16,11 @@ struct ChatMessageEvent {
   std::string text;
 };
 
-struct EntityUpdatedEvent {
-  uint32_t serverEntityId{};
-  std::optional<lah::shared::Position> position;
-  std::optional<lah::shared::Team> team;
-  std::optional<lah::shared::Health> health;
-  std::optional<lah::shared::CharacterState> characterState;
-  // todo add all the other components as well THIS IS SO ANNOYING
-};
+// Use the shared EntitySnapshot type, just for serialization/domain separation
+using EntityUpdatedEvent = lah::shared::EntitySnapshot;
 
 struct EntityDeletedEvent {
-  uint32_t serverEntityId{};
+  uint32_t entityId{};
 };
 
 using InboundEventVariant = std::variant<PlayerAssignedEvent,

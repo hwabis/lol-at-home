@@ -244,4 +244,16 @@ auto C2SMessageSerializer::DeserializeChampionSelect(
                        : Team::Color::Red};
 }
 
+auto C2SMessageSerializer::DeserializeChatMessage(
+    std::span<const std::byte> data) -> std::optional<ChatMessageData> {
+  const auto* c2sMessage = GetC2SMessageFB(data.data());
+
+  if (c2sMessage->message_type() != C2SDataFB::ChatMessageFB) {
+    return std::nullopt;
+  }
+
+  const auto* chatMessage = c2sMessage->message_as_ChatMessageFB();
+  return ChatMessageData{.message = chatMessage->text()->str()};
+}
+
 }  // namespace lah::shared

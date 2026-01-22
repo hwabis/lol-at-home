@@ -29,23 +29,21 @@ void InboundEventVisitor::operator()(const ChatMessageEvent& /*event*/) {
 }
 
 void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
-  spdlog::debug("Processing inbound event " +
-                std::to_string(event.serverEntityId));
+  spdlog::debug("Processing inbound event " + std::to_string(event.entityId));
 
   entt::entity clientEntity{};
 
-  auto existing = findClientEntityByServerId(event.serverEntityId);
+  auto existing = findClientEntityByServerId(event.entityId);
   if (existing.has_value()) {
     clientEntity = *existing;
   } else {
     clientEntity = registry_->create();
-    registry_->emplace<ServerEntityId>(clientEntity, event.serverEntityId);
+    registry_->emplace<ServerEntityId>(clientEntity, event.entityId);
   }
 
-  if (serverAssignedId_.has_value() &&
-      *serverAssignedId_ == event.serverEntityId) {
+  if (serverAssignedId_.has_value() && *serverAssignedId_ == event.entityId) {
     if (!registry_->all_of<LocalPlayer>(clientEntity)) {
-      registry_->emplace<LocalPlayer>(clientEntity, event.serverEntityId);
+      registry_->emplace<LocalPlayer>(clientEntity, event.entityId);
       spdlog::info("Tagged local player!");
     }
   }
@@ -55,23 +53,42 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
                                                          *event.position);
   }
 
-  if (event.team.has_value()) {
-    registry_->emplace_or_replace<lah::shared::Team>(clientEntity, *event.team);
-  }
-
   if (event.health.has_value()) {
     registry_->emplace_or_replace<lah::shared::Health>(clientEntity,
                                                        *event.health);
+  }
+
+  if (event.mana.has_value()) {
+    registry_->emplace_or_replace<lah::shared::Mana>(clientEntity, *event.mana);
+  }
+
+  if (event.movementStats.has_value()) {
+    registry_->emplace_or_replace<lah::shared::MovementStats>(
+        clientEntity, *event.movementStats);
   }
 
   if (event.characterState.has_value()) {
     registry_->emplace_or_replace<lah::shared::CharacterState>(
         clientEntity, *event.characterState);
   }
+
+  if (event.moveTarget.has_value()) {
+    registry_->emplace_or_replace<lah::shared::MoveTarget>(clientEntity,
+                                                           *event.moveTarget);
+  }
+
+  if (event.team.has_value()) {
+    registry_->emplace_or_replace<lah::shared::Team>(clientEntity, *event.team);
+  }
+
+  if (event.abilities.has_value()) {
+    registry_->emplace_or_replace<lah::shared::Abilities>(clientEntity,
+                                                          *event.abilities);
+  }
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {
-  auto existing = findClientEntityByServerId(event.serverEntityId);
+  auto existing = findClientEntityByServerId(event.entityId);
   if (existing.has_value()) {
     registry_->destroy(*existing);
   }
