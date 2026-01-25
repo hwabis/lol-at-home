@@ -75,8 +75,8 @@ class GameActionProcessor {
         (distance - sourceRadius.radius - targetRadius.radius) / distance;
 
     auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
-    moveTarget = {.targetX = xDelta * proportion,
-                  .targetY = yDelta * proportion};
+    moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
+                  .targetY = sourcePos.y + (yDelta * proportion)};
 
     instantDirty_->push_back(action.source);
   }
