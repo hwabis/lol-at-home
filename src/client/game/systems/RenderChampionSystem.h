@@ -107,6 +107,9 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
         case lah::shared::CharacterState::State::Moving:
           stateText = "Moving";
           break;
+        case lah::shared::CharacterState::State::AutoAttackMoving:
+          stateText = "Auto Attack Moving";
+          break;
         case lah::shared::CharacterState::State::AutoAttackWindup:
           stateText = "Auto Attack Windup";
           break;

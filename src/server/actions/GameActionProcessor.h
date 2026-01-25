@@ -31,6 +31,10 @@ class GameActionProcessor {
     auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
     moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
 
+    auto& characterState =
+        registry_->get<lah::shared::CharacterState>(action.source);
+    characterState.state = lah::shared::CharacterState::State::Moving;
+
     instantDirty_->push_back(action.source);
   }
 
@@ -77,6 +81,10 @@ class GameActionProcessor {
     auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
     moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
                   .targetY = sourcePos.y + (yDelta * proportion)};
+
+    auto& characterState =
+        registry_->get<lah::shared::CharacterState>(action.source);
+    characterState.state = lah::shared::CharacterState::State::AutoAttackMoving;
 
     instantDirty_->push_back(action.source);
   }

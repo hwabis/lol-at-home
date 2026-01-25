@@ -59,6 +59,9 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
       case CharacterState::State::Moving:
         charState = CharacterStateFB::Moving;
         break;
+      case CharacterState::State::AutoAttackMoving:
+        charState = CharacterStateFB::AutoAttackMoving;
+        break;
       case CharacterState::State::AutoAttackWindup:
         charState = CharacterStateFB::AutoAttackWindup;
         break;
@@ -225,6 +228,9 @@ auto S2CMessageSerializer::DeserializeGameStateDelta(
             break;
           case CharacterStateFB::Moving:
             state = CharacterState::State::Moving;
+            break;
+          case CharacterStateFB::AutoAttackMoving:
+            state = CharacterState::State::AutoAttackMoving;
             break;
           case CharacterStateFB::AutoAttackWindup:
             state = CharacterState::State::AutoAttackWindup;

@@ -27,9 +27,16 @@ class MovementSystem : public IEcsSystem {
                       movementStats.speed, timeElapsed);
 
       pos = newPos;
-      characterState.state = reached
-                                 ? lah::shared::CharacterState::State::Idle
-                                 : lah::shared::CharacterState::State::Moving;
+      if (reached) {
+        if (characterState.state ==
+            lah::shared::CharacterState::State::Moving) {
+          characterState.state = lah::shared::CharacterState::State::Idle;
+        } else if (characterState.state ==
+                   lah::shared::CharacterState::State::AutoAttackMoving) {
+          characterState.state =
+              lah::shared::CharacterState::State::AutoAttackWindup;
+        }
+      }
 
       // Technically movement system never sends updates instantly (we currently
       // have no way of knowing when the target position has changed, aka the

@@ -36,7 +36,8 @@ struct CharacterState {
   enum class State : uint8_t {
     Idle = 0,
     Moving = 1,
-    AutoAttackWindup = 2,
+    AutoAttackMoving = 2,
+    AutoAttackWindup = 3,
   };
   State state = State::Idle;
 };
