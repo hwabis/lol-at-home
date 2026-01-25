@@ -23,22 +23,23 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
   static void drawChampions(entt::registry& registry,
                             lah::engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<lah::shared::Position>();
+    auto view = registry.view<lah::shared::Position, lah::shared::Radius>();
     for (auto entity : view) {
       auto& position = view.get<lah::shared::Position>(entity);
+      auto& radius = view.get<lah::shared::Radius>(entity);
 
       lah::engine::Vector2 worldPos{.x = position.x, .y = position.y};
       auto screenPos = info.camera.WorldToScreen(worldPos);
 
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-      float radius = position.championRadius;
       float centerX = screenPos.x;
       float centerY = screenPos.y;
 
-      int intRadius = static_cast<int>(std::ceil(radius));
+      int intRadius = static_cast<int>(radius.radius);
       for (int yDraw = -intRadius; yDraw <= intRadius; yDraw++) {
-        float width = std::sqrt((radius * radius) - (yDraw * yDraw));
+        auto width = static_cast<float>(
+            std::sqrt((intRadius * intRadius) - (yDraw * yDraw)));
         SDL_RenderLine(renderer, centerX - width,
                        centerY + static_cast<float>(yDraw), centerX + width,
                        centerY + static_cast<float>(yDraw));
@@ -49,10 +50,11 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
   static void drawHealthBars(entt::registry& registry,
                              lah::engine::SceneInfo& info) {
     auto* renderer = info.sdlRenderer;
-    auto view = registry.view<lah::shared::Position, lah::shared::Health,
-                              lah::shared::Team>();
+    auto view = registry.view<lah::shared::Position, lah::shared::Radius,
+                              lah::shared::Health, lah::shared::Team>();
     for (auto entity : view) {
       auto& position = view.get<lah::shared::Position>(entity);
+      auto& radius = view.get<lah::shared::Radius>(entity);
       auto& health = view.get<lah::shared::Health>(entity);
       auto& team = view.get<lah::shared::Team>(entity);
 
@@ -63,7 +65,7 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
       constexpr float barWidth = 100.0F;
       constexpr float barHeight = 10.0F;
       float barX = screenPos.x - barWidth * 0.5F;
-      float barY = screenPos.y - position.championRadius - barHeight - 10.0F;
+      float barY = screenPos.y - radius.radius - barHeight - 10.0F;
 
       SDL_FRect background{barX, barY, barWidth, barHeight};
       SDL_FRect foreground{background.x, background.y, barWidth * healthRatio,

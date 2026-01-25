@@ -28,19 +28,10 @@ class GameActionProcessor {
       return;
     }
 
-    if (auto* moveTarget =
-            registry_->try_get<lah::shared::MoveTarget>(action.source)) {
-      *moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
+    auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
+    moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
 
-      if (auto* characterState =
-              registry_->try_get<lah::shared::CharacterState>(action.source)) {
-        characterState->state = lah::shared::CharacterState::State::Moving;
-      }
-
-      instantDirty_->push_back(action.source);
-    } else {
-      spdlog::warn("Entity has no MoveTarget component");
-    }
+    instantDirty_->push_back(action.source);
   }
 
   void operator()(const lah::shared::AbilityAction& action) {
@@ -70,8 +61,24 @@ class GameActionProcessor {
     abilityImpl->Execute(*registry_, ability, action.target);
   }
 
-  void operator()(const lah::shared::AutoAttackAction& /*action*/) {
-    // todo
+  void operator()(const lah::shared::AutoAttackAction& action) {
+    auto& sourcePos = registry_->get<lah::shared::Position>(action.source);
+    auto& targetPos = registry_->get<lah::shared::Position>(action.target);
+    auto& sourceRadius = registry_->get<lah::shared::Radius>(action.source);
+    auto& targetRadius = registry_->get<lah::shared::Radius>(action.target);
+
+    float xDelta = targetPos.x - sourcePos.x;
+    float yDelta = targetPos.y - sourcePos.y;
+
+    float distance = std::sqrt((xDelta * xDelta) + (yDelta * yDelta));
+    float proportion =
+        (distance - sourceRadius.radius - targetRadius.radius) / distance;
+
+    auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
+    moveTarget = {.targetX = xDelta * proportion,
+                  .targetY = yDelta * proportion};
+
+    instantDirty_->push_back(action.source);
   }
 
   void operator()(const lah::shared::StopGameAction& /*action*/) {

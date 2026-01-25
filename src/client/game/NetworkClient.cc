@@ -199,7 +199,7 @@ void NetworkClient::sendChampionSelect(lah::shared::Team::Color team) {
 
 void NetworkClient::handleGameStateDelta(std::span<const std::byte> data) {
   auto deltaData =
-      lah::shared::S2CMessageSerializer::DeserializeGameStateDeltaToData(data);
+      lah::shared::S2CMessageSerializer::DeserializeGameStateDelta(data);
 
   if (!deltaData) {
     return;

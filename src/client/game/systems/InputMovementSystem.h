@@ -59,9 +59,8 @@ class InputMovementSystem : public lah::engine::IEcsSystem {
                                   lah::shared::Team::Color myTeam,
                                   entt::entity excludeEntity)
       -> std::optional<uint32_t> {
-    auto view =
-        registry
-            .view<lah::shared::Position, lah::shared::Team, ServerEntityId>();
+    auto view = registry.view<lah::shared::Position, lah::shared::Radius,
+                              lah::shared::Team, ServerEntityId>();
 
     for (auto entity : view) {
       if (entity == excludeEntity) {
@@ -74,10 +73,11 @@ class InputMovementSystem : public lah::engine::IEcsSystem {
       }
 
       auto& position = view.get<lah::shared::Position>(entity);
+      auto& radius = view.get<lah::shared::Radius>(entity);
       float dx = position.x - x;
       float dy = position.y - y;
       float distSq = dx * dx + dy * dy;
-      float radiusSq = position.championRadius * position.championRadius;
+      float radiusSq = radius.radius * radius.radius;
 
       if (distSq <= radiusSq) {
         auto& serverId = view.get<ServerEntityId>(entity);

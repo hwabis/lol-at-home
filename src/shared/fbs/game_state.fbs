@@ -1,6 +1,10 @@
 include "game_common.fbs";
 namespace lah_shared;
 
+struct RadiusFB {
+  radius: float;
+}
+
 struct HealthFB {
   current_health: float;
   max_health: float;
@@ -62,6 +66,7 @@ table AbilitiesFB {
 table EntityFB {
   id: uint;  // entt::entity
   position: PositionFB;
+  radius: RadiusFB;
   health: HealthFB;
   mana: ManaFB;
   movement_stats: MovementStatsFB;

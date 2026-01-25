@@ -53,6 +53,11 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
                                                          *event.position);
   }
 
+  if (event.radius.has_value()) {
+    registry_->emplace_or_replace<lah::shared::Radius>(clientEntity,
+                                                       *event.radius);
+  }
+
   if (event.health.has_value()) {
     registry_->emplace_or_replace<lah::shared::Health>(clientEntity,
                                                        *event.health);

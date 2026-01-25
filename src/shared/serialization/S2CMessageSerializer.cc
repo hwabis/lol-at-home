@@ -20,6 +20,13 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     posPtr = &posData;
   }
 
+  RadiusFB radiusData{};
+  const RadiusFB* radiusPtr = nullptr;
+  if (const auto* radius = registry.try_get<Radius>(entity)) {
+    radiusData = RadiusFB(radius->radius);
+    radiusPtr = &radiusData;
+  }
+
   HealthFB HealthData{};
   const HealthFB* healthPtr = nullptr;
   if (const auto* health = registry.try_get<Health>(entity)) {
@@ -99,8 +106,8 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
   }
 
   auto entityOffset =
-      CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, healthPtr,
-                     manaPtr, movementStatsPtr, characterStatePtr,
+      CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, radiusPtr,
+                     healthPtr, manaPtr, movementStatsPtr, characterStatePtr,
                      moveTargetPtr, teamPtr, abilitiesOffset);
 
   return entityOffset;
@@ -160,149 +167,6 @@ auto S2CMessageSerializer::SerializeGameStateDelta(
 }
 
 auto S2CMessageSerializer::DeserializeGameStateDelta(
-    entt::registry& registry,
-    std::span<const std::byte> data) -> void {
-  const auto* s2cMessage = GetS2CMessageFB(data.data());
-
-  if (s2cMessage->message_type() != S2CDataFB::GameStateDeltaFB) {
-    return;
-  }
-
-  const auto* gamestate = s2cMessage->message_as_GameStateDeltaFB();
-
-  for (const auto* entityFB : *gamestate->entities()) {
-    auto entity = static_cast<entt::entity>(entityFB->id());
-
-    if (!registry.valid(entity)) {
-      entity = registry.create(entity);
-    }
-
-    deserializePosition(registry, entity, entityFB->position());
-    deserializeHealth(registry, entity, entityFB->health());
-    deserializeMana(registry, entity, entityFB->mana());
-    deserializeMovementStats(registry, entity, entityFB->movement_stats());
-    deserializeCharacterState(registry, entity, entityFB->character_state());
-    deserializeMoveTarget(registry, entity, entityFB->move_target());
-    deserializeTeam(registry, entity, entityFB->team());
-    deserializeAbilities(registry, entity, entityFB->abilities());
-  }
-
-  for (uint32_t deletedId : *gamestate->deleted_entity_ids()) {
-    auto entity = static_cast<entt::entity>(deletedId);
-    if (registry.valid(entity)) {
-      registry.destroy(entity);
-    }
-  }
-}
-
-void S2CMessageSerializer::deserializePosition(entt::registry& registry,
-                                               entt::entity entity,
-                                               const PositionFB* pos) {
-  if (pos != nullptr) {
-    registry.emplace_or_replace<Position>(entity, pos->x(), pos->y());
-  }
-}
-
-void S2CMessageSerializer::deserializeHealth(entt::registry& registry,
-                                             entt::entity entity,
-                                             const HealthFB* health) {
-  if (health != nullptr) {
-    registry.emplace_or_replace<Health>(entity, health->current_health(),
-                                        health->max_health(),
-                                        health->health_regen_per_sec());
-  }
-}
-
-void S2CMessageSerializer::deserializeMana(entt::registry& registry,
-                                           entt::entity entity,
-                                           const ManaFB* mana) {
-  if (mana != nullptr) {
-    registry.emplace_or_replace<Mana>(entity, mana->mana(), mana->max_mana(),
-                                      mana->mana_regen_per_sec());
-  }
-}
-
-void S2CMessageSerializer::deserializeMovementStats(
-    entt::registry& registry,
-    entt::entity entity,
-    const MovementStatsFB* movementStats) {
-  if (movementStats != nullptr) {
-    registry.emplace_or_replace<MovementStats>(
-        entity, MovementStats{.speed = movementStats->speed()});
-  }
-}
-
-void S2CMessageSerializer::deserializeCharacterState(
-    entt::registry& registry,
-    entt::entity entity,
-    const CharacterStateDataFB* characterStateData) {
-  if (characterStateData != nullptr) {
-    CharacterState::State state{};
-    switch (characterStateData->state()) {
-      case CharacterStateFB::Idle:
-        state = CharacterState::State::Idle;
-        break;
-      case CharacterStateFB::Moving:
-        state = CharacterState::State::Moving;
-        break;
-      case CharacterStateFB::AutoAttackWindup:
-        state = CharacterState::State::AutoAttackWindup;
-        break;
-    }
-
-    registry.emplace_or_replace<CharacterState>(entity,
-                                                CharacterState{.state = state});
-  }
-}
-
-void S2CMessageSerializer::deserializeMoveTarget(
-    entt::registry& registry,
-    entt::entity entity,
-    const MoveTargetFB* moveTarget) {
-  if (moveTarget != nullptr) {
-    registry.emplace_or_replace<MoveTarget>(
-        entity, MoveTarget{.targetX = moveTarget->target_pos().x(),
-                           .targetY = moveTarget->target_pos().y()});
-  }
-}
-
-void S2CMessageSerializer::deserializeTeam(entt::registry& registry,
-                                           entt::entity entity,
-                                           const TeamFB* team) {
-  if (team != nullptr) {
-    registry.emplace_or_replace<Team>(entity, team->color() == TeamColorFB::Blue
-                                                  ? Team::Color::Blue
-                                                  : Team::Color::Red);
-  }
-}
-
-void S2CMessageSerializer::deserializeAbilities(
-    entt::registry& registry,
-    entt::entity entity,
-    const AbilitiesFB* abilitiesFB) {
-  if (abilitiesFB != nullptr) {
-    Abilities abilities;
-    if (abilitiesFB != nullptr && abilitiesFB->abilities() != nullptr) {
-      for (const auto* abilityEntryFB : *abilitiesFB->abilities()) {
-        auto slot = static_cast<AbilitySlot>(abilityEntryFB->slot());
-        const auto* abilityFB = abilityEntryFB->ability();
-
-        Abilities::Ability ability{
-            .tag = static_cast<AbilityTag>(abilityFB->id()),
-            .cooldownRemaining = abilityFB->cooldown_remaining(),
-            .rank = abilityFB->rank(),
-            .currentCharges = abilityFB->current_charges(),
-            .maxCharges = abilityFB->max_charges()};
-
-        abilities.abilities[slot] = ability;
-      }
-    }
-
-    registry.emplace_or_replace<Abilities>(entity, abilities);
-  }
-}
-
-auto S2CMessageSerializer::DeserializeGameStateDeltaToData(
     std::span<const std::byte> data) -> std::optional<GameStateDeltaData> {
   const auto* s2cMessage = GetS2CMessageFB(data.data());
 
@@ -322,6 +186,12 @@ auto S2CMessageSerializer::DeserializeGameStateDeltaToData(
         snapshot.position = Position{
             .x = entityFB->position()->x(),
             .y = entityFB->position()->y(),
+        };
+      }
+
+      if (entityFB->radius() != nullptr) {
+        snapshot.radius = Radius{
+            .radius = entityFB->radius()->radius(),
         };
       }
 

@@ -10,7 +10,10 @@ namespace lah::shared {
 struct Position {
   float x{};
   float y{};
-  float championRadius = 50.0F;
+};
+
+struct Radius {
+  float radius{};
 };
 
 struct Health {

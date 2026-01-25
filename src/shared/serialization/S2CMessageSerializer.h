@@ -23,6 +23,7 @@ struct ChatBroadcastData {
 struct EntitySnapshot {
   uint32_t entityId{};
   std::optional<Position> position;
+  std::optional<Radius> radius;
   std::optional<Health> health;
   std::optional<Mana> mana;
   std::optional<MovementStats> movementStats;
@@ -63,11 +64,7 @@ class S2CMessageSerializer {
                                      const std::string& message)
       -> std::vector<std::byte>;
 
-  static auto DeserializeGameStateDelta(entt::registry& registry,
-                                        std::span<const std::byte> data)
-      -> void;
-
-  static auto DeserializeGameStateDeltaToData(std::span<const std::byte> data)
+  static auto DeserializeGameStateDelta(std::span<const std::byte> data)
       -> std::optional<GameStateDeltaData>;
 
   static auto DeserializePlayerAssignment(std::span<const std::byte> data)
@@ -80,6 +77,9 @@ class S2CMessageSerializer {
   static void deserializePosition(entt::registry& registry,
                                   entt::entity entity,
                                   const lah_shared::PositionFB* pos);
+  static void deserializeRadius(entt::registry& registry,
+                                entt::entity entity,
+                                const lah_shared::RadiusFB* radius);
   static void deserializeHealth(entt::registry& registry,
                                 entt::entity entity,
                                 const lah_shared::HealthFB* health);
