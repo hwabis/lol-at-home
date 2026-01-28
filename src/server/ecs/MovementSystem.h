@@ -35,6 +35,13 @@ class MovementSystem : public IEcsSystem {
                    lah::shared::CharacterState::State::AutoAttackMoving) {
           characterState.state =
               lah::shared::CharacterState::State::AutoAttackWindup;
+          auto* attackStats =
+              registry.try_get<lah::shared::AutoAttackStats>(entity);
+          if (attackStats != nullptr) {
+            registry.emplace_or_replace<lah::shared::AutoAttackWindupTimer>(
+                entity, lah::shared::AutoAttackWindupTimer{
+                            .remaining = attackStats->windupDuration});
+          }
         }
       }
 

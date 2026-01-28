@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <entt/entt.hpp>
 #include <unordered_map>
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTag.h"
@@ -53,8 +54,19 @@ struct Team {
   Color color;
 };
 
-struct AutoAttackRange {
+struct AutoAttackStats {
   float range;
+  float damage;
+  float windupDuration;
+  float attackSpeed;
+};
+
+struct AutoAttackTarget {
+  entt::entity target;
+};
+
+struct AutoAttackWindupTimer {
+  float remaining;
 };
 
 struct Abilities {

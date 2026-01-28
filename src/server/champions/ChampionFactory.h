@@ -46,7 +46,7 @@ class ChampionFactory {
     // I guess every champ should always have a MoveTarget even when not moving
     // ?
     registry.emplace<MoveTarget>(entity, startX, startY);
-    registry.emplace<AutoAttackRange>(entity, 105.0F);
+    registry.emplace<AutoAttackStats>(entity, 105.0F, 66.0F, 0.5F, 0.625F);
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};

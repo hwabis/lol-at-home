@@ -70,21 +70,40 @@ class GameActionProcessor {
     auto& targetPos = registry_->get<lah::shared::Position>(action.target);
     auto& sourceRadius = registry_->get<lah::shared::Radius>(action.source);
     auto& targetRadius = registry_->get<lah::shared::Radius>(action.target);
+    auto& attackStats =
+        registry_->get<lah::shared::AutoAttackStats>(action.source);
 
     float xDelta = targetPos.x - sourcePos.x;
     float yDelta = targetPos.y - sourcePos.y;
 
     float distance = std::sqrt((xDelta * xDelta) + (yDelta * yDelta));
-    float proportion =
-        (distance - sourceRadius.radius - targetRadius.radius) / distance;
+    float effectiveDistance =
+        distance - sourceRadius.radius - targetRadius.radius;
 
-    auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
-    moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
-                  .targetY = sourcePos.y + (yDelta * proportion)};
+    registry_->emplace_or_replace<lah::shared::AutoAttackTarget>(
+        action.source, lah::shared::AutoAttackTarget{.target = action.target});
 
     auto& characterState =
         registry_->get<lah::shared::CharacterState>(action.source);
-    characterState.state = lah::shared::CharacterState::State::AutoAttackMoving;
+
+    if (effectiveDistance <= attackStats.range) {
+      characterState.state =
+          lah::shared::CharacterState::State::AutoAttackWindup;
+      registry_->emplace_or_replace<lah::shared::AutoAttackWindupTimer>(
+          action.source, lah::shared::AutoAttackWindupTimer{
+                             .remaining = attackStats.windupDuration});
+    } else {
+      float proportion = (distance - sourceRadius.radius - targetRadius.radius -
+                          attackStats.range) /
+                         distance;
+
+      auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
+      moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
+                    .targetY = sourcePos.y + (yDelta * proportion)};
+
+      characterState.state =
+          lah::shared::CharacterState::State::AutoAttackMoving;
+    }
 
     instantDirty_->push_back(action.source);
   }

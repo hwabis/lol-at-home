@@ -1,6 +1,7 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
 #include "core/InboundEventVisitor.h"
+#include "ecs/AutoAttackSystem.h"
 #include "ecs/HealthSystem.h"
 #include "ecs/MovementSystem.h"
 #include "serialization/S2CMessageSerializer.h"
@@ -13,10 +14,9 @@ GameState::GameState(std::shared_ptr<ThreadSafeQueue<InboundEvent>> inbound,
     : inbound_(std::move(inbound)),
       outbound_(std::move(outbound)),
       simulationHz_(simulationHz) {
-  // Unfortunately order of systems kinda matters here. e.g. HealthSystem needs
-  // to see some components that are attached by previous systems
-  // todo combat/damage system needs to go before health system
+  // Unfortunately order of systems kinda matters here
   systems_.push_back(std::make_unique<MovementSystem>());
+  systems_.push_back(std::make_unique<AutoAttackSystem>());
   systems_.push_back(std::make_unique<HealthSystem>());
 
   for (auto& system : systems_) {
