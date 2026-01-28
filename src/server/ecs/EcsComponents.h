@@ -17,4 +17,14 @@ struct PendingHeal {
   float amount;
 };
 
+// transient component - only attached while auto-attacking
+struct AutoAttackTarget {
+  entt::entity target;
+};
+
+// transient component - only attached during windup
+struct AutoAttackWindupTimer {
+  float remaining;
+};
+
 }  // namespace lah::server

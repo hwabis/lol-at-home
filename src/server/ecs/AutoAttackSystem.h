@@ -16,22 +16,22 @@ class AutoAttackSystem : public IEcsSystem {
              std::vector<entt::entity>& /*deletedEntities*/) override {
     const float seconds = std::chrono::duration<float>(timeElapsed).count();
 
-    auto view = registry.view<
-        lah::shared::CharacterState, lah::shared::AutoAttackWindupTimer,
-        lah::shared::AutoAttackTarget, lah::shared::AutoAttackStats>();
+    auto view =
+        registry.view<lah::shared::CharacterState, AutoAttackWindupTimer,
+                      AutoAttackTarget, lah::shared::AutoAttackStats>();
 
     for (auto entity : view) {
       auto& characterState = view.get<lah::shared::CharacterState>(entity);
 
       if (characterState.state !=
           lah::shared::CharacterState::State::AutoAttackWindup) {
-        registry.remove<lah::shared::AutoAttackWindupTimer>(entity);
-        registry.remove<lah::shared::AutoAttackTarget>(entity);
+        registry.remove<AutoAttackWindupTimer>(entity);
+        registry.remove<AutoAttackTarget>(entity);
         continue;
       }
 
-      auto& windupTimer = view.get<lah::shared::AutoAttackWindupTimer>(entity);
-      auto& attackTarget = view.get<lah::shared::AutoAttackTarget>(entity);
+      auto& windupTimer = view.get<AutoAttackWindupTimer>(entity);
+      auto& attackTarget = view.get<AutoAttackTarget>(entity);
       auto& attackStats = view.get<lah::shared::AutoAttackStats>(entity);
 
       windupTimer.remaining -= seconds;
@@ -45,8 +45,8 @@ class AutoAttackSystem : public IEcsSystem {
         }
 
         characterState.state = lah::shared::CharacterState::State::Idle;
-        registry.remove<lah::shared::AutoAttackWindupTimer>(entity);
-        registry.remove<lah::shared::AutoAttackTarget>(entity);
+        registry.remove<AutoAttackWindupTimer>(entity);
+        registry.remove<AutoAttackTarget>(entity);
         dirtyInstant.push_back(entity);
       }
     }

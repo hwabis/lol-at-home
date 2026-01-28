@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include "domain/EcsComponents.h"
+#include "ecs/EcsComponents.h"
 #include "ecs/IEcsSystem.h"
 
 namespace lah::server {
@@ -28,6 +29,8 @@ class MovementSystem : public IEcsSystem {
 
       pos = newPos;
       if (reached) {
+        registry.remove<lah::shared::MoveTarget>(entity);
+
         if (characterState.state ==
             lah::shared::CharacterState::State::Moving) {
           characterState.state = lah::shared::CharacterState::State::Idle;
@@ -38,9 +41,9 @@ class MovementSystem : public IEcsSystem {
           auto* attackStats =
               registry.try_get<lah::shared::AutoAttackStats>(entity);
           if (attackStats != nullptr) {
-            registry.emplace_or_replace<lah::shared::AutoAttackWindupTimer>(
-                entity, lah::shared::AutoAttackWindupTimer{
-                            .remaining = attackStats->windupDuration});
+            registry.emplace_or_replace<AutoAttackWindupTimer>(
+                entity, AutoAttackWindupTimer{.remaining =
+                                                  attackStats->windupDuration});
           }
         }
       }

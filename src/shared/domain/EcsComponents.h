@@ -43,6 +43,7 @@ struct CharacterState {
   State state = State::Idle;
 };
 
+// transient component - only attached when moving
 struct MoveTarget {
   float targetX{};
   float targetY{};
@@ -59,14 +60,6 @@ struct AutoAttackStats {
   float damage;
   float windupDuration;
   float attackSpeed;
-};
-
-struct AutoAttackTarget {
-  entt::entity target;
-};
-
-struct AutoAttackWindupTimer {
-  float remaining;
 };
 
 struct Abilities {

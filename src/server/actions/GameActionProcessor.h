@@ -6,6 +6,7 @@
 #include "domain/ArenaConfig.h"
 #include "domain/EcsComponents.h"
 #include "domain/GameAction.h"
+#include "ecs/EcsComponents.h"
 
 namespace lah::server {
 
@@ -28,7 +29,8 @@ class GameActionProcessor {
       return;
     }
 
-    auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
+    auto& moveTarget =
+        registry_->emplace_or_replace<lah::shared::MoveTarget>(action.source);
     moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
 
     auto& characterState =
@@ -80,8 +82,8 @@ class GameActionProcessor {
     float effectiveDistance =
         distance - sourceRadius.radius - targetRadius.radius;
 
-    registry_->emplace_or_replace<lah::shared::AutoAttackTarget>(
-        action.source, lah::shared::AutoAttackTarget{.target = action.target});
+    registry_->emplace_or_replace<AutoAttackTarget>(
+        action.source, AutoAttackTarget{.target = action.target});
 
     auto& characterState =
         registry_->get<lah::shared::CharacterState>(action.source);
@@ -89,15 +91,16 @@ class GameActionProcessor {
     if (effectiveDistance <= attackStats.range) {
       characterState.state =
           lah::shared::CharacterState::State::AutoAttackWindup;
-      registry_->emplace_or_replace<lah::shared::AutoAttackWindupTimer>(
-          action.source, lah::shared::AutoAttackWindupTimer{
-                             .remaining = attackStats.windupDuration});
+      registry_->emplace_or_replace<AutoAttackWindupTimer>(
+          action.source,
+          AutoAttackWindupTimer{.remaining = attackStats.windupDuration});
     } else {
       float proportion = (distance - sourceRadius.radius - targetRadius.radius -
                           attackStats.range) /
                          distance;
 
-      auto& moveTarget = registry_->get<lah::shared::MoveTarget>(action.source);
+      auto& moveTarget =
+          registry_->emplace_or_replace<lah::shared::MoveTarget>(action.source);
       moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
                     .targetY = sourcePos.y + (yDelta * proportion)};
 
