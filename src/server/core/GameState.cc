@@ -35,16 +35,20 @@ auto GameState::Cycle(std::chrono::milliseconds timeElapsed) -> void {
   ++tickCounter_;
 
   std::vector<entt::entity> instantDirty;
-  processInbound(instantDirty);
+  std::vector<entt::entity> inboundDeleted;
+  processInbound(instantDirty, inboundDeleted);
   auto [dirtyEntities, deletedEntities] = cycleSystems(timeElapsed);
 
   dirtyEntities.insert(dirtyEntities.end(), instantDirty.begin(),
                        instantDirty.end());
+  deletedEntities.insert(deletedEntities.end(), inboundDeleted.begin(),
+                         inboundDeleted.end());
 
   pushOutbound(dirtyEntities, deletedEntities);
 }
 
-void GameState::processInbound(std::vector<entt::entity>& instantDirty) {
+void GameState::processInbound(std::vector<entt::entity>& instantDirty,
+                               std::vector<entt::entity>& deletedEntities) {
   std::queue<InboundEvent> inboundEvents = inbound_->PopAll();
 
   while (!inboundEvents.empty()) {
@@ -57,9 +61,10 @@ void GameState::processInbound(std::vector<entt::entity>& instantDirty) {
       }
     }
 
-    std::visit(InboundEventVisitor{event.peer, &registry_, &peerToEntityMap_,
-                                   &instantDirty, outbound_.get()},
-               event.event);
+    std::visit(
+        InboundEventVisitor{event.peer, &registry_, &peerToEntityMap_,
+                            &instantDirty, &deletedEntities, outbound_.get()},
+        event.event);
   }
 }
 

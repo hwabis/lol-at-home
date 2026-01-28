@@ -16,6 +16,7 @@ class InboundEventVisitor {
       entt::registry* registry,
       std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
       std::vector<entt::entity>* instantDirty,
+      std::vector<entt::entity>* deletedEntities,
       ThreadSafeQueue<OutboundEvent>* outbound);
 
   void operator()(const ChampionSelectedEvent& event) const;
@@ -28,6 +29,7 @@ class InboundEventVisitor {
   entt::registry* registry_;
   std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap_;
   std::vector<entt::entity>* instantDirty_;
+  std::vector<entt::entity>* deletedEntities_;
   ThreadSafeQueue<OutboundEvent>* outbound_;
 };
 

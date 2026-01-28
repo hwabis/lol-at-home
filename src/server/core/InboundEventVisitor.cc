@@ -11,11 +11,13 @@ InboundEventVisitor::InboundEventVisitor(
     entt::registry* registry,
     std::unordered_map<ENetPeer*, entt::entity>* peerToEntityMap,
     std::vector<entt::entity>* instantDirty,
+    std::vector<entt::entity>* deletedEntities,
     ThreadSafeQueue<OutboundEvent>* outbound)
     : peer_(peer),
       registry_(registry),
       peerToEntityMap_(peerToEntityMap),
       instantDirty_(instantDirty),
+      deletedEntities_(deletedEntities),
       outbound_(outbound) {}
 
 void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
@@ -44,6 +46,7 @@ void InboundEventVisitor::operator()(
     const ClientDisconnectedEvent& /*event*/) const {
   auto iterator = peerToEntityMap_->find(peer_);
   if (iterator != peerToEntityMap_->end()) {
+    deletedEntities_->push_back(iterator->second);
     registry_->destroy(iterator->second);
     peerToEntityMap_->erase(iterator);
   }
