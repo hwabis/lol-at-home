@@ -30,10 +30,12 @@ void InboundEventVisitor::operator()(const ChampionSelectedEvent& event) const {
       static_cast<uint32_t>(entity));
   outbound_->Push(OutboundEvent{.target = peer_, .s2cMessage = payload});
 
+  instantDirty_->push_back(entity);
+
   // Send full game state to new player
   std::vector<entt::entity> allEntities;
-  for (auto entity : registry_->view<entt::entity>()) {
-    allEntities.push_back(entity);
+  for (auto entityIt : registry_->view<entt::entity>()) {
+    allEntities.push_back(entityIt);
   }
   auto gameStatePayload =
       lah::shared::S2CMessageSerializer::SerializeGameStateDelta(

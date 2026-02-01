@@ -90,10 +90,6 @@ class S2CMessageSerializer {
       entt::registry& registry,
       entt::entity entity,
       const lah_shared::MovementStatsFB* movementStats);
-  static void deserializeCharacterState(
-      entt::registry& registry,
-      entt::entity entity,
-      const lah_shared::CharacterStateDataFB* characterStateData);
   static void deserializeMoveTarget(entt::registry& registry,
                                     entt::entity entity,
                                     const lah_shared::MoveTargetFB* moveTarget);

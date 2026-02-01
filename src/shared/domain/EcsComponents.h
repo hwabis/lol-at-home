@@ -33,9 +33,6 @@ struct MovementStats {
   float speed{};  // units per sec
 };
 
-// todo technically this struct isn't needed... we can actually infer everything
-// about the state from other ecs components. should eventually remove so
-// there's only one source of truth
 struct CharacterState {
   enum class State : uint8_t {
     Idle = 0,

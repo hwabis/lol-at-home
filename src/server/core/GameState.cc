@@ -1,7 +1,9 @@
 #include "core/GameState.h"
 #include <spdlog/spdlog.h>
 #include "core/InboundEventVisitor.h"
+#include "domain/EcsComponents.h"
 #include "ecs/AutoAttackSystem.h"
+#include "ecs/EcsComponents.h"
 #include "ecs/HealthSystem.h"
 #include "ecs/MovementSystem.h"
 #include "serialization/S2CMessageSerializer.h"
@@ -123,6 +125,27 @@ auto GameState::cycleSystems(std::chrono::milliseconds timeElapsed)
 
 void GameState::pushOutbound(const std::vector<entt::entity>& dirtyEntities,
                              const std::vector<entt::entity>& deletedEntities) {
+  // Compute CharacterState for dirty entities before serialization
+  for (auto entity : dirtyEntities) {
+    if (!registry_.valid(entity)) {
+      continue;
+    }
+
+    lah::shared::CharacterState::State state =
+        lah::shared::CharacterState::State::Idle;
+
+    if (registry_.all_of<AutoAttackWindupTimer>(entity)) {
+      state = lah::shared::CharacterState::State::AutoAttackWindup;
+    } else if (registry_.all_of<lah::shared::MoveTarget>(entity)) {
+      state = (registry_.all_of<AutoAttackTarget>(entity))
+                  ? lah::shared::CharacterState::State::AutoAttackMoving
+                  : lah::shared::CharacterState::State::Moving;
+    }
+
+    registry_.emplace_or_replace<lah::shared::CharacterState>(
+        entity, lah::shared::CharacterState{.state = state});
+  }
+
   auto payload = lah::shared::S2CMessageSerializer::SerializeGameStateDelta(
       registry_, dirtyEntities, deletedEntities);
 

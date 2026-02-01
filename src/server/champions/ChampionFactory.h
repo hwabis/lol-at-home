@@ -42,10 +42,7 @@ class ChampionFactory {
     registry.emplace<Health>(entity, 616.0, 616.0, 8.0);
     // registry.emplace<Mana>(entity, 0.0, 0.0, 0.0);  // Garen has no mana
     registry.emplace<MovementStats>(entity, 340.0);
-    registry.emplace<CharacterState>(entity, CharacterState::State::Idle);
-    // I guess every champ should always have a MoveTarget even when not moving
-    // ?
-    registry.emplace<MoveTarget>(entity, startX, startY);
+    registry.emplace<lah::shared::CharacterState>(entity);
     registry.emplace<AutoAttackStats>(entity, 105.0F, 66.0F, 0.5F, 0.625F);
 
     Abilities abilities;

@@ -33,9 +33,8 @@ class GameActionProcessor {
         registry_->emplace_or_replace<lah::shared::MoveTarget>(action.source);
     moveTarget = {.targetX = action.targetX, .targetY = action.targetY};
 
-    auto& characterState =
-        registry_->get<lah::shared::CharacterState>(action.source);
-    characterState.state = lah::shared::CharacterState::State::Moving;
+    registry_->remove<AutoAttackTarget>(action.source);
+    registry_->remove<AutoAttackWindupTimer>(action.source);
 
     instantDirty_->push_back(action.source);
   }
@@ -85,12 +84,8 @@ class GameActionProcessor {
     registry_->emplace_or_replace<AutoAttackTarget>(
         action.source, AutoAttackTarget{.target = action.target});
 
-    auto& characterState =
-        registry_->get<lah::shared::CharacterState>(action.source);
-
     if (effectiveDistance <= attackStats.range) {
-      characterState.state =
-          lah::shared::CharacterState::State::AutoAttackWindup;
+      registry_->remove<lah::shared::MoveTarget>(action.source);
       registry_->emplace_or_replace<AutoAttackWindupTimer>(
           action.source,
           AutoAttackWindupTimer{.remaining = attackStats.windupDuration});
@@ -103,9 +98,6 @@ class GameActionProcessor {
           registry_->emplace_or_replace<lah::shared::MoveTarget>(action.source);
       moveTarget = {.targetX = sourcePos.x + (xDelta * proportion),
                     .targetY = sourcePos.y + (yDelta * proportion)};
-
-      characterState.state =
-          lah::shared::CharacterState::State::AutoAttackMoving;
     }
 
     instantDirty_->push_back(action.source);

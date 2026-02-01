@@ -17,7 +17,7 @@ struct PendingHeal {
   float amount;
 };
 
-// transient component - only attached while auto-attacking
+// transient component - only attached during aa move or aa windup
 struct AutoAttackTarget {
   entt::entity target;
 };

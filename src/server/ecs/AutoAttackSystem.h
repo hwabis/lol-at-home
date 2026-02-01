@@ -16,20 +16,10 @@ class AutoAttackSystem : public IEcsSystem {
              std::vector<entt::entity>& /*deletedEntities*/) override {
     const float seconds = std::chrono::duration<float>(timeElapsed).count();
 
-    auto view =
-        registry.view<lah::shared::CharacterState, AutoAttackWindupTimer,
-                      AutoAttackTarget, lah::shared::AutoAttackStats>();
+    auto view = registry.view<AutoAttackWindupTimer, AutoAttackTarget,
+                              lah::shared::AutoAttackStats>();
 
     for (auto entity : view) {
-      auto& characterState = view.get<lah::shared::CharacterState>(entity);
-
-      if (characterState.state !=
-          lah::shared::CharacterState::State::AutoAttackWindup) {
-        registry.remove<AutoAttackWindupTimer>(entity);
-        registry.remove<AutoAttackTarget>(entity);
-        continue;
-      }
-
       auto& windupTimer = view.get<AutoAttackWindupTimer>(entity);
       auto& attackTarget = view.get<AutoAttackTarget>(entity);
       auto& attackStats = view.get<lah::shared::AutoAttackStats>(entity);
@@ -44,7 +34,6 @@ class AutoAttackSystem : public IEcsSystem {
           dirtyInstant.push_back(attackTarget.target);
         }
 
-        characterState.state = lah::shared::CharacterState::State::Idle;
         registry.remove<AutoAttackWindupTimer>(entity);
         registry.remove<AutoAttackTarget>(entity);
         dirtyInstant.push_back(entity);
@@ -53,7 +42,7 @@ class AutoAttackSystem : public IEcsSystem {
   }
 
   [[nodiscard]] auto GetPeriodicSyncRateHz() const -> int override {
-    constexpr int rateHz = 30;  // High rate for responsive auto-attacks
+    constexpr int rateHz = 30;
     return rateHz;
   }
 };

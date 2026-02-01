@@ -12,14 +12,12 @@ class MovementSystem : public IEcsSystem {
   void Cycle(entt::registry& registry,
              std::chrono::milliseconds timeElapsed,
              std::vector<entt::entity>& dirtyPeriodic,
-             std::vector<entt::entity>& /*dirtyInstant*/,
+             std::vector<entt::entity>& dirtyInstant,
              std::vector<entt::entity>& /*deletedEntities*/) override {
-    auto view =
-        registry.view<lah::shared::Position, lah::shared::MovementStats,
-                      lah::shared::CharacterState, lah::shared::MoveTarget>();
+    auto view = registry.view<lah::shared::Position, lah::shared::MovementStats,
+                              lah::shared::MoveTarget>();
     for (auto entity : view) {
       auto& pos = view.get<lah::shared::Position>(entity);
-      auto& characterState = view.get<lah::shared::CharacterState>(entity);
       auto& movementStats = view.get<lah::shared::MovementStats>(entity);
       auto& moveTarget = view.get<lah::shared::MoveTarget>(entity);
 
@@ -31,13 +29,8 @@ class MovementSystem : public IEcsSystem {
       if (reached) {
         registry.remove<lah::shared::MoveTarget>(entity);
 
-        if (characterState.state ==
-            lah::shared::CharacterState::State::Moving) {
-          characterState.state = lah::shared::CharacterState::State::Idle;
-        } else if (characterState.state ==
-                   lah::shared::CharacterState::State::AutoAttackMoving) {
-          characterState.state =
-              lah::shared::CharacterState::State::AutoAttackWindup;
+        auto* attackTarget = registry.try_get<AutoAttackTarget>(entity);
+        if (attackTarget != nullptr) {
           auto* attackStats =
               registry.try_get<lah::shared::AutoAttackStats>(entity);
           if (attackStats != nullptr) {
@@ -46,13 +39,12 @@ class MovementSystem : public IEcsSystem {
                                                   attackStats->windupDuration});
           }
         }
-      }
 
-      // Technically movement system never sends updates instantly (we currently
-      // have no way of knowing when the target position has changed, aka the
-      // player right-clicked), but the sync rate is so high anyway. Not sure
-      // what LoL actually does
-      dirtyPeriodic.push_back(entity);
+        // Send state change immediately when reaching destination
+        dirtyInstant.push_back(entity);
+      } else {
+        dirtyPeriodic.push_back(entity);
+      }
     }
   };
 

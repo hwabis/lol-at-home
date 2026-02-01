@@ -73,8 +73,13 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
   }
 
   if (event.characterState.has_value()) {
+    auto state = event.characterState->state;
     registry_->emplace_or_replace<lah::shared::CharacterState>(
         clientEntity, *event.characterState);
+
+    if (state == lah::shared::CharacterState::State::Idle) {
+      registry_->remove<lah::shared::MoveTarget>(clientEntity);
+    }
   }
 
   if (event.moveTarget.has_value()) {
