@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <entt/entt.hpp>
 #include <unordered_map>
+#include "ChampionId.h"
 #include "abilities/AbilitySlot.h"
 #include "abilities/AbilityTag.h"
 
@@ -60,6 +61,10 @@ struct AutoAttackStats {
   float damage;
   float windupDuration;
   float attackSpeed;
+};
+
+struct ChampionType {
+  ChampionId id;
 };
 
 struct Abilities {

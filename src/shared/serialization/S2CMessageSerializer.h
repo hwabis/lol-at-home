@@ -31,6 +31,7 @@ struct EntitySnapshot {
   std::optional<MoveTarget> moveTarget;
   std::optional<Team> team;
   std::optional<Abilities> abilities;
+  std::optional<ChampionType> championType;
 };
 
 struct GameStateDeltaData {

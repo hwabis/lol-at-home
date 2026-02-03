@@ -108,10 +108,18 @@ auto serializeEntity(flatbuffers::FlatBufferBuilder& builder,
     abilitiesOffset = CreateAbilitiesFB(builder, entriesVector);
   }
 
+  ChampionTypeFB championTypeData{};
+  const ChampionTypeFB* championTypePtr = nullptr;
+  if (const auto* championType = registry.try_get<ChampionType>(entity)) {
+    championTypeData =
+        ChampionTypeFB(static_cast<ChampionIdFB>(championType->id));
+    championTypePtr = &championTypeData;
+  }
+
   auto entityOffset =
       CreateEntityFB(builder, static_cast<uint32_t>(entity), posPtr, radiusPtr,
                      healthPtr, manaPtr, movementStatsPtr, characterStatePtr,
-                     moveTargetPtr, teamPtr, abilitiesOffset);
+                     moveTargetPtr, teamPtr, abilitiesOffset, championTypePtr);
 
   return entityOffset;
 }
@@ -272,6 +280,12 @@ auto S2CMessageSerializer::DeserializeGameStateDelta(
           abilities.abilities[slot] = ability;
         }
         snapshot.abilities = abilities;
+      }
+
+      if (entityFB->champion_type() != nullptr) {
+        snapshot.championType = ChampionType{
+            .id = static_cast<ChampionId>(entityFB->champion_type()->id()),
+        };
       }
 
       result.entities.push_back(snapshot);

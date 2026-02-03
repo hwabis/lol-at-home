@@ -64,6 +64,15 @@ table AbilitiesFB {
   abilities: [AbilityEntryFB];
 }
 
+enum ChampionIdFB: ubyte {
+  Garen = 0,
+  Teemo = 1,
+}
+
+struct ChampionTypeFB {
+  id: ChampionIdFB;
+}
+
 table EntityFB {
   id: uint;  // entt::entity
   position: PositionFB;
@@ -75,6 +84,7 @@ table EntityFB {
   move_target: MoveTargetFB;
   team: TeamFB;
   abilities: AbilitiesFB;
+  champion_type: ChampionTypeFB;
 }
 
 table GameStateDeltaFB {

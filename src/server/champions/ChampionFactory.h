@@ -44,6 +44,7 @@ class ChampionFactory {
     registry.emplace<MovementStats>(entity, 340.0);
     registry.emplace<lah::shared::CharacterState>(entity);
     registry.emplace<AutoAttackStats>(entity, 105.0F, 66.0F, 0.5F, 0.625F);
+    registry.emplace<ChampionType>(entity, ChampionId::Garen);
 
     Abilities abilities;
     abilities.abilities[AbilitySlot::Q] = {.tag = AbilityTag::Garen_Q};

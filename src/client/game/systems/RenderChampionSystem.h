@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_render.h>
 #include <spdlog/spdlog.h>
-#include "Components.h"
 #include "IEcsSystem.h"
 #include "TextRenderer.h"
 #include "domain/EcsComponents.h"
@@ -92,45 +91,64 @@ class RenderChampionSystem : public lah::engine::IEcsSystem {
     auto* font = info.font;
 
     auto view =
-        registry.view<lah::game::LocalPlayer, lah::shared::CharacterState>();
+        registry.view<lah::shared::Position, lah::shared::Radius,
+                      lah::shared::CharacterState, lah::shared::ChampionType>();
 
-    bool foundPlayer = false;
+    constexpr float barWidth = 100.0F;
+    constexpr float barHeight = 10.0F;
+    constexpr float textOffsetAboveBar = 5.0F;
+
     for (auto entity : view) {
-      foundPlayer = true;
+      auto& position = view.get<lah::shared::Position>(entity);
+      auto& radius = view.get<lah::shared::Radius>(entity);
       auto& state = view.get<lah::shared::CharacterState>(entity);
+      auto& championType = view.get<lah::shared::ChampionType>(entity);
 
-      std::string stateText;
-      switch (state.state) {
-        case lah::shared::CharacterState::State::Idle:
-          stateText = "Idle";
-          break;
-        case lah::shared::CharacterState::State::Moving:
-          stateText = "Moving";
-          break;
-        case lah::shared::CharacterState::State::AutoAttackMoving:
-          stateText = "Auto Attack Moving";
-          break;
-        case lah::shared::CharacterState::State::AutoAttackWindup:
-          stateText = "Auto Attack Windup";
-          break;
+      lah::engine::Vector2 worldPos{.x = position.x, .y = position.y};
+      auto screenPos = info.camera.WorldToScreen(worldPos);
+
+      std::string displayText;
+      if (state.state == lah::shared::CharacterState::State::Idle) {
+        displayText = getChampionName(championType.id);
+      } else {
+        displayText = getStateText(state.state);
       }
 
-      std::string displayText = std::string("State: ") + stateText;
+      float textX = screenPos.x - barWidth * 0.5F;
+      float textY =
+          screenPos.y - radius.radius - barHeight - 10.0F - textOffsetAboveBar;
       lah::engine::TextRenderer::DrawText(renderer, font, displayText,
-                                          {.x = 10, .y = 10});
+                                          {.x = textX, .y = textY});
+    }
+  }
 
-      break;
+  static auto getChampionName(lah::shared::ChampionId id) -> std::string {
+    switch (id) {
+      case lah::shared::ChampionId::Garen:
+        return "Garen";
+      case lah::shared::ChampionId::Teemo:
+        return "Teemo";
     }
 
-    if (!foundPlayer) {
-      static bool loggedOnce = false;
-      if (!loggedOnce) {
-        spdlog::warn(
-            "No LocalPlayer entity with CharacterState found for text "
-            "rendering");
-        loggedOnce = true;
-      }
+    // unreachable (compiler catches all switch cases)
+    return "Unknown";
+  }
+
+  static auto getStateText(lah::shared::CharacterState::State state)
+      -> std::string {
+    switch (state) {
+      case lah::shared::CharacterState::State::Idle:
+        return "IDLE";
+      case lah::shared::CharacterState::State::Moving:
+        return "MOVING";
+      case lah::shared::CharacterState::State::AutoAttackMoving:
+        return "AUTO ATTACK MOVING";
+      case lah::shared::CharacterState::State::AutoAttackWindup:
+        return "AUTO ATTACK WINDUP";
     }
+
+    // unreachable (compiler catches all switch cases)
+    return "UNKNOWN";
   }
 };
 

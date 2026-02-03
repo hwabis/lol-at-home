@@ -95,6 +95,11 @@ void InboundEventVisitor::operator()(const EntityUpdatedEvent& event) {
     registry_->emplace_or_replace<lah::shared::Abilities>(clientEntity,
                                                           *event.abilities);
   }
+
+  if (event.championType.has_value()) {
+    registry_->emplace_or_replace<lah::shared::ChampionType>(
+        clientEntity, *event.championType);
+  }
 }
 
 void InboundEventVisitor::operator()(const EntityDeletedEvent& event) {
